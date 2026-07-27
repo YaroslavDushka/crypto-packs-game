@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Крипто-паки</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
+        .app { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: 0 auto; background: #141828; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.7); }
+        
+        .content { flex: 1; overflow-y: auto; padding: 20px 20px 100px; scrollbar-width: thin; scrollbar-color: #3b4a6b #141828; }
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-thumb { background: #3b4a6b; border-radius: 8px; }
+
+        .tab-pane { display: none; animation: fade 0.25s ease; }
+        .tab-pane.active { display: block; }
+
+        @keyframes fade { from { opacity: 0.4; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* БАЛАНС ВАЛЮТЫ */
+        .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
+
+        /* МАГАЗИН - ПАКЕТЫ */
+        .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .pack-card { background: #111722; border-radius: 16px; padding: 16px; text-align: center; border: 2px solid #2a3348; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .pack-card:active { transform: scale(0.95); }
+        .pack-card .pack-emoji { font-size: 48px; line-height: 1.2; margin-bottom: 6px; }
+        .pack-card .pack-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .pack-card .pack-rarity { font-size: 11px; font-weight: bold; padding: 2px 10px; border-radius: 12px; margin-bottom: 8px; }
+        .pack-card .pack-price { font-size: 13px; color: #f7931a; background: #1e222d; padding: 4px 12px; border-radius: 12px; }
+
+        /* Цвета редкостей */
+        .rarity-legendary { border-color: #ffd700 !important; background: #1a1600 !important; }
+        .rarity-legendary .pack-rarity { background: #ffd700; color: #000; }
+        .rarity-epic { border-color: #a855f7 !important; background: #1a0b2e !important; }
+        .rarity-epic .pack-rarity { background: #a855f7; color: #fff; }
+        .rarity-deadly { border-color: #ef4444 !important; background: #2a0a0a !important; }
+        .rarity-deadly .pack-rarity { background: #ef4444; color: #fff; }
+        .rarity-rare { border-color: #3b82f6 !important; background: #0b1a2e !important; }
+        .rarity-rare .pack-rarity { background: #3b82f6; color: #fff; }
+        .rarity-common { border-color: #6b7280 !important; }
+        .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
+
+        /* КАРТЫ В КОЛЛЕКЦИИ */
+        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .card-item { background: #111722; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #2a3348; }
+        .card-item .card-img { font-size: 32px; display: block; margin-bottom: 4px; }
+        .card-item .card-count { font-size: 12px; color: #8892b0; }
+        
+        /* ПОДВАЛ */
+        .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
+        .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; background: transparent; border: none; color: #8892b0; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; gap: 2px; padding-top: 6px; border-radius: 12px; }
+        .tab-btn .icon { font-size: 22px; line-height: 1.2; }
+        .tab-btn.active { color: #64ffda; }
+        @media (max-width: 480px) { .tab-btn .icon { font-size: 20px; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="content" id="contentArea">
+        
+        <!-- МАГАЗИН -->
+        <div class="tab-pane active" id="shop">
+            <div class="content-card">
+                <h2>🛒 Магазин <span class="balance-box" id="shopBalance">₿ 0</span></h2>
+                <div class="packs-grid" id="packsContainer">
+                    <!-- Кнопки сгенерируются JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- КАРТЫ -->
+        <div class="tab-pane" id="cards">
+            <div class="content-card">
+                <h2>🃏 Мои карты <span class="balance-box" id="cardsBalance">₿ 0</span></h2>
+                <div id="cardsContainer">
+                    <div class="placeholder" style="text-align:center; padding: 30px 0; border: 2px dashed #2a3348; border-radius: 16px; background: #101826;">
+                        <span style="font-size:40px; display:block;">📭</span>
+                        У вас пока нет карт.<br>Купите пакеты в магазине!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Остальные вкладки (заглушки) -->
+        <div class="tab-pane" id="leaders"><div class="content-card"><h2>🏆 Лидеры</h2><div class="placeholder" style="padding:30px; text-align:center;">Скоро будет рейтинг!</div></div></div>
+        <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="padding:30px; text-align:center;">Скоро здесь будет биржа!</div></div></div>
+        <div class="tab-pane" id="crypto"><div class="content-card"><h2>₿ Криптовалюта</h2><div class="placeholder" style="padding:30px; text-align:center;">Ваш баланс: <strong id="cryptoBalance">0</strong> монет</div></div></div>
+        <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="padding:30px; text-align:center;">Игровые достижения в разработке!</div></div></div>
+    </div>
+
+    <div class="tabs-bottom" id="tabBar">
+        <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
+        <button class="tab-btn" data-tab="cards"><span class="icon">🃏</span><span class="label">Карты</span></button>
+        <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
+        <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
+        <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 1. ДАННЫЕ ИГРЫ (Все карты и пакеты)
+    // ==========================================
+    
+    // Список всех карт, которые могут выпасть
+    const ALL_CARDS = [
+        { id: 'tsum', name: 'Пакет ЦУМ', emoji: '🛍️', rarity: 'legendary' },
+        { id: 'bmw', name: 'Пакет BMW', emoji: '👜', rarity: 'epic' },
+        { id: 'skull', name: 'Череп', emoji: '💀', rarity: 'deadly' },
+        { id: 'tea', name: 'Чайный пакетик', emoji: '🫖', rarity: 'rare' },
+        { id: 'pepe', name: 'Pepe', emoji: '🐸', rarity: 'common' }
+    ];
+
+    // Описание пакетов (сортировка: от самого редкого к обычному)
+    const PACKS = [
+        { id: 'pack1', name: 'Легендарный пакет', emoji: '🌟', rarity: 'legendary', price: 1000, order: 1 },
+        { id: 'pack2', name: 'Эпический пакет', emoji: '💜', rarity: 'epic', price: 500, order: 2 },
+        { id: 'pack3', name: 'Смертельный пакет', emoji: '☠️', rarity: 'deadly', price: 250, order: 3 },
+        { id: 'pack4', name: 'Редкий пакет', emoji: '🔵', rarity: 'rare', price: 100, order: 4 },
+        { id: 'pack5', name: 'Обычный пакет', emoji: '🟤', rarity: 'common', price: 20, order: 5 }
+    ];
+
+    // ==========================================
+    // 2. ЛОГИКА СОХРАНЕНИЯ (LocalStorage)
+    // ==========================================
+
+    function getSaveData() {
+        let data = localStorage.getItem('cryptoGameData');
+        if (data) {
+            return JSON.parse(data);
+        }
+        // Если нет сохранения, создаем нового игрока с 50 монетами
+        return {
+            balance: 50, 
+            cards: {} // { 'tsum': 0, 'bmw': 0, ... }
+        };
+    }
+
+    function saveGame() {
+        localStorage.setItem('cryptoGameData', JSON.stringify(gameData));
+    }
+
+    // Загружаем данные при старте
+    let gameData = getSaveData();
+
+    // ==========================================
+    // 3. ФУНКЦИИ ИГРЫ
+    // ==========================================
+
+    // Обновить баланс на экране
+    function updateUI() {
+        document.getElementById('shopBalance').innerText = `₿ ${gameData.balance}`;
+        document.getElementById('cardsBalance').innerText = `₿ ${gameData.balance}`;
+        document.getElementById('cryptoBalance').innerText = gameData.balance;
+    }
+
+    // Купить и открыть пакет
+    function buyPack(packId) {
+        const pack = PACKS.find(p => p.id === packId);
+        if (!pack) return;
+
+        if (gameData.balance < pack.price) {
+            alert(`Недостаточно монет! Нужно ₿${pack.price}`);
+            return;
+        }
+
+        // Списать монеты
+        gameData.balance -= pack.price;
+
+        // Логика открытия пакета: 
+        // Чем реже пакет, тем выше шанс выбить редкую карту.
+        // Но для простоты: из любого пакета выпадает карта с такой же редкостью, как пакет.
+        // (Ты можешь потом усложнить формулу шансов)
+        let possibleCards = ALL_CARDS.filter(c => c.rarity === pack.rarity);
+        
+        // Если карт этой редкости нет в списке (на всякий случай), берем любую обычную
+        if (possibleCards.length === 0) possibleCards = ALL_CARDS.filter(c => c.rarity === 'common');
+
+        const randomCard = possibleCards[Math.floor(Math.random() * possibleCards.length)];
+
+        // Добавляем карту в коллекцию
+        if (!gameData.cards[randomCard.id]) {
+            gameData.cards[randomCard.id] = 0;
+        }
+        gameData.cards[randomCard.id]++;
+
+        // Сохраняем и обновляем интерфейс
+        saveGame();
+        renderShop();
+        renderCards();
+        updateUI();
+
+        // Всплывающее сообщение (уведомление)
+        alert(`Вы открыли пакет и получили: ${randomCard.emoji} ${randomCard.name}!`);
+    }
+
+    // ==========================================
+    // 4. ОТРИСОВКА ИНТЕРФЕЙСА (Render)
+    // ==========================================
+
+    function renderShop() {
+        const container = document.getElementById('packsContainer');
+        container.innerHTML = '';
+
+        // Сортируем пакеты по редкости (1 - легендарный, 5 - обычный)
+        const sortedPacks = PACKS.sort((a, b) => a.order - b.order);
+
+        sortedPacks.forEach(pack => {
+            const card = document.createElement('div');
+            card.className = `pack-card rarity-${pack.rarity}`;
+            card.innerHTML = `
+                <div class="pack-emoji">${pack.emoji}</div>
+                <div class="pack-name">${pack.name}</div>
+                <div class="pack-rarity">${pack.rarity.toUpperCase()}</div>
+                <div class="pack-price">₿ ${pack.price}</div>
+            `;
+            card.onclick = () => buyPack(pack.id);
+            container.appendChild(card);
+        });
+    }
+
+    function renderCards() {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+
+        // Проверим, есть ли вообще карты
+        let hasCards = false;
+        for (let key in gameData.cards) {
+            if (gameData.cards[key] > 0) hasCards = true;
+        }
+
+        if (!hasCards) {
+            container.innerHTML = `
+                <div class="placeholder" style="text-align:center; padding: 30px 0; border: 2px dashed #2a3348; border-radius: 16px; background: #101826;">
+                    <span style="font-size:40px; display:block;">📭</span>
+                    У вас пока нет карт.<br>Купите пакеты в магазине!
+                </div>
+            `;
+            return;
+        }
+
+        // Если есть карты, выводим их сеткой
+        const grid = document.createElement('div');
+        grid.className = 'cards-grid';
+
+        ALL_CARDS.forEach(card => {
+            const count = gameData.cards[card.id] || 0;
+            if (count > 0) {
+                const item = document.createElement('div');
+                item.className = `card-item rarity-${card.rarity}`;
+                item.innerHTML = `
+                    <span class="card-img">${card.emoji}</span>
+                    <div style="font-size: 12px; margin-bottom: 2px;">${card.name}</div>
+                    <div class="card-count">${count} шт.</div>
+                `;
+                grid.appendChild(item);
+            }
+        });
+
+        container.appendChild(grid);
+    }
+
+    // ==========================================
+    // 5. ЗАПУСК И НАВИГАЦИЯ
+    // ==========================================
+
+    // Первичная загрузка
+    renderShop();
+    renderCards();
+    updateUI();
+
+    // Навигация по вкладкам
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
