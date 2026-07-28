@@ -745,13 +745,16 @@
         document.getElementById('registerBtn').addEventListener('click', handleRegister);
         document.getElementById('guestBtn').addEventListener('click', handleGuest);
 
-        // БЕЗОПАСНАЯ КНОПКА ПРОФИЛЯ (Исправлена ошибка addEventListener на null)
-        const profileBtn = document.getElementById('profileBtn');
-        if (profileBtn) {
-            profileBtn.addEventListener('click', () => {
-                // Здесь будет открытие профиля, пока просто заглушка
-            });
-        }
+        // БЕЗОПАСНОСТЬ: Проверяем, есть ли кнопка профиля перед добавлением события
+        setTimeout(() => {
+            const profileBtn = document.getElementById('profileBtn');
+            if (profileBtn) {
+                profileBtn.addEventListener('click', () => {
+                    // Действие при нажатии на профиль
+                    alert("Профиль: " + (currentUser || "Не авторизован"));
+                });
+            }
+        }, 100);
 
         // Автоматический вход при перезагрузке
         const cachedUser = localStorage.getItem('cachedUser');
@@ -819,7 +822,7 @@
             }
         }, 1000);
 
-        // Инициализация при старте (если пользователь уже вошёл через сохранение)
+        // Инициализация при старте
         loadLocalGame();
         if (!cachedUser) {
             document.getElementById('authContainer').style.display = 'flex';
