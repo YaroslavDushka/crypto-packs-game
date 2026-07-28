@@ -119,15 +119,50 @@
         </div>
 
         <div class="tab-pane" id="leaders">
-            <div class="content-card">
-                <h2>🏆 Лидеры</h2>
-                <div id="leadersContainer" style="text-align:center; padding:10px 0;">
-                    <h3 style="color:#64ffda; margin-bottom:15px;">🏅 Топ-10 игроков</h3>
-                    <div id="onlineTopList" style="padding:10px;"></div>
-                    <div style="border-top:1px solid #2a3348; padding-top:15px; margin-top:15px;">
-                        <div style="color:#8892b0; font-size:13px;">Ваш доход:</div>
-                        <div id="yourBestScore" style="font-size:24px; color:#ffd700;">$0/сек</div>
+            <div class="content-card" style="padding:0; border:none; background:transparent; box-shadow:none;">
+                <style>
+                    /* Стили таблицы лидеров внутри игры */
+                    .leader-wrapper { background: #16213e; border-radius: 20px; padding: 20px; border: 2px solid #ffb347; box-shadow: 0 0 40px rgba(255, 180, 71, 0.15); width:100%; box-sizing:border-box; }
+                    .leader-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+                    .leader-header h2 { font-size: 22px; color: #ffb347; margin:0; display: flex; align-items: center; gap: 10px; }
+                    .leader-stats { background: #2a2a45; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #aaa; border: 1px solid #ffb34740; }
+                    .leader-stats strong { color: #ffb347; }
+                    .leader-search { width: 100%; padding: 10px 16px; border-radius: 40px; border: 1px solid #ffb347; background: #1e1e2f; color: #fff; font-size: 14px; outline: none; margin-bottom: 15px; box-sizing:border-box; }
+                    .leader-search:focus { border-color: #ffb347; box-shadow: 0 0 15px rgba(255, 180, 71, 0.2); }
+                    .leader-table-header { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 2px solid #ffb347; font-weight: 600; color: #ffb347; font-size: 12px; text-transform: uppercase; gap: 8px; }
+                    .leader-row { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 1px solid #2a2a45; align-items: center; gap: 8px; transition: 0.2s; }
+                    .leader-row:hover { background: #2a2a45; border-radius: 6px; }
+                    .leader-rank { font-weight: 700; color: #ffb347; font-size: 15px; text-align: center; }
+                    .leader-rank.gold { color: #ffd700; }
+                    .leader-rank.silver { color: #c0c0c0; }
+                    .leader-rank.bronze { color: #cd7f32; }
+                    .leader-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    .leader-income { color: #ffb347; font-weight: 600; text-align: center; }
+                    .leader-empty { text-align: center; padding: 30px 0; color: #666; font-size: 15px; }
+                    .leader-footer { margin-top: 12px; text-align: center; font-size: 12px; color: #555; border-top: 1px solid #2a2a45; padding-top: 12px; }
+                    .leader-footer span { color: #ffb347; }
+                    .leader-loading { text-align: center; padding: 30px 0; color: #ffb347; font-size: 16px; }
+                </style>
+
+                <div class="leader-wrapper">
+                    <div class="leader-header">
+                        <h2><span>🏆</span> Топ лидеров</h2>
+                        <div class="leader-stats">👥 <strong id="totalPlayers">0</strong> игроков</div>
                     </div>
+                    
+                    <input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск по нику..." oninput="filterPlayers()">
+                    
+                    <div class="leader-table-header">
+                        <div>№</div>
+                        <div>Игрок</div>
+                        <div style="text-align:center;">💰 Доход</div>
+                    </div>
+                    
+                    <div id="leaderList">
+                        <div class="leader-loading">Загрузка...</div>
+                    </div>
+                    
+                    <div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span> игроков</div>
                 </div>
             </div>
         </div>
@@ -167,58 +202,9 @@
     </div>
 </div>
 
-<script type="module">
+<script>
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ (ДЛЯ ОНЛАЙН-ТОПА)
-    // ==========================================
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCNeATf03rnrmofZAilQeEGUrREt06F3I8",
-      authDomain: "cryptopacks-798d3.firebaseapp.com",
-      projectId: "cryptopacks-798d3",
-      storageBucket: "cryptopacks-798d3.firebasestorage.app",
-      messagingSenderId: "243185920568",
-      appId: "1:243185920568:web:a619151012e40e0e15d4cd",
-      measurementId: "G-EY0K2YKD6T"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // ==========================================
-    // ВКЛАДКИ И ДОХОД
-    // ==========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                tabButtons.forEach(b => b.classList.remove('active'));
-                tabPanes.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
-            });
-        });
-
-        setInterval(() => {
-            let totalIncome = 0;
-            gameData.equipped.forEach(id => {
-                let card = ALL_CARDS.find(c => c.id === id);
-                if (card) totalIncome += card.income;
-            });
-            if (totalIncome > 0) {
-                gameData.balance = (gameData.balance || 0) + totalIncome;
-                saveGame();
-                updateUI();
-            }
-            updateOnlineLeaderboard(totalIncome);
-        }, 1000);
-    });
-
-    // ==========================================
-    // ДАННЫЕ ИГРЫ (ПОМЕНЯНЫ МЕСТАМИ!)
+    // ДАННЫЕ ИГРЫ
     // ==========================================
     
     const COMMON_CARDS = [
@@ -229,22 +215,20 @@
         { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 40, income: 10, dropRate: 0.05 }
     ];
 
-    // ЛЕГЕНДАРНЫЕ ($50,000) - СЮДА ПЕРЕЕХАЛИ МЕМЫ (Снеговик, Дрейк и т.д.)
-    const LEGENDARY_CARDS = [
-        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'legendary', price: 200, income: 600, dropRate: 0.20 },
-        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'legendary', price: 200, income: 600, dropRate: 0.20 },
-        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'legendary', price: 200, income: 600, dropRate: 0.20 },
-        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'legendary', price: 200, income: 600, dropRate: 0.20 },
-        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'legendary', price: 200, income: 600, dropRate: 0.20 }
+    const DEADLY_CARDS = [
+        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 }
     ];
 
-    // СМЕРТЕЛЬНЫЕ ($10,000) - СЮДА ПЕРЕЕХАЛИ СКЕЛЕТЫ (Интернет, Луна, Фулл хаус и т.д.)
-    const DEADLY_CARDS = [
-        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, income: 300, dropRate: 0.20 },
-        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, income: 300, dropRate: 0.20 },
-        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, income: 300, dropRate: 0.20 },
-        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'deadly', price: 90, income: 200, dropRate: 0.20 },
-        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'deadly', price: 60, income: 200, dropRate: 0.20 }
+    const LEGENDARY_CARDS = [
+        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'legendary', price: 150, income: 300, dropRate: 0.20 },
+        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'legendary', price: 120, income: 300, dropRate: 0.20 },
+        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'legendary', price: 40, income: 300, dropRate: 0.20 },
+        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 90, income: 200, dropRate: 0.20 },
+        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 60, income: 200, dropRate: 0.20 }
     ];
 
     const EPIC_CARDS = [
@@ -263,7 +247,7 @@
         { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 }
     ];
 
-    const ALL_CARDS = [...LEGENDARY_CARDS, ...DEADLY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
+    const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
 
     const PACK_DATA = [
         { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS },
@@ -274,7 +258,7 @@
     ];
 
     // ==========================================
-    // ЛОГИКА ИГРЫ + СТАРТОВЫЕ ПАКЕТЫ
+    // ЛОГИКА ИГРЫ
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
@@ -283,13 +267,11 @@
         let data = localStorage.getItem('cryptoGameData');
         if (data) {
             gameData = JSON.parse(data);
-            // Если магазин пустой - генерируем
             if (!gameData.store || Object.keys(gameData.store).length === 0) generateStore();
         } else {
             generateStore();
         }
         if (gameData.balance === undefined) gameData.balance = 10;
-        // На случай, если инвентарь не массив
         if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
 
         // ВСЕГДА, ЕСЛИ БАЛАНС РАВЕН 10, ДАЁМ 3 ОБЫЧНЫХ ПАКЕТА
@@ -306,7 +288,7 @@
         gameData.store = {};
         gameData.storeTimer = 300;
         PACK_DATA.forEach(p => {
-            let count = Math.floor(Math.random() * 4); // 0, 1, 2 или 3
+            let count = Math.floor(Math.random() * 4);
             gameData.store[p.id] = count;
         });
         saveGame();
@@ -314,10 +296,6 @@
         updateUI();
         renderInventory();
     }
-
-    // ==========================================
-    // ПОКУПКА И ОТКРЫТИЕ ПАКЕТОВ
-    // ==========================================
 
     function buyPack(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
@@ -338,8 +316,6 @@
 
         gameData.balance -= pack.price;
         gameData.store[packId]--;
-
-        // Кладём закрытый пакет в ИНВЕНТАРЬ
         gameData.inventory.push(packId);
 
         saveGame();
@@ -355,10 +331,8 @@
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
 
-        // Удаляем пакет из инвентаря (открываем)
         gameData.inventory.splice(index, 1);
 
-        // Логика выпадения карты
         let randomCard;
         let rand = Math.random(), cum = 0;
         let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
@@ -371,7 +345,6 @@
         }
         if (!randomCard) randomCard = shuffled[shuffled.length-1];
 
-        // Добавляем в коллекцию
         if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
         gameData.cards[randomCard.id]++;
 
@@ -382,7 +355,7 @@
     }
 
     // ==========================================
-    // МЕНЮ УПРАВЛЕНИЯ КАРТАМИ (ИСПРАВЛЕНО!)
+    // МЕНЮ УПРАВЛЕНИЯ КАРТАМИ
     // ==========================================
 
     let selectedCardId = null;
@@ -390,16 +363,11 @@
     function equipOne(cardId) {
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
-        
-        // Проверяем, есть ли у нас эта карта в наличии
         if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
             alert("У вас нет этой карты!");
             return;
         }
-
-        // Уменьшаем количество карт на 1 (одеваем)
         gameData.cards[cardId]--;
-        // Добавляем в экипировку
         gameData.equipped.push(cardId);
 
         saveGame();
@@ -410,16 +378,12 @@
     }
 
     function unequipOne(cardId) {
-        // Ищем индекс карты в экипировке
         const idx = gameData.equipped.indexOf(cardId);
         if (idx === -1) {
             alert("Эта карта не надета!");
             return;
         }
-
-        // Удаляем её из экипировки
         gameData.equipped.splice(idx, 1);
-        // Возвращаем карту обратно в коллекцию
         if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
         gameData.cards[cardId]++;
 
@@ -440,7 +404,6 @@
         const sellPrice = Math.floor(card.price / 2);
         gameData.cards[cardId]--;
         gameData.balance += sellPrice;
-        // Если эта карта была надета - снимаем одну
         const idx = gameData.equipped.indexOf(cardId);
         if (idx !== -1) gameData.equipped.splice(idx, 1);
         saveGame();
@@ -469,52 +432,77 @@
     function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // ОНЛАЙН ТОП 200 (ИСПРАВЛЕНО!)
+    // ТАБЛИЦА ЛИДЕРОВ (ЛОКАЛЬНАЯ, ОБНОВЛЯЕТСЯ КАЖДЫЕ 15 СЕКУНД)
     // ==========================================
 
-    let leaderboardReady = false;
-    function updateOnlineLeaderboard(income) {
-        const playerKey = localStorage.getItem('playerId') || 'guest_' + Date.now();
-        if (!localStorage.getItem('playerId')) localStorage.setItem('playerId', playerKey);
+    function getLeaderboardPlayers() {
+        const players = [];
+        
+        // В этой версии мы берём только текущего игрока, так как нет онлайн-базы
+        // Если у тебя есть Firebase, ты можешь заменить этот блок на чтение из Firebase
+        const income = getCurrentIncome();
+        players.push({
+            name: 'Игрок',
+            income: income
+        });
+        
+        return players.sort((a, b) => b.income - a.income).slice(0, 100);
+    }
 
-        // Всегда отправляем свой доход (даже если 0, чтобы удалить из топа)
-        const myRef = ref(db, 'leaderboard/' + playerKey);
-        set(myRef, { 
-            name: 'Игрок ' + playerKey.slice(-4), 
-            income: income 
-        }).catch(() => {});
+    function getCurrentIncome() {
+        let total = 0;
+        gameData.equipped.forEach(id => {
+            let card = ALL_CARDS.find(c => c.id === id);
+            if (card) total += card.income;
+        });
+        return total;
+    }
 
-        // Подключаемся к топу только один раз
-        if (!leaderboardReady) {
-            leaderboardReady = true;
-            const topRef = ref(db, 'leaderboard');
-            onValue(topRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-                
-                // Сортируем всех игроков по доходу (от большего к меньшему)
-                const sorted = Object.values(data)
-                    .filter(p => p.income > 0) // Показываем только тех, у кого есть доход
-                    .sort((a, b) => b.income - a.income);
-                
-                // Берём топ 200
-                const top200 = sorted.slice(0, 200);
-                const container = document.getElementById('onlineTopList');
-                
-                let html = `<div style="font-size:12px; color:#8892b0; margin-bottom:10px;">Топ ${top200.length} игроков:</div>`;
-                
-                top200.forEach((player, index) => {
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
-                    html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; border-bottom:1px solid #2a3348; align-items:center; font-size:13px;">
-                                <span>${medal} ${player.name || 'Аноним'}</span>
-                                <span style="color:#ffd700;">$${player.income}/сек</span>
-                            </div>`;
-                });
-                
-                if (top200.length === 0) html = `<p style="color:#8892b0;">Пока нет игроков с доходом.</p>`;
-                container.innerHTML = html;
-            });
+    function renderLeaderboard(filter = '') {
+        const container = document.getElementById('leaderList');
+        const totalSpan = document.getElementById('totalCount');
+        const shownSpan = document.getElementById('shownCount');
+        const totalPlayersSpan = document.getElementById('totalPlayers');
+        
+        const players = getLeaderboardPlayers();
+        
+        totalPlayersSpan.textContent = players.length;
+        
+        const searchTerm = filter.toLowerCase().trim();
+        const filtered = searchTerm 
+            ? players.filter(p => p.name.toLowerCase().includes(searchTerm))
+            : players;
+        
+        totalSpan.textContent = players.length;
+        shownSpan.textContent = filtered.length;
+        
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="leader-empty">${searchTerm ? '👀 Ничего не найдено' : '😕 Пока нет игроков'}</div>`;
+            return;
         }
+        
+        let html = '';
+        filtered.forEach((player, index) => {
+            const rank = index + 1;
+            let rankClass = '';
+            if (rank === 1) rankClass = 'gold';
+            else if (rank === 2) rankClass = 'silver';
+            else if (rank === 3) rankClass = 'bronze';
+            
+            html += `
+                <div class="leader-row">
+                    <div class="leader-rank ${rankClass}">${rank}</div>
+                    <div class="leader-name">${player.name}</div>
+                    <div class="leader-income">💵 ${player.income}/сек</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function filterPlayers() {
+        const search = document.getElementById('searchInput').value;
+        renderLeaderboard(search);
     }
 
     // ==========================================
@@ -530,7 +518,6 @@
             if (card) totalIncome += card.income;
         });
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
-        document.getElementById('yourBestScore').innerText = `$${totalIncome}/сек`;
     }
 
     setInterval(() => {
@@ -642,10 +629,35 @@
         alert(msg);
     };
 
-    // Инициализация
-    renderShop();
-    renderInventory();
-    updateUI();
+    // ==========================================
+    // ВКЛАДКИ
+    // ==========================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        // Инициализация и таблица лидеров
+        loadGame();
+        renderShop();
+        renderInventory();
+        updateUI();
+        renderLeaderboard();
+
+        // Автообновление топа каждые 15 секунд
+        setInterval(() => {
+            const search = document.getElementById('searchInput').value;
+            renderLeaderboard(search);
+        }, 15000);
+    });
 </script>
 </body>
 </html>
