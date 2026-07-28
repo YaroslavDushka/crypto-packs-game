@@ -45,6 +45,7 @@
         /* КАРТЫ В КОЛЛЕКЦИИ И ЭКИПИРОВКА */
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; position: relative; display: flex; flex-direction: column; align-items: center; }
+        .card-item img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; margin-bottom: 4px; background: #0b0e1a; }
         .card-item .card-img { font-size: 40px; display: block; margin-bottom: 4px; }
         .card-item .card-count { font-size: 12px; color: #8892b0; margin-bottom: 6px; }
         .card-item .btn-equip { background: #2a3348; border: none; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 10px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 4px; }
@@ -126,13 +127,13 @@
         { id: 'pepe', name: 'Pepe', emoji: '🐸', rarity: 'common', price: 10 }
     ];
 
-    // НОВЫЕ СМЕРТЕЛЬНЫЕ КАРТЫ (выпадают только из Смертельного пакета)
+    // НОВЫЕ СМЕРТЕЛЬНЫЕ КАРТЫ (теперь с картинками!)
     const DEADLY_CARDS = [
-        { id: 'skull_meme', name: 'Интернет помнит всё', emoji: '🖤', rarity: 'deadly', price: 150, dropRate: 0.40 },
-        { id: 'skull_moon', name: 'Помни о смерти', emoji: '🌙', rarity: 'deadly', price: 120, dropRate: 0.30 },
-        { id: 'skull_wait', name: 'Кто следующий?', emoji: '⏳', rarity: 'deadly', price: 90, dropRate: 0.20 },
-        { id: 'skull_finger', name: 'Крутые скелеты', emoji: '🖕', rarity: 'deadly', price: 60, dropRate: 0.08 },
-        { id: 'skull_fh', name: 'Фулл хаус', emoji: '🃏', rarity: 'deadly', price: 40, dropRate: 0.02 } // Самая редкая
+        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, dropRate: 0.40 },
+        { id: 'skull_moon', name: 'Помни о смерти', img: 'skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, dropRate: 0.30 },
+        { id: 'skull_next', name: 'Кто следующий?', img: 'skull_next.png', emoji: '👻', rarity: 'deadly', price: 90, dropRate: 0.20 },
+        { id: 'skull_finger', name: 'Крутые скелеты', img: 'skull_finger.png', emoji: '🖕', rarity: 'deadly', price: 60, dropRate: 0.08 },
+        { id: 'skull_fh', name: 'Фулл хаус', img: 'skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, dropRate: 0.02 } 
     ];
 
     // Пакеты (добавлен восклицательный знак и поле для описания шансов)
@@ -343,8 +344,18 @@
             if (count > 0) {
                 const item = document.createElement('div');
                 item.className = `card-item rarity-${card.rarity}`;
+                
+                // Если у карты есть картинка - показываем её, если нет - эмодзи
+                let imageContent = `<span class="card-img">${card.emoji}</span>`;
+                if (card.img) {
+                    imageContent = `
+                        <img src="${card.img}" alt="${card.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span class="card-img" style="display:none;">${card.emoji}</span>
+                    `;
+                }
+
                 item.innerHTML = `
-                    <span class="card-img">${card.emoji}</span>
+                    ${imageContent}
                     <div style="font-size: 12px; margin-bottom: 2px;">${card.name}</div>
                     <div class="card-count">${count} шт. | 💰 ${card.price}</div>
                     <button class="btn-equip ${isEquipped ? 'equipped' : ''}" onclick="toggleEquip('${card.id}')">
