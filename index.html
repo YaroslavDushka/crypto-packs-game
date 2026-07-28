@@ -21,6 +21,9 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
+        /* БАЛАНС */
+        .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
+
         /* МАГАЗИН - ПАКЕТЫ */
         .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .pack-card { background: #111722; border-radius: 16px; padding: 16px; text-align: center; border: 2px solid #2a3348; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; position: relative; }
@@ -42,13 +45,15 @@
         .rarity-common { border-color: #6b7280 !important; }
         .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
 
-        /* КАРТЫ */
+        /* КАРТЫ В КОЛЛЕКЦИИ */
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; display: flex; flex-direction: column; align-items: center; }
         .card-item img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; margin-bottom: 4px; background: #0b0e1a; }
         .card-item .card-img { font-size: 40px; display: block; margin-bottom: 4px; }
         .card-item .card-count { font-size: 12px; color: #8892b0; margin-bottom: 6px; }
+        .card-item .card-income { font-size: 11px; color: #64ffda; font-weight: bold; margin-bottom: 6px; }
         
+        /* ЭКИПИРОВКА */
         .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
@@ -66,21 +71,29 @@
     <div class="content" id="contentArea">
         <div class="tab-pane active" id="shop">
             <div class="content-card">
-                <h2>🛒 Магазин</h2>
+                <h2>🛒 Магазин <span class="balance-box" id="shopBalance">💵 $0</span></h2>
                 <div class="packs-grid" id="packsContainer"></div>
             </div>
         </div>
         <div class="tab-pane" id="cards">
             <div class="content-card">
                 <h2>🃏 Мои карты</h2>
-                <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка</h3>
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
                 <div class="equip-slots" id="equipContainer"></div>
                 <div id="cardsContainer"></div>
             </div>
         </div>
         <div class="tab-pane" id="leaders"><div class="content-card"><h2>🏆 Лидеры</h2><div class="placeholder" style="text-align:center; padding:30px;">Скоро рейтинг!</div></div></div>
         <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">Скоро биржа!</div></div></div>
-        <div class="tab-pane" id="crypto"><div class="content-card"><h2>₿ Криптовалюта</h2><div class="placeholder" style="text-align:center; padding:30px;">Информация о курсах</div></div></div>
+        <div class="tab-pane" id="crypto">
+            <div class="content-card">
+                <h2>₿ Криптовалюта</h2>
+                <div class="placeholder" style="padding:30px; text-align:center;">
+                    Ваш баланс: <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$0</strong><br>
+                    <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
+                </div>
+            </div>
+        </div>
         <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
     </div>
 
@@ -94,59 +107,182 @@
 </div>
 
 <script>
-    // ОЧЕНЬ ВАЖНО: сначала настраиваем переключение вкладок
+    // ВКЛАДКИ
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
-
         tabButtons.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Убираем активный класс у всех
                 tabButtons.forEach(b => b.classList.remove('active'));
                 tabPanes.forEach(p => p.classList.remove('active'));
-                
-                // Добавляем активный класс нажатой кнопке
                 this.classList.add('active');
-                
-                // Показываем нужный блок
-                const tabId = this.getAttribute('data-tab');
-                document.getElementById(tabId).classList.add('active');
+                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
             });
         });
+
+        // ЗАПУСКАЕМ ДОХОД КАЖДУЮ СЕКУНДУ
+        setInterval(() => {
+            let totalIncome = 0;
+            gameData.equipped.forEach(id => {
+                let card = ALL_CARDS.find(c => c.id === id);
+                if (card) totalIncome += card.income;
+            });
+            if (totalIncome > 0) {
+                gameData.balance = (gameData.balance || 0) + totalIncome;
+                saveGame();
+                updateUI();
+            }
+        }, 1000);
     });
 
-    // Данные игры (пакеты и карты)
-    const ALL_CARDS = [
-        { id: 'tsum', name: 'Пакет ЦУМ', emoji: '🛍️', rarity: 'legendary', price: 200 },
-        { id: 'bmw', name: 'Пакет BMW', emoji: '👜', rarity: 'epic', price: 100 },
-        { id: 'skull', name: 'Череп', emoji: '💀', rarity: 'deadly', price: 50 },
-        { id: 'tea', name: 'Чайный пакетик', emoji: '🫖', rarity: 'rare', price: 30 },
-        { id: 'pepe', name: 'Pepe', emoji: '🐸', rarity: 'common', price: 10 }
+    // ==========================================
+    // 1. ВСЕ КАРТЫ (с доходом в секунду) + ПАКЕТЫ (с ценами)
+    // ==========================================
+    
+    // Карты для обычного пакета (ПЕПЕ)
+    const COMMON_CARDS = [
+        { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 10, income: 1, dropRate: 0.35 },
+        { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'пепе/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 15, income: 2, dropRate: 0.30 },
+        { id: 'pepe_sun', name: 'Солнечный Пепе', img: 'пепе/pepe_sun.png', emoji: '🌞', rarity: 'common', price: 20, income: 3, dropRate: 0.20 },
+        { id: 'pepe_muscle', name: 'Качок Пепе', img: 'пепе/pepe_muscle.png', emoji: '💪', rarity: 'common', price: 25, income: 5, dropRate: 0.10 },
+        { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 40, income: 10, dropRate: 0.05 }
     ];
 
+    // Карты для смертельного пакета (ЧЕРЕП)
     const DEADLY_CARDS = [
-        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, dropRate: 0.40 },
-        { id: 'skull_moon', name: 'Помни о смерти', img: 'skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, dropRate: 0.30 },
-        { id: 'skull_next', name: 'Кто следующий?', img: 'skull_next.png', emoji: '👻', rarity: 'deadly', price: 90, dropRate: 0.20 },
-        { id: 'skull_finger', name: 'Крутые скелеты', img: 'skull_finger.png', emoji: '🖕', rarity: 'deadly', price: 60, dropRate: 0.08 },
-        { id: 'skull_fh', name: 'Фулл хаус', img: 'skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, dropRate: 0.02 }
+        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, income: 75, dropRate: 0.40 },
+        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, income: 60, dropRate: 0.30 },
+        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'deadly', price: 90, income: 45, dropRate: 0.20 },
+        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'deadly', price: 60, income: 30, dropRate: 0.08 },
+        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, income: 20, dropRate: 0.02 }
     ];
 
+    // Карты для эпического пакета (БМВ + чайные мемы)
+    const EPIC_CARDS = [
+        { id: 'bmw_x5', name: 'BMW X5', img: 'бмв/bmw_x5.png', emoji: '🏎️', rarity: 'epic', price: 150, income: 150 },
+        { id: 'bmw_m5', name: 'BMW M5', img: 'бмв/bmw_m5.png', emoji: '💨', rarity: 'epic', price: 150, income: 150 },
+        { id: 'bmw_i8', name: 'BMW i8', img: 'бмв/bmw_i8.png', emoji: '⚡', rarity: 'epic', price: 150, income: 150 },
+        { id: 'bmw_5_series', name: 'THE 5 Series', img: 'бмв/bmw_5_series.png', emoji: '🌃', rarity: 'epic', price: 150, income: 150 },
+        { id: 'bmw_m5_2026', name: '2026 BMW M5', img: 'бмв/bmw_m5_2026.png', emoji: '🏁', rarity: 'epic', price: 150, income: 150 },
+        { id: 'tea_despair', name: 'Отчаяние', img: 'чай/tea_despair.png', emoji: '🍵', rarity: 'epic', price: 50, income: 25 },
+        { id: 'tea_cat', name: 'Кот и Чай', img: 'чай/tea_cat.png', emoji: '🐈', rarity: 'epic', price: 50, income: 25 },
+        { id: 'tea_black_cat', name: 'Пойдем пить чай', img: 'чай/tea_black_cat.png', emoji: '🐈‍⬛', rarity: 'epic', price: 50, income: 25 },
+        { id: 'tea_poseidon', name: 'Посейдон', img: 'чай/tea_poseidon.png', emoji: '🌊', rarity: 'epic', price: 50, income: 25 },
+        { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'epic', price: 50, income: 25 }
+    ];
+
+    // Карты для легендарного пакета (Мемы для пакетов цум)
+    const LEGENDARY_CARDS = [
+        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы для пакетов цум/snow_man.png', emoji: '⛄', rarity: 'legendary', price: 200, income: 400 },
+        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы для пакетов цум/drake_math.png', emoji: '🤓', rarity: 'legendary', price: 200, income: 400 },
+        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы для пакетов цум/chair_fall.png', emoji: '🪑', rarity: 'legendary', price: 200, income: 400 },
+        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы для пакетов цум/list_rogue.png', emoji: '📜', rarity: 'legendary', price: 200, income: 400 },
+        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы для пакетов цум/cash_register.png', emoji: '😭', rarity: 'legendary', price: 200, income: 400 }
+    ];
+
+    // Собираем всё вместе
+    const ALL_CARDS = [...LEGENDARY_CARDS, ...EPIC_CARDS, ...DEADLY_CARDS, ...COMMON_CARDS];
+
+    // ПАКЕТЫ С ЦЕНАМИ (Обычный - Бесплатно!)
     const PACKS = [
-        { id: 'pack1', name: 'Легендарный пакет!', img: 'pack_legendary.png', rarity: 'legendary', order: 1, drops: ALL_CARDS.filter(c => c.rarity === 'legendary') },
-        { id: 'pack2', name: 'Эпический пакет!', img: 'pack_epic.png', rarity: 'epic', order: 2, drops: ALL_CARDS.filter(c => c.rarity === 'epic') },
-        { id: 'pack3', name: 'Смертельный пакет!', img: 'pack_deadly.png', rarity: 'deadly', order: 3, drops: DEADLY_CARDS },
-        { id: 'pack4', name: 'Редкий пакет!', img: 'pack_rare.png', rarity: 'rare', order: 4, drops: ALL_CARDS.filter(c => c.rarity === 'rare') },
-        { id: 'pack5', name: 'Обычный пакет!', img: 'pack_common.png', rarity: 'common', order: 5, drops: ALL_CARDS.filter(c => c.rarity === 'common') }
+        { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 0, drops: COMMON_CARDS },
+        { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: [] },
+        { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 2500, drops: DEADLY_CARDS },
+        { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 2, price: 6700, drops: EPIC_CARDS },
+        { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы для пакетов цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS }
     ];
 
-    let gameData = { cards: {}, equipped: [] };
+    // ==========================================
+    // 2. СОХРАНЕНИЕ И БАЛАНС
+    // ==========================================
+
+    let gameData = { balance: 0, cards: {}, equipped: [] };
     function loadGame() {
         let data = localStorage.getItem('cryptoGameData');
         if (data) gameData = JSON.parse(data);
+        if (!gameData.balance) gameData.balance = 0;
     }
     function saveGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
     loadGame();
+
+    function updateUI() {
+        document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
+        document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
+        
+        let totalIncome = 0;
+        gameData.equipped.forEach(id => {
+            let card = ALL_CARDS.find(c => c.id === id);
+            if (card) totalIncome += card.income;
+        });
+        document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
+        document.querySelector('#crypto .placeholder span:last-child').innerText = `Доход: +$${totalIncome} / сек`;
+    }
+
+    // ==========================================
+    // 3. ОТКРЫТИЕ ПАКЕТОВ (с проверкой денег)
+    // ==========================================
+
+    function openPack(packId) {
+        const pack = PACKS.find(p => p.id === packId);
+        if (!pack) return;
+
+        if (pack.price > 0 && gameData.balance < pack.price) {
+            alert(`Не хватает денег! Нужно $${pack.price}`);
+            return;
+        }
+        if (pack.drops.length === 0) {
+            alert("Этот пакет пока пуст! Загляни в другие.");
+            return;
+        }
+
+        // Покупаем пакет
+        if (pack.price > 0) gameData.balance -= pack.price;
+
+        let randomCard;
+        let rand = Math.random(), cum = 0;
+        let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
+        for (let c of shuffled) { 
+            cum += c.dropRate; 
+            if (rand <= cum) { randomCard = c; break; } 
+        }
+        if (!randomCard) randomCard = shuffled[shuffled.length-1];
+
+        if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
+        gameData.cards[randomCard.id]++;
+        saveGame();
+        renderCards();
+        updateUI();
+        alert(`💰 Вы получили: ${randomCard.emoji} ${randomCard.name}!\nДоход: +$${randomCard.income}/сек`);
+    }
+
+    // Экипировка
+    function equipCard(cardId) {
+        if (gameData.equipped.length >= 10) {
+            alert("Максимум 10 карт в экипировке!");
+            return;
+        }
+        if (gameData.equipped.includes(cardId)) return;
+        gameData.equipped.push(cardId);
+        saveGame();
+        renderCards();
+        updateUI();
+    }
+
+    function unequipCard(cardId) {
+        gameData.equipped = gameData.equipped.filter(id => id !== cardId);
+        saveGame();
+        renderCards();
+        updateUI();
+    }
+
+    window.toggleEquip = function(cardId) {
+        if (gameData.equipped.includes(cardId)) unequipCard(cardId);
+        else equipCard(cardId);
+    }
+
+    // ==========================================
+    // 4. ОТРИСОВКА
+    // ==========================================
 
     function renderShop() {
         const container = document.getElementById('packsContainer');
@@ -154,45 +290,60 @@
         PACKS.sort((a,b) => a.order - b.order).forEach(pack => {
             const card = document.createElement('div');
             card.className = `pack-card rarity-${pack.rarity}`;
-            card.innerHTML = `<img src="${pack.img}" onerror="this.remove()"><div class="pack-name">${pack.name}</div><div class="pack-rarity">${pack.rarity.toUpperCase()}</div><div class="pack-price">Бесплатно</div>`;
+            const priceText = pack.price === 0 ? 'Бесплатно' : `$${pack.price}`;
+            card.innerHTML = `<img src="${pack.img}" onerror="this.remove()"><div class="pack-name">${pack.name}</div><div class="pack-rarity">${pack.rarity.toUpperCase()}</div><div class="pack-price">${priceText}</div>`;
             card.onclick = () => openPack(pack.id);
             container.appendChild(card);
         });
     }
 
-    function openPack(packId) {
-        const pack = PACKS.find(p => p.id === packId);
-        let randomCard;
-        if (pack.rarity === 'deadly') {
-            let rand = Math.random(), cum = 0;
-            for (let c of DEADLY_CARDS.sort(() => Math.random() - 0.5)) { cum += c.dropRate; if (rand <= cum) { randomCard = c; break; } }
-            if (!randomCard) randomCard = DEADLY_CARDS[DEADLY_CARDS.length-1];
-        } else {
-            let possible = ALL_CARDS.filter(c => c.rarity === pack.rarity);
-            randomCard = possible[Math.floor(Math.random() * possible.length)];
-        }
-        if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
-        gameData.cards[randomCard.id]++;
-        saveGame();
-        renderCards();
-        alert(`Вы получили: ${randomCard.emoji} ${randomCard.name}!`);
-    }
-
     function renderCards() {
         const container = document.getElementById('cardsContainer');
-        const equip = document.getElementById('equipContainer');
-        container.innerHTML = ''; equip.innerHTML = '';
+        container.innerHTML = '';
+        const equipContainer = document.getElementById('equipContainer');
         
+        equipContainer.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'equip-slot';
+            const equippedCardId = gameData.equipped[i];
+            if (equippedCardId) {
+                let card = ALL_CARDS.find(c => c.id === equippedCardId);
+                if (card) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = card.emoji;
+                    slot.title = `Снять ${card.name}`;
+                    slot.onclick = () => unequipCard(card.id);
+                }
+            }
+            equipContainer.appendChild(slot);
+        }
+
         let has = false;
         for (let k in gameData.cards) if (gameData.cards[k] > 0) has = true;
-        if (!has) { container.innerHTML = `<div class="placeholder" style="padding:30px; text-align:center;">📭 У вас пока нет карт.</div>`; return; }
+        if (!has) { 
+            container.innerHTML = `<div class="placeholder" style="padding:30px; text-align:center;">📭 У вас пока нет карт.</div>`; 
+            return; 
+        }
 
         const grid = document.createElement('div'); grid.className = 'cards-grid';
-        [...ALL_CARDS, ...DEADLY_CARDS].forEach(card => {
+        ALL_CARDS.forEach(card => {
             if ((gameData.cards[card.id] || 0) > 0) {
-                const item = document.createElement('div'); item.className = `card-item rarity-${card.rarity}`;
-                let imgHtml = card.img ? `<img src="${card.img}" onerror="this.remove()">` : `<span class="card-img">${card.emoji}</span>`;
-                item.innerHTML = `${imgHtml}<div style="font-size:12px">${card.name}</div><div class="card-count">${gameData.cards[card.id]} шт.</div>`;
+                const item = document.createElement('div'); 
+                item.className = `card-item rarity-${card.rarity}`;
+                let imgHtml = `<span class="card-img">${card.emoji}</span>`;
+                if (card.img) {
+                    imgHtml = `<img src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
+                }
+                item.innerHTML = `
+                    ${imgHtml}
+                    <div style="font-size:12px">${card.name}</div>
+                    <div class="card-income">+$${card.income}/сек</div>
+                    <div class="card-count">${gameData.cards[card.id]} шт.</div>
+                    <button class="btn-equip ${gameData.equipped.includes(card.id) ? 'equipped' : ''}" onclick="toggleEquip('${card.id}')" style="background:#2a3348; border:none; color:#fff; padding:4px 8px; border-radius:8px; font-size:10px; cursor:pointer; width:100%; margin-top:4px;">
+                        ${gameData.equipped.includes(card.id) ? 'Снять' : 'Надеть'}
+                    </button>
+                `;
                 grid.appendChild(item);
             }
         });
@@ -201,6 +352,7 @@
 
     renderShop();
     renderCards();
+    updateUI();
 </script>
 </body>
 </html>
