@@ -680,7 +680,7 @@
         };
 
         // ==========================================
-        // АВТОРИЗАЦИЯ
+        // АВТОРИЗАЦИЯ (ИСПРАВЛЕНА!)
         // ==========================================
 
         document.getElementById('authLoginBtn').onclick = function() {
@@ -723,10 +723,17 @@
 
         document.getElementById('authDeleteBtn').onclick = function() {
             const login = document.getElementById('loginInput').value.trim();
-            if (!login) return;
-            if (confirm(`Удалить аккаунт ${login}? Это навсегда!`)) {
-                deleteAccount(login);
-            }
+            if (!login) { alert("Введите логин!"); return; }
+            
+            loadCloudData(login, function(data) {
+                if (!data) { 
+                    alert("Такого аккаунта не существует, нечего удалять!"); 
+                    return; 
+                }
+                if (confirm(`Удалить аккаунт ${login}? Это навсегда!`)) {
+                    deleteAccount(login);
+                }
+            });
         };
 
         const cachedUser = localStorage.getItem('cachedUser');
