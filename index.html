@@ -115,7 +115,7 @@
                 </div>
             </div>
         </div>
-        <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">Скоро биржа!</div></div></div>
+        <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
         <div class="tab-pane" id="crypto">
             <div class="content-card">
                 <h2>₿ Криптовалюта</h2>
@@ -143,6 +143,7 @@
         <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
         <button class="tab-btn" data-tab="cards"><span class="icon">🃏</span><span class="label">Карты</span></button>
         <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
+        <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
         <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
         <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
     </div>
@@ -150,7 +151,7 @@
 
 <script type="module">
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ (твои данные)
+    // FIREBASE ПОДКЛЮЧЕНИЕ
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -199,7 +200,7 @@
     });
 
     // ==========================================
-    // ДАННЫЕ ИГРЫ
+    // ДАННЫЕ ИГРЫ (ПОМЕНЯНЫ МЕСТАМИ!)
     // ==========================================
     
     const COMMON_CARDS = [
@@ -210,20 +211,22 @@
         { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 40, income: 10, dropRate: 0.05 }
     ];
 
+    // СМЕРТЕЛЬНЫЕ ($50,000) - СЮДА ПЕРЕЕХАЛИ МЕМЫ (Снеговик, Дрейк и т.д.)
     const DEADLY_CARDS = [
-        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, income: 600, dropRate: 0.40 },
-        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, income: 500, dropRate: 0.35 },
-        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, income: 400, dropRate: 0.25 }
+        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 }
     ];
 
+    // ЛЕГЕНДАРНЫЕ ($10,000) - СЮДА ПЕРЕЕХАЛИ СКЕЛЕТЫ (Интернет, Луна, Фулл хаус и т.д.)
     const LEGENDARY_CARDS = [
-        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
-        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
-        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
-        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
-        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
-        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 90, income: 300, dropRate: 0.20 },
-        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 60, income: 300, dropRate: 0.20 }
+        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'legendary', price: 150, income: 300, dropRate: 0.20 },
+        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'legendary', price: 120, income: 300, dropRate: 0.20 },
+        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'legendary', price: 40, income: 300, dropRate: 0.20 },
+        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 90, income: 200, dropRate: 0.20 },
+        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 60, income: 200, dropRate: 0.20 }
     ];
 
     const EPIC_CARDS = [
@@ -248,8 +251,8 @@
         { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS },
         { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS },
         { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 2, price: 6700, drops: EPIC_CARDS },
-        { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS },
-        { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 50000, drops: DEADLY_CARDS }
+        { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 50000, drops: DEADLY_CARDS },
+        { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS }
     ];
 
     // ==========================================
@@ -465,6 +468,8 @@
         const container = document.getElementById('cardsContainer');
         container.innerHTML = '';
         const equipContainer = document.getElementById('equipContainer');
+        
+        // ОТРИСОВКА СЛОТОВ ЭКИПИРОВКИ (ВОССТАНОВЛЕНА!)
         equipContainer.innerHTML = '';
         gameData.equipped.forEach(cardId => {
             const slot = document.createElement('div');
