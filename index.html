@@ -382,7 +382,7 @@
     }
 
     // ==========================================
-    // МЕНЮ УПРАВЛЕНИЯ КАРТАМИ
+    // МЕНЮ УПРАВЛЕНИЯ КАРТАМИ (ИСПРАВЛЕНО!)
     // ==========================================
 
     let selectedCardId = null;
@@ -390,11 +390,18 @@
     function equipOne(cardId) {
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
+        
+        // Проверяем, есть ли у нас эта карта в наличии
         if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
             alert("У вас нет этой карты!");
             return;
         }
+
+        // Уменьшаем количество карт на 1 (одеваем)
+        gameData.cards[cardId]--;
+        // Добавляем в экипировку
         gameData.equipped.push(cardId);
+
         saveGame();
         renderInventory();
         updateUI();
@@ -403,12 +410,19 @@
     }
 
     function unequipOne(cardId) {
+        // Ищем индекс карты в экипировке
         const idx = gameData.equipped.indexOf(cardId);
         if (idx === -1) {
             alert("Эта карта не надета!");
             return;
         }
+
+        // Удаляем её из экипировки
         gameData.equipped.splice(idx, 1);
+        // Возвращаем карту обратно в коллекцию
+        if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
+        gameData.cards[cardId]++;
+
         saveGame();
         renderInventory();
         updateUI();
@@ -426,6 +440,7 @@
         const sellPrice = Math.floor(card.price / 2);
         gameData.cards[cardId]--;
         gameData.balance += sellPrice;
+        // Если эта карта была надета - снимаем одну
         const idx = gameData.equipped.indexOf(cardId);
         if (idx !== -1) gameData.equipped.splice(idx, 1);
         saveGame();
@@ -454,7 +469,7 @@
     function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // ОНЛАЙН ТОП
+    // ОНЛАЙН ТОП 200 (ИСПРАВЛЕНО!)
     // ==========================================
 
     let leaderboardReady = false;
@@ -462,29 +477,41 @@
         const playerKey = localStorage.getItem('playerId') || 'guest_' + Date.now();
         if (!localStorage.getItem('playerId')) localStorage.setItem('playerId', playerKey);
 
-        // Отправляем данные только если есть экипировка
-        if (gameData.equipped.length > 0) {
-            const myRef = ref(db, 'leaderboard/' + playerKey);
-            set(myRef, { name: 'Игрок', income: income }).catch(() => {});
-        }
+        // Всегда отправляем свой доход (даже если 0, чтобы удалить из топа)
+        const myRef = ref(db, 'leaderboard/' + playerKey);
+        set(myRef, { 
+            name: 'Игрок ' + playerKey.slice(-4), 
+            income: income 
+        }).catch(() => {});
 
+        // Подключаемся к топу только один раз
         if (!leaderboardReady) {
             leaderboardReady = true;
             const topRef = ref(db, 'leaderboard');
             onValue(topRef, (snapshot) => {
                 const data = snapshot.val();
                 if (!data) return;
-                const sorted = Object.values(data).sort((a, b) => b.income - a.income).slice(0, 10);
+                
+                // Сортируем всех игроков по доходу (от большего к меньшему)
+                const sorted = Object.values(data)
+                    .filter(p => p.income > 0) // Показываем только тех, у кого есть доход
+                    .sort((a, b) => b.income - a.income);
+                
+                // Берём топ 200
+                const top200 = sorted.slice(0, 200);
                 const container = document.getElementById('onlineTopList');
-                let html = '';
-                sorted.forEach((player, index) => {
+                
+                let html = `<div style="font-size:12px; color:#8892b0; margin-bottom:10px;">Топ ${top200.length} игроков:</div>`;
+                
+                top200.forEach((player, index) => {
                     const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
-                    html += `<div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #2a3348; align-items:center;">
+                    html += `<div style="display:flex; justify-content:space-between; padding:4px 8px; border-bottom:1px solid #2a3348; align-items:center; font-size:13px;">
                                 <span>${medal} ${player.name || 'Аноним'}</span>
                                 <span style="color:#ffd700;">$${player.income}/сек</span>
                             </div>`;
                 });
-                if (sorted.length === 0) html = `<p style="color:#8892b0;">Пока нет других игроков.</p>`;
+                
+                if (top200.length === 0) html = `<p style="color:#8892b0;">Пока нет игроков с доходом.</p>`;
                 container.innerHTML = html;
             });
         }
