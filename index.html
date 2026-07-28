@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки (Инвентарь + Таймер)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -21,6 +21,7 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
+        .top-info { display: flex; align-items: center; gap: 12px; }
         .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
         .timer-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #64ffda; display: flex; align-items: center; gap: 6px; }
 
@@ -47,12 +48,13 @@
         .rarity-common { border-color: #6b7280 !important; }
         .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
 
+        /* ИНВЕНТАРЬ */
         .inv-packs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .inv-pack-item { background: #111722; border: 2px solid #2a3348; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
         .inv-pack-item:active { transform: scale(0.95); }
         .inv-pack-item img { width: 60px; height: 60px; object-fit: contain; border-radius: 6px; background: #0b0e1a; }
         .inv-pack-item .p-name { font-size: 12px; margin-top: 4px; }
-
+        
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: 0.2s; }
         .card-item:hover { border-color: #64ffda; }
@@ -61,11 +63,13 @@
         .card-item .card-count { font-size: 12px; color: #8892b0; margin-bottom: 6px; }
         .card-item .card-income { font-size: 11px; color: #64ffda; font-weight: bold; margin-bottom: 6px; }
         .card-item .card-price { font-size: 11px; color: #f7931a; margin-bottom: 6px; }
-
+        
+        /* ЭКИПИРОВКА */
         .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; min-height: 70px; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
 
+        /* МОДАЛЬНОЕ ОКНО КАРТЫ */
         .card-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 999; }
         .card-modal.active { display: flex; }
         .modal-content { background: #1a2133; padding: 24px; border-radius: 20px; max-width: 320px; width: 90%; border: 1px solid #2a3348; text-align: center; }
@@ -89,38 +93,68 @@
     <div class="content" id="contentArea">
         <div class="tab-pane active" id="shop">
             <div class="content-card">
-                <h2>🛒 Магазин <span class="balance-box" id="shopBalance">💵 $10</span></h2>
+                <h2>
+                    🛒 Магазин 
+                    <div class="top-info">
+                        <span class="balance-box" id="shopBalance">💵 $10</span>
+                        <span class="timer-box" id="shopTimer">⏳ 5:00</span>
+                    </div>
+                </h2>
                 <div class="packs-grid" id="packsContainer"></div>
             </div>
         </div>
+        
         <div class="tab-pane" id="inventory">
             <div class="content-card">
                 <h2>🎒 Инвентарь</h2>
                 <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
                 <div class="equip-slots" id="equipContainer"></div>
+                
+                <h3 style="font-size: 14px; margin: 15px 0 10px; color: #f7931a;">📦 Закрытые пакеты</h3>
                 <div id="invPacksContainer" class="inv-packs-grid"></div>
+
+                <h3 style="font-size: 14px; margin: 15px 0 10px; color: #64ffda;">🃏 Открытые карты</h3>
                 <div id="cardsContainer"></div>
             </div>
         </div>
+
         <div class="tab-pane" id="leaders">
             <div class="content-card">
                 <h2>🏆 Лидеры</h2>
                 <div id="leadersContainer" style="text-align:center; padding:10px 0;">
-                    <div id="onlineTopList" style="padding:10px; width:100%;"></div>
+                    <h3 style="color:#64ffda; margin-bottom:15px;">🏅 Топ-10 игроков</h3>
+                    <div id="onlineTopList" style="padding:10px;"></div>
+                    <div style="border-top:1px solid #2a3348; padding-top:15px; margin-top:15px;">
+                        <div style="color:#8892b0; font-size:13px;">Ваш доход:</div>
+                        <div id="yourBestScore" style="font-size:24px; color:#ffd700;">$0/сек</div>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
         <div class="tab-pane" id="crypto">
             <div class="content-card">
                 <h2>₿ Криптовалюта</h2>
                 <div class="placeholder" style="padding:30px; text-align:center;">
-                    <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
+                    Ваш баланс: <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
                     <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
                 </div>
             </div>
         </div>
         <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
+    <div class="card-modal" id="cardModal">
+        <div class="modal-content">
+            <h3 id="modalCardTitle">Название карты</h3>
+            <p id="modalCardDesc">Информация о карте</p>
+            <button class="modal-btn" id="modalEquipBtn">Одеть</button>
+            <button class="modal-btn" id="modalUnequipBtn">Снять</button>
+            <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
+            <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
+        </div>
     </div>
 
     <div class="tabs-bottom" id="tabBar">
@@ -133,21 +167,9 @@
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
-<div class="card-modal" id="cardModal">
-    <div class="modal-content">
-        <h3 id="modalCardTitle">Название карты</h3>
-        <p id="modalCardDesc">Информация о карте</p>
-        <button class="modal-btn" id="modalEquipBtn">Одеть</button>
-        <button class="modal-btn" id="modalUnequipBtn">Снять</button>
-        <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
-        <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
-    </div>
-</div>
-
 <script type="module">
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ (ТОЛЬКО ДЛЯ ТОПА)
+    // FIREBASE ПОДКЛЮЧЕНИЕ (ДЛЯ ОНЛАЙН-ТОПА)
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -164,6 +186,36 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    // ==========================================
+    // ВКЛАДКИ И ДОХОД
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        setInterval(() => {
+            let totalIncome = 0;
+            gameData.equipped.forEach(id => {
+                let card = ALL_CARDS.find(c => c.id === id);
+                if (card) totalIncome += card.income;
+            });
+            if (totalIncome > 0) {
+                gameData.balance = (gameData.balance || 0) + totalIncome;
+                saveGame();
+                updateUI();
+            }
+            updateOnlineLeaderboard(totalIncome);
+        }, 1000);
+    });
 
     // ==========================================
     // ДАННЫЕ ИГРЫ
@@ -210,6 +262,7 @@
     ];
 
     const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
+
     const PACK_DATA = [
         { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS },
         { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS },
@@ -219,51 +272,75 @@
     ];
 
     // ==========================================
-    // ЛОГИКА ИГРЫ (БЕЗ АККАУНТОВ, ТОЛЬКО LOCALSTORAGE)
+    // ЛОГИКА ИГРЫ + СТАРТОВЫЕ ПАКЕТЫ
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
-    let playerId = localStorage.getItem('cryptoPlayerId') || 'player_' + Date.now();
-    localStorage.setItem('cryptoPlayerId', playerId);
     
-    function loadLocalGame() {
+    function loadGame() {
         let data = localStorage.getItem('cryptoGameData');
         if (data) {
             gameData = JSON.parse(data);
+            // Если магазин пустой - генерируем
             if (!gameData.store || Object.keys(gameData.store).length === 0) generateStore();
         } else {
+            // ПЕРВЫЙ ЗАПУСК: 3 обычных пакета в инвентарь!
             generateStore();
-            for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+            for(let i=0; i<3; i++) {
+                gameData.inventory.push('pack5');
+            }
         }
         if (gameData.balance === undefined) gameData.balance = 10;
+        // На случай, если инвентарь не массив
+        if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
     }
-    function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
+    function saveGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
+    loadGame();
 
     function generateStore() {
         gameData.store = {};
         gameData.storeTimer = 300;
         PACK_DATA.forEach(p => {
-            let count = Math.floor(Math.random() * 4);
+            let count = Math.floor(Math.random() * 4); // 0, 1, 2 или 3
             gameData.store[p.id] = count;
         });
-        saveLocalGame();
+        saveGame();
         renderShop();
         updateUI();
         renderInventory();
     }
 
+    // ==========================================
+    // ПОКУПКА И ОТКРЫТИЕ ПАКЕТОВ
+    // ==========================================
+
     function buyPack(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
-        if (!gameData.store[packId] || gameData.store[packId] <= 0) { alert("Этого пакета нет в наличии!"); return; }
-        if (gameData.balance < pack.price) { alert(`Не хватает денег! Нужно $${pack.price}`); return; }
+        
+        if (!gameData.store[packId] || gameData.store[packId] <= 0) {
+            alert("Этого пакета нет в наличии! Подождите обновления магазина.");
+            return;
+        }
+        if (gameData.balance < pack.price) {
+            alert(`Не хватает денег! Нужно $${pack.price}`);
+            return;
+        }
+        if (pack.drops.length === 0) {
+            alert("Этот пакет пока пуст! Загляни в другие.");
+            return;
+        }
 
         gameData.balance -= pack.price;
         gameData.store[packId]--;
+
+        // Кладём закрытый пакет в ИНВЕНТАРЬ
         gameData.inventory.push(packId);
 
-        saveLocalGame();
-        renderShop(); updateUI(); renderInventory();
+        saveGame();
+        renderShop();
+        updateUI();
+        renderInventory();
         alert(`✅ Вы купили ${pack.name}!\nОн лежит в вашем Инвентаре.`);
     }
 
@@ -272,21 +349,30 @@
         const packId = gameData.inventory[index];
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
-        if (pack.drops.length === 0) { alert("Этот пакет пуст!"); return; }
 
+        // Удаляем пакет из инвентаря (открываем)
         gameData.inventory.splice(index, 1);
 
+        // Логика выпадения карты
         let randomCard;
         let rand = Math.random(), cum = 0;
         let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
-        for (let c of shuffled) { cum += c.dropRate; if (rand <= cum) { randomCard = c; break; } }
+        for (let c of shuffled) {
+            cum += c.dropRate;
+            if (rand <= cum) {
+                randomCard = c;
+                break;
+            }
+        }
         if (!randomCard) randomCard = shuffled[shuffled.length-1];
 
+        // Добавляем в коллекцию
         if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
         gameData.cards[randomCard.id]++;
 
-        saveLocalGame();
-        renderInventory(); updateUI();
+        saveGame();
+        renderInventory();
+        updateUI();
         alert(`🎉 Вам выпала карта:\n${randomCard.emoji} ${randomCard.name}!\nДоход: +$${randomCard.income}/сек`);
     }
 
@@ -304,8 +390,10 @@
             return;
         }
         gameData.equipped.push(cardId);
-        saveLocalGame();
-        renderInventory(); updateUI(); closeCardModal();
+        saveGame();
+        renderInventory();
+        updateUI();
+        closeModal();
         alert(`Одета 1 шт. ${card.name}!`);
     }
 
@@ -316,8 +404,10 @@
             return;
         }
         gameData.equipped.splice(idx, 1);
-        saveLocalGame();
-        renderInventory(); updateUI(); closeCardModal();
+        saveGame();
+        renderInventory();
+        updateUI();
+        closeModal();
         alert(`Снята 1 шт. ${card.name}!`);
     }
 
@@ -333,8 +423,10 @@
         gameData.balance += sellPrice;
         const idx = gameData.equipped.indexOf(cardId);
         if (idx !== -1) gameData.equipped.splice(idx, 1);
-        saveLocalGame();
-        renderInventory(); updateUI(); closeCardModal();
+        saveGame();
+        renderInventory();
+        updateUI();
+        closeModal();
         alert(`Продана 1 шт. ${card.name} за $${sellPrice}!`);
     }
 
@@ -350,31 +442,75 @@
         document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
         document.getElementById('modalSellBtn').innerText = `Продать за $${Math.floor(card.price/2)}`;
         document.getElementById('modalSellBtn').onclick = () => sellOne(cardId);
-        document.getElementById('modalCloseBtn').onclick = closeCardModal;
+        document.getElementById('modalCloseBtn').onclick = closeModal;
         modal.classList.add('active');
     };
 
-    function closeCardModal() { document.getElementById('cardModal').classList.remove('active'); }
+    function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // UI ОТРИСОВКА
+    // ОНЛАЙН ТОП
+    // ==========================================
+
+    let leaderboardReady = false;
+    function updateOnlineLeaderboard(income) {
+        const playerKey = localStorage.getItem('playerId') || 'guest_' + Date.now();
+        if (!localStorage.getItem('playerId')) localStorage.setItem('playerId', playerKey);
+
+        // Отправляем данные только если есть экипировка
+        if (gameData.equipped.length > 0) {
+            const myRef = ref(db, 'leaderboard/' + playerKey);
+            set(myRef, { name: 'Игрок', income: income }).catch(() => {});
+        }
+
+        if (!leaderboardReady) {
+            leaderboardReady = true;
+            const topRef = ref(db, 'leaderboard');
+            onValue(topRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                const sorted = Object.values(data).sort((a, b) => b.income - a.income).slice(0, 10);
+                const container = document.getElementById('onlineTopList');
+                let html = '';
+                sorted.forEach((player, index) => {
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
+                    html += `<div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #2a3348; align-items:center;">
+                                <span>${medal} ${player.name || 'Аноним'}</span>
+                                <span style="color:#ffd700;">$${player.income}/сек</span>
+                            </div>`;
+                });
+                if (sorted.length === 0) html = `<p style="color:#8892b0;">Пока нет других игроков.</p>`;
+                container.innerHTML = html;
+            });
+        }
+    }
+
+    // ==========================================
+    // ОТРИСОВКА И ТАЙМЕР
     // ==========================================
 
     function updateUI() {
         document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
         document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
-        
         let totalIncome = 0;
-        if (gameData.equipped && gameData.equipped.length > 0) {
-            gameData.equipped.forEach(id => {
-                let card = ALL_CARDS.find(c => c.id === id);
-                if (card) totalIncome += card.income;
-            });
-        }
+        gameData.equipped.forEach(id => {
+            let card = ALL_CARDS.find(c => c.id === id);
+            if (card) totalIncome += card.income;
+        });
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
-        const cryptoDesc = document.querySelector('#crypto .placeholder span:last-child');
-        if (cryptoDesc) cryptoDesc.innerText = `Доход: +$${totalIncome} / сек`;
+        document.getElementById('yourBestScore').innerText = `$${totalIncome}/сек`;
     }
+
+    setInterval(() => {
+        if (gameData.storeTimer > 0) {
+            gameData.storeTimer--;
+            let m = Math.floor(gameData.storeTimer / 60);
+            let s = gameData.storeTimer % 60;
+            document.getElementById('shopTimer').innerText = `⏳ ${m}:${s < 10 ? '0'+s : s}`;
+        } else {
+            generateStore();
+        }
+    }, 1000);
 
     function renderShop() {
         const container = document.getElementById('packsContainer');
@@ -400,18 +536,16 @@
     function renderInventory() {
         const equipContainer = document.getElementById('equipContainer');
         equipContainer.innerHTML = '';
-        if (gameData.equipped && gameData.equipped.length > 0) {
-            gameData.equipped.forEach(cardId => {
-                const slot = document.createElement('div');
-                slot.className = 'equip-slot filled';
-                let card = ALL_CARDS.find(c => c.id === cardId);
-                if (card) {
-                    slot.innerHTML = card.emoji;
-                    slot.title = `Надета: ${card.name}`;
-                }
-                equipContainer.appendChild(slot);
-            });
-        }
+        gameData.equipped.forEach(cardId => {
+            const slot = document.createElement('div');
+            slot.className = 'equip-slot filled';
+            let card = ALL_CARDS.find(c => c.id === cardId);
+            if (card) {
+                slot.innerHTML = card.emoji;
+                slot.title = `Надета: ${card.name}`;
+            }
+            equipContainer.appendChild(slot);
+        });
 
         const invCont = document.getElementById('invPacksContainer');
         invCont.innerHTML = '';
@@ -435,14 +569,14 @@
         if (gameData.cards) {
             for (let k in gameData.cards) if (gameData.cards[k] > 0) has = true;
         }
-        if (!has) { 
-            container.innerHTML = `<div class="placeholder" style="padding:30px; text-align:center;">📭 У вас пока нет открытых карт.</div>`; 
-            return; 
+        if (!has) {
+            container.innerHTML = `<div class="placeholder" style="padding:30px; text-align:center;">📭 У вас пока нет открытых карт.</div>`;
+            return;
         }
         const grid = document.createElement('div'); grid.className = 'cards-grid';
         ALL_CARDS.forEach(card => {
             if (gameData.cards && (gameData.cards[card.id] || 0) > 0) {
-                const item = document.createElement('div'); 
+                const item = document.createElement('div');
                 item.className = `card-item rarity-${card.rarity}`;
                 let imgHtml = `<span class="card-img">${card.emoji}</span>`;
                 if (card.img) {
@@ -464,105 +598,22 @@
 
     window.showChances = function(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
-        if (!pack || pack.drops.length === 0) { alert("Шансы не настроены."); return; }
+        if (!pack || pack.drops.length === 0) {
+            alert("Шансы не настроены.");
+            return;
+        }
         let msg = `📊 Шансы выпадения из ${pack.name}:\n\n`;
         let shuffled = [...pack.drops].sort((a,b) => a.dropRate - b.dropRate);
-        shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`; });
+        shuffled.forEach(c => {
+            msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`;
+        });
         alert(msg);
     };
 
-    // ==========================================
-    // ОНЛАЙН ТОП (FIREBASE)
-    // ==========================================
-
-    function renderLeaders() {
-        const myIncome = gameData.equipped.reduce((sum, id) => {
-            let card = ALL_CARDS.find(c => c.id === id);
-            return sum + (card ? card.income : 0);
-        }, 0);
-
-        // Отправляем свой доход в Firebase
-        const myRef = ref(db, 'leaderboard/' + playerId);
-        set(myRef, { income: myIncome });
-
-        // Слушаем всех игроков
-        const topRef = ref(db, 'leaderboard');
-        onValue(topRef, (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-            let allPlayers = [];
-            for (let key in data) {
-                let p = data[key];
-                allPlayers.push({ name: 'Игрок ' + key.slice(-4), income: p.income || 0 });
-            }
-            const sorted = allPlayers.sort((a,b) => b.income - a.income).slice(0, 10);
-            const container = document.getElementById('onlineTopList');
-            let html = `<h3 style="color:#64ffda; margin-bottom:10px;">🏆 Топ игроков</h3>`;
-            sorted.forEach((player, index) => {
-                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
-                html += `<div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #2a3348;">
-                            <span>${medal} ${player.name}</span>
-                            <span style="color:#ffd700;">$${player.income}/сек</span>
-                        </div>`;
-            });
-            container.innerHTML = html;
-        });
-    }
-
-    // ==========================================
-    // ТАЙМЕР И ДОХОД
-    // ==========================================
-
-    setInterval(() => {
-        if (gameData.storeTimer > 0) {
-            gameData.storeTimer--;
-            let m = Math.floor(gameData.storeTimer / 60);
-            let s = gameData.storeTimer % 60;
-            document.getElementById('shopTimer').innerText = `⏳ ${m}:${s < 10 ? '0'+s : s}`;
-        } else {
-            generateStore();
-        }
-    }, 1000);
-
-    setInterval(() => {
-        let totalIncome = 0;
-        if (gameData.equipped && gameData.equipped.length > 0) {
-            gameData.equipped.forEach(id => {
-                let card = ALL_CARDS.find(c => c.id === id);
-                if (card) totalIncome += card.income;
-            });
-        }
-        if (totalIncome > 0) {
-            gameData.balance = (gameData.balance || 0) + totalIncome;
-            saveLocalGame();
-            updateUI();
-            renderLeaders(); // Обновляем топ
-        }
-    }, 1000);
-
-    // ==========================================
-    // ВКЛАДКИ
-    // ==========================================
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                tabButtons.forEach(b => b.classList.remove('active'));
-                tabPanes.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
-            });
-        });
-
-        // Инициализация
-        loadLocalGame();
-        renderShop();
-        renderInventory();
-        updateUI();
-        renderLeaders();
-    });
+    // Инициализация
+    renderShop();
+    renderInventory();
+    updateUI();
 </script>
 </body>
 </html>
