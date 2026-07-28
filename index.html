@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>Крипто-паки (Синхронизация)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
+        html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
         .app { display: flex; flex-direction: column; height: 100%; max-width: 600px; margin: 0 auto; background: #141828; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.7); }
         
         .content { flex: 1; overflow-y: auto; padding: 20px 20px 100px; scrollbar-width: thin; scrollbar-color: #3b4a6b #141828; }
@@ -308,8 +308,14 @@
     let currentUser = null;
     let isSaving = false;
 
+    // ИСПРАВЛЕНИЕ: Функция безопасного преобразования логина
+    function safePath(str) {
+        return str.replace(/[.#$\/\[\]]/g, '_');
+    }
+
     async function loadCloudData(username) {
-        const userRef = ref(db, 'users/' + username);
+        const safeUsername = safePath(username);
+        const userRef = ref(db, 'users/' + safeUsername);
         const snapshot = await get(userRef);
         if (snapshot.exists()) return snapshot.val();
         return null;
@@ -319,7 +325,8 @@
         if (!currentUser || isSaving) return;
         isSaving = true;
         try {
-            const userRef = ref(db, 'users/' + currentUser);
+            const safeUsername = safePath(currentUser);
+            const userRef = ref(db, 'users/' + safeUsername);
             await set(userRef, {
                 balance: gameData.balance,
                 cards: gameData.cards || {},
@@ -331,7 +338,8 @@
     }
 
     async function deleteAccount(username) {
-        const userRef = ref(db, 'users/' + username);
+        const safeUsername = safePath(username);
+        const userRef = ref(db, 'users/' + safeUsername);
         await remove(userRef);
         localStorage.removeItem('cachedUser');
         currentUser = null;
@@ -486,7 +494,7 @@
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
     }
 
-    // Таблица лидеров
+    // Таблица лидеров (работает с безопасным ключом)
     function renderLeaderboard() {
         const topRef = ref(db, 'users');
         onValue(topRef, (snapshot) => {
@@ -530,7 +538,6 @@
         });
     }
     window.filterPlayers = function() {
-        // Фильтрация в онлайне не нужна, так как onValue обновляет всё, но можно оставить для визуала
         renderLeaderboard();
     };
 
