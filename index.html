@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки (Синхронизация)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -21,6 +21,19 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
+        /* --- ОКНО ВХОДА --- */
+        .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .auth-overlay.hidden { display:none; }
+        .auth-box { background:#1a2133; padding:30px; border-radius:20px; border:1px solid #ffb347; width:90%; max-width:380px; text-align:center; }
+        .auth-box h2 { color:#fff; margin-bottom:20px; }
+        .auth-input { width:100%; padding:12px; margin:10px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:12px; color:#fff; font-size:16px; }
+        .auth-input:focus { outline:2px solid #64ffda; }
+        .auth-btn { width:100%; padding:12px; margin:6px 0; background:#ffb347; border:none; border-radius:12px; font-size:16px; font-weight:bold; cursor:pointer; color:#000; }
+        .auth-btn:hover { background:#ffcc66; }
+        .auth-btn.danger { background:#4a1a1a; color:#ff6b6b; }
+        .auth-btn.danger:hover { background:#ff6b6b; color:#fff; }
+        
+        /* --- МАГАЗИН И ИНВЕНТАРЬ --- */
         .top-info { display: flex; align-items: center; gap: 12px; }
         .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
         .timer-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #64ffda; display: flex; align-items: center; gap: 6px; }
@@ -48,7 +61,6 @@
         .rarity-common { border-color: #6b7280 !important; }
         .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
 
-        /* ИНВЕНТАРЬ */
         .inv-packs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .inv-pack-item { background: #111722; border: 2px solid #2a3348; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
         .inv-pack-item:active { transform: scale(0.95); }
@@ -64,14 +76,12 @@
         .card-item .card-income { font-size: 11px; color: #64ffda; font-weight: bold; margin-bottom: 6px; }
         .card-item .card-price { font-size: 11px; color: #f7931a; margin-bottom: 6px; }
         
-        /* ЭКИПИРОВКА */
         .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; min-height: 70px; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; cursor: pointer; transition: 0.2s; }
         .equip-slot.filled:hover { background: #ef4444; border-color: #ef4444; transform: scale(1.05); }
         .equip-slot.filled:active { transform: scale(0.9); }
 
-        /* МОДАЛЬНОЕ ОКНО КАРТЫ */
         .card-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 999; }
         .card-modal.active { display: flex; }
         .modal-content { background: #1a2133; padding: 24px; border-radius: 20px; max-width: 320px; width: 90%; border: 1px solid #2a3348; text-align: center; }
@@ -91,123 +101,155 @@
     </style>
 </head>
 <body>
-<div class="app">
-    <div class="content" id="contentArea">
-        <div class="tab-pane active" id="shop">
-            <div class="content-card">
-                <h2>
-                    🛒 Магазин 
-                    <div class="top-info">
-                        <span class="balance-box" id="shopBalance">💵 $10</span>
-                        <span class="timer-box" id="shopTimer">⏳ 5:00</span>
-                    </div>
-                </h2>
-                <div class="packs-grid" id="packsContainer"></div>
-            </div>
+
+    <!-- ОКНО ВХОДА (ПОКАЗЫВАЕТСЯ ПЕРЕД ИГРОЙ) -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box">
+            <h2>🛒 Крипто-паки</h2>
+            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Войди, чтобы синхронизировать прогресс между ПК и телефоном!</p>
+            <input type="text" class="auth-input" id="loginInput" placeholder="Введи логин (никнейм)">
+            <input type="password" class="auth-input" id="passInput" placeholder="Введи пароль">
+            <button class="auth-btn" id="authLoginBtn">🔓 Войти / Загрузить</button>
+            <button class="auth-btn" id="authRegisterBtn">➕ Создать новый аккаунт</button>
+            <button class="auth-btn danger" id="authDeleteBtn">🗑️ Удалить этот аккаунт</button>
         </div>
-        
-        <div class="tab-pane" id="inventory">
-            <div class="content-card">
-                <h2>🎒 Инвентарь</h2>
-                <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
-                <div class="equip-slots" id="equipContainer"></div>
-                
-                <h3 style="font-size: 14px; margin: 15px 0 10px; color: #f7931a;">📦 Закрытые пакеты</h3>
-                <div id="invPacksContainer" class="inv-packs-grid"></div>
+    </div>
 
-                <h3 style="font-size: 14px; margin: 15px 0 10px; color: #64ffda;">🃏 Открытые карты</h3>
-                <div id="cardsContainer"></div>
-            </div>
-        </div>
-
-        <div class="tab-pane" id="leaders">
-            <div class="content-card" style="padding:0; border:none; background:transparent; box-shadow:none;">
-                <style>
-                    .leader-wrapper { background: #16213e; border-radius: 20px; padding: 20px; border: 2px solid #ffb347; box-shadow: 0 0 40px rgba(255, 180, 71, 0.15); width:100%; box-sizing:border-box; }
-                    .leader-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-                    .leader-header h2 { font-size: 22px; color: #ffb347; margin:0; display: flex; align-items: center; gap: 10px; }
-                    .leader-stats { background: #2a2a45; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #aaa; border: 1px solid #ffb34740; }
-                    .leader-stats strong { color: #ffb347; }
-                    .leader-search { width: 100%; padding: 10px 16px; border-radius: 40px; border: 1px solid #ffb347; background: #1e1e2f; color: #fff; font-size: 14px; outline: none; margin-bottom: 15px; box-sizing:border-box; }
-                    .leader-search:focus { border-color: #ffb347; box-shadow: 0 0 15px rgba(255, 180, 71, 0.2); }
-                    .leader-table-header { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 2px solid #ffb347; font-weight: 600; color: #ffb347; font-size: 12px; text-transform: uppercase; gap: 8px; }
-                    .leader-row { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 1px solid #2a2a45; align-items: center; gap: 8px; transition: 0.2s; }
-                    .leader-row:hover { background: #2a2a45; border-radius: 6px; }
-                    .leader-rank { font-weight: 700; color: #ffb347; font-size: 15px; text-align: center; }
-                    .leader-rank.gold { color: #ffd700; }
-                    .leader-rank.silver { color: #c0c0c0; }
-                    .leader-rank.bronze { color: #cd7f32; }
-                    .leader-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                    .leader-income { color: #ffb347; font-weight: 600; text-align: center; }
-                    .leader-empty { text-align: center; padding: 30px 0; color: #666; font-size: 15px; }
-                    .leader-footer { margin-top: 12px; text-align: center; font-size: 12px; color: #555; border-top: 1px solid #2a2a45; padding-top: 12px; }
-                    .leader-footer span { color: #ffb347; }
-                    .leader-loading { text-align: center; padding: 30px 0; color: #ffb347; font-size: 16px; }
-                </style>
-
-                <div class="leader-wrapper">
-                    <div class="leader-header">
-                        <h2><span>🏆</span> Топ лидеров</h2>
-                        <div class="leader-stats">👥 <strong id="totalPlayers">0</strong> игроков</div>
-                    </div>
-                    
-                    <input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск по нику..." oninput="filterPlayers()">
-                    
-                    <div class="leader-table-header">
-                        <div>№</div>
-                        <div>Игрок</div>
-                        <div style="text-align:center;">💰 Доход</div>
-                    </div>
-                    
-                    <div id="leaderList">
-                        <div class="leader-loading">Загрузка...</div>
-                    </div>
-                    
-                    <div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span> игроков</div>
+    <div class="app" id="gameApp">
+        <div class="content" id="contentArea">
+            <div class="tab-pane active" id="shop">
+                <div class="content-card">
+                    <h2>
+                        🛒 Магазин 
+                        <div class="top-info">
+                            <span class="balance-box" id="shopBalance">💵 $10</span>
+                            <span class="timer-box" id="shopTimer">⏳ 5:00</span>
+                        </div>
+                    </h2>
+                    <div class="packs-grid" id="packsContainer"></div>
                 </div>
             </div>
-        </div>
+            
+            <div class="tab-pane" id="inventory">
+                <div class="content-card">
+                    <h2>🎒 Инвентарь</h2>
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
+                    <div class="equip-slots" id="equipContainer"></div>
+                    
+                    <h3 style="font-size: 14px; margin: 15px 0 10px; color: #f7931a;">📦 Закрытые пакеты</h3>
+                    <div id="invPacksContainer" class="inv-packs-grid"></div>
 
-        <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
-        <div class="tab-pane" id="crypto">
-            <div class="content-card">
-                <h2>₿ Криптовалюта</h2>
-                <div class="placeholder" style="padding:30px; text-align:center;">
-                    Ваш баланс: <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
-                    <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
+                    <h3 style="font-size: 14px; margin: 15px 0 10px; color: #64ffda;">🃏 Открытые карты</h3>
+                    <div id="cardsContainer"></div>
                 </div>
             </div>
+
+            <div class="tab-pane" id="leaders">
+                <div class="content-card" style="padding:0; border:none; background:transparent; box-shadow:none;">
+                    <style>
+                        .leader-wrapper { background: #16213e; border-radius: 20px; padding: 20px; border: 2px solid #ffb347; box-shadow: 0 0 40px rgba(255, 180, 71, 0.15); width:100%; box-sizing:border-box; }
+                        .leader-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+                        .leader-header h2 { font-size: 22px; color: #ffb347; margin:0; display: flex; align-items: center; gap: 10px; }
+                        .leader-stats { background: #2a2a45; padding: 4px 14px; border-radius: 30px; font-size: 13px; color: #aaa; border: 1px solid #ffb34740; }
+                        .leader-stats strong { color: #ffb347; }
+                        .leader-search { width: 100%; padding: 10px 16px; border-radius: 40px; border: 1px solid #ffb347; background: #1e1e2f; color: #fff; font-size: 14px; outline: none; margin-bottom: 15px; box-sizing:border-box; }
+                        .leader-search:focus { border-color: #ffb347; box-shadow: 0 0 15px rgba(255, 180, 71, 0.2); }
+                        .leader-table-header { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 2px solid #ffb347; font-weight: 600; color: #ffb347; font-size: 12px; text-transform: uppercase; gap: 8px; }
+                        .leader-row { display: grid; grid-template-columns: 40px 1fr 100px; padding: 8px 10px; border-bottom: 1px solid #2a2a45; align-items: center; gap: 8px; transition: 0.2s; }
+                        .leader-row:hover { background: #2a2a45; border-radius: 6px; }
+                        .leader-rank { font-weight: 700; color: #ffb347; font-size: 15px; text-align: center; }
+                        .leader-rank.gold { color: #ffd700; }
+                        .leader-rank.silver { color: #c0c0c0; }
+                        .leader-rank.bronze { color: #cd7f32; }
+                        .leader-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                        .leader-income { color: #ffb347; font-weight: 600; text-align: center; }
+                        .leader-empty { text-align: center; padding: 30px 0; color: #666; font-size: 15px; }
+                        .leader-footer { margin-top: 12px; text-align: center; font-size: 12px; color: #555; border-top: 1px solid #2a2a45; padding-top: 12px; }
+                        .leader-footer span { color: #ffb347; }
+                        .leader-loading { text-align: center; padding: 30px 0; color: #ffb347; font-size: 16px; }
+                    </style>
+
+                    <div class="leader-wrapper">
+                        <div class="leader-header">
+                            <h2><span>🏆</span> Топ лидеров</h2>
+                            <div class="leader-stats">👥 <strong id="totalPlayers">0</strong> игроков</div>
+                        </div>
+                        
+                        <input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск по нику..." oninput="filterPlayers()">
+                        
+                        <div class="leader-table-header">
+                            <div>№</div>
+                            <div>Игрок</div>
+                            <div style="text-align:center;">💰 Доход</div>
+                        </div>
+                        
+                        <div id="leaderList">
+                            <div class="leader-loading">Загрузка...</div>
+                        </div>
+                        
+                        <div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span> игроков</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
+            <div class="tab-pane" id="crypto">
+                <div class="content-card">
+                    <h2>₿ Криптовалюта</h2>
+                    <div class="placeholder" style="padding:30px; text-align:center;">
+                        Ваш баланс: <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
+                        <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
         </div>
-        <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
-    </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
-    <div class="card-modal" id="cardModal">
-        <div class="modal-content">
-            <h3 id="modalCardTitle">Название карты</h3>
-            <p id="modalCardDesc">Информация о карте</p>
-            <button class="modal-btn" id="modalEquipBtn">Одеть</button>
-            <button class="modal-btn" id="modalUnequipBtn">Снять</button>
-            <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
-            <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
+        <!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
+        <div class="card-modal" id="cardModal">
+            <div class="modal-content">
+                <h3 id="modalCardTitle">Название карты</h3>
+                <p id="modalCardDesc">Информация о карте</p>
+                <button class="modal-btn" id="modalEquipBtn">Одеть</button>
+                <button class="modal-btn" id="modalUnequipBtn">Снять</button>
+                <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
+                <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
+            </div>
+        </div>
+
+        <div class="tabs-bottom" id="tabBar">
+            <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
+            <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
+            <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
+            <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
+            <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
+            <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
         </div>
     </div>
 
-    <div class="tabs-bottom" id="tabBar">
-        <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
-        <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
-        <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
-        <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
-        <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
-        <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
-    </div>
-</div>
+<script type="module">
+    // ==========================================
+    // FIREBASE ПОДКЛЮЧЕНИЕ (ОНЛАЙН БАЗА)
+    // ==========================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNeATf03rnrmofZAilQeEGUrREt06F3I8",
+      authDomain: "cryptopacks-798d3.firebaseapp.com",
+      projectId: "cryptopacks-798d3",
+      storageBucket: "cryptopacks-798d3.firebasestorage.app",
+      messagingSenderId: "243185920568",
+      appId: "1:243185920568:web:a619151012e40e0e15d4cd",
+      measurementId: "G-EY0K2YKD6T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     // ==========================================
-    // ДАННЫЕ ИГРЫ
+    // ДАННЫЕ ИГРЫ (ВСЕ КАРТЫ)
     // ==========================================
-    
     const COMMON_CARDS = [
         { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 10, income: 1, dropRate: 0.35 },
         { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'пепе/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 15, income: 2, dropRate: 0.30 },
@@ -259,12 +301,44 @@
     ];
 
     // ==========================================
-    // ЛОГИКА ИГРЫ
+    // ЛОГИКА ИГРЫ И СИНХРОНИЗАЦИЯ
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
-    
-    function loadGame() {
+    let currentUser = null;
+    let isSaving = false;
+
+    async function loadCloudData(username) {
+        const userRef = ref(db, 'users/' + username);
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) return snapshot.val();
+        return null;
+    }
+
+    async function saveCloudGame() {
+        if (!currentUser || isSaving) return;
+        isSaving = true;
+        try {
+            const userRef = ref(db, 'users/' + currentUser);
+            await set(userRef, {
+                balance: gameData.balance,
+                cards: gameData.cards || {},
+                equipped: gameData.equipped || [],
+                inventory: gameData.inventory || []
+            });
+        } catch (e) { console.error("Ошибка сохранения в облако:", e); }
+        isSaving = false;
+    }
+
+    async function deleteAccount(username) {
+        const userRef = ref(db, 'users/' + username);
+        await remove(userRef);
+        localStorage.removeItem('cachedUser');
+        currentUser = null;
+        location.reload();
+    }
+
+    function loadLocalGame() {
         let data = localStorage.getItem('cryptoGameData');
         if (data) {
             gameData = JSON.parse(data);
@@ -275,15 +349,12 @@
         if (gameData.balance === undefined) gameData.balance = 10;
         if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
 
-        // ВСЕГДА, ЕСЛИ БАЛАНС РАВЕН 10, ДАЁМ 3 ОБЫЧНЫХ ПАКЕТА
-        if (gameData.balance === 10) {
-            for(let i=0; i<3; i++) {
-                gameData.inventory.push('pack5');
-            }
+        // При балансе 10 выдаём 3 пакета
+        if (gameData.balance === 10 && gameData.inventory.length === 0) {
+            for(let i=0; i<3; i++) gameData.inventory.push('pack5');
         }
     }
-    function saveGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
-    loadGame();
+    function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
     function generateStore() {
         gameData.store = {};
@@ -292,38 +363,30 @@
             let count = Math.floor(Math.random() * 4);
             gameData.store[p.id] = count;
         });
-        saveGame();
+        saveLocalGame();
         renderShop();
         updateUI();
         renderInventory();
     }
 
+    // ==========================================
+    // ИГРОВЫЕ ДЕЙСТВИЯ
+    // ==========================================
+
     function buyPack(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
-        
-        if (!gameData.store[packId] || gameData.store[packId] <= 0) {
-            alert("Этого пакета нет в наличии! Подождите обновления магазина.");
-            return;
-        }
-        if (gameData.balance < pack.price) {
-            alert(`Не хватает денег! Нужно $${pack.price}`);
-            return;
-        }
-        if (pack.drops.length === 0) {
-            alert("Этот пакет пока пуст! Загляни в другие.");
-            return;
-        }
+        if (!gameData.store[packId] || gameData.store[packId] <= 0) { alert("Нет в наличии!"); return; }
+        if (gameData.balance < pack.price) { alert(`Нужно $${pack.price}`); return; }
+        if (pack.drops.length === 0) { alert("Пакет пуст!"); return; }
 
         gameData.balance -= pack.price;
         gameData.store[packId]--;
         gameData.inventory.push(packId);
 
-        saveGame();
-        renderShop();
-        updateUI();
-        renderInventory();
-        alert(`✅ Вы купили ${pack.name}!\nОн лежит в вашем Инвентаре.`);
+        saveLocalGame(); saveCloudGame();
+        renderShop(); updateUI(); renderInventory();
+        alert(`✅ Вы купили ${pack.name}!`);
     }
 
     function openPackFromInventory(index) {
@@ -339,89 +402,61 @@
         let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
         for (let c of shuffled) {
             cum += c.dropRate;
-            if (rand <= cum) {
-                randomCard = c;
-                break;
-            }
+            if (rand <= cum) { randomCard = c; break; }
         }
         if (!randomCard) randomCard = shuffled[shuffled.length-1];
 
         if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
         gameData.cards[randomCard.id]++;
 
-        saveGame();
-        renderInventory();
-        updateUI();
-        alert(`🎉 Вам выпала карта:\n${randomCard.emoji} ${randomCard.name}!\nДоход: +$${randomCard.income}/сек`);
+        saveLocalGame(); saveCloudGame();
+        renderInventory(); updateUI();
+        alert(`🎉 Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
     }
 
     // ==========================================
-    // МЕНЮ УПРАВЛЕНИЯ КАРТАМИ
+    // УПРАВЛЕНИЕ КАРТАМИ
     // ==========================================
 
-    let selectedCardId = null;
-    
     function equipOne(cardId) {
-        const card = ALL_CARDS.find(c => c.id === cardId);
-        if (!card) return;
-        if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
-            alert("У вас нет этой карты!");
-            return;
-        }
+        if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { alert("Нет этой карты!"); return; }
         gameData.cards[cardId]--;
         gameData.equipped.push(cardId);
 
-        saveGame();
-        renderInventory();
-        updateUI();
-        closeModal();
-        alert(`Одета 1 шт. ${card.name}!`);
+        saveLocalGame(); saveCloudGame();
+        renderInventory(); updateUI(); closeModal();
     }
 
     function unequipOne(cardId) {
         const idx = gameData.equipped.indexOf(cardId);
-        if (idx === -1) {
-            alert("Эта карта не надета!");
-            return;
-        }
+        if (idx === -1) { alert("Не надета!"); return; }
         gameData.equipped.splice(idx, 1);
         if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
         gameData.cards[cardId]++;
 
-        saveGame();
-        renderInventory();
-        updateUI();
-        closeModal();
-        alert(`Снята 1 шт. ${card.name}!`);
+        saveLocalGame(); saveCloudGame();
+        renderInventory(); updateUI(); closeModal();
     }
 
     function sellOne(cardId) {
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
-        if (gameData.cards[cardId] <= 0) {
-            alert("У вас нет этой карты для продажи!");
-            return;
-        }
+        if (gameData.cards[cardId] <= 0) { alert("Нет для продажи!"); return; }
         const sellPrice = Math.floor(card.price / 2);
         gameData.cards[cardId]--;
         gameData.balance += sellPrice;
         const idx = gameData.equipped.indexOf(cardId);
         if (idx !== -1) gameData.equipped.splice(idx, 1);
-        saveGame();
-        renderInventory();
-        updateUI();
-        closeModal();
-        alert(`Продана 1 шт. ${card.name} за $${sellPrice}!`);
+        saveLocalGame(); saveCloudGame();
+        renderInventory(); updateUI(); closeModal();
     }
 
     window.openCardMenu = function(cardId) {
-        selectedCardId = cardId;
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
         const modal = document.getElementById('cardModal');
         document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
-        document.getElementById('modalCardDesc').innerHTML = `💰 Цена: $${card.price}<br>📈 Доход: +$${card.income}/сек<br>📦 В наличии: ${gameData.cards[card.id] || 0} шт.`;
-        
+        document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/сек | 📦 ${gameData.cards[card.id] || 0} шт.`;
         document.getElementById('modalEquipBtn').onclick = () => equipOne(cardId);
         document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
         document.getElementById('modalSellBtn').innerText = `Продать за $${Math.floor(card.price/2)}`;
@@ -429,26 +464,11 @@
         document.getElementById('modalCloseBtn').onclick = closeModal;
         modal.classList.add('active');
     };
-
     function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // ТАБЛИЦА ЛИДЕРОВ (ЛОКАЛЬНАЯ, ОБНОВЛЯЕТСЯ КАЖДЫЕ 15 СЕКУНД)
+    // ИНТЕРФЕЙС И ТАБЛИЦА ЛИДЕРОВ
     // ==========================================
-
-    function getLeaderboardPlayers() {
-        const players = [];
-        
-        // В этой версии мы берём только текущего игрока, так как нет онлайн-базы
-        // Если у тебя есть Firebase, ты можешь заменить этот блок на чтение из Firebase
-        const income = getCurrentIncome();
-        players.push({
-            name: 'Игрок',
-            income: income
-        });
-        
-        return players.sort((a, b) => b.income - a.income).slice(0, 100);
-    }
 
     function getCurrentIncome() {
         let total = 0;
@@ -459,67 +479,64 @@
         return total;
     }
 
-    function renderLeaderboard(filter = '') {
-        const container = document.getElementById('leaderList');
-        const totalSpan = document.getElementById('totalCount');
-        const shownSpan = document.getElementById('shownCount');
-        const totalPlayersSpan = document.getElementById('totalPlayers');
-        
-        const players = getLeaderboardPlayers();
-        
-        totalPlayersSpan.textContent = players.length;
-        
-        const searchTerm = filter.toLowerCase().trim();
-        const filtered = searchTerm 
-            ? players.filter(p => p.name.toLowerCase().includes(searchTerm))
-            : players;
-        
-        totalSpan.textContent = players.length;
-        shownSpan.textContent = filtered.length;
-        
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="leader-empty">${searchTerm ? '👀 Ничего не найдено' : '😕 Пока нет игроков'}</div>`;
-            return;
-        }
-        
-        let html = '';
-        filtered.forEach((player, index) => {
-            const rank = index + 1;
-            let rankClass = '';
-            if (rank === 1) rankClass = 'gold';
-            else if (rank === 2) rankClass = 'silver';
-            else if (rank === 3) rankClass = 'bronze';
-            
-            html += `
-                <div class="leader-row">
-                    <div class="leader-rank ${rankClass}">${rank}</div>
-                    <div class="leader-name">${player.name}</div>
-                    <div class="leader-income">💵 ${player.income}/сек</div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    }
-
-    function filterPlayers() {
-        const search = document.getElementById('searchInput').value;
-        renderLeaderboard(search);
-    }
-
-    // ==========================================
-    // ОТРИСОВКА И ТАЙМЕР
-    // ==========================================
-
     function updateUI() {
         document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
         document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
-        let totalIncome = 0;
-        gameData.equipped.forEach(id => {
-            let card = ALL_CARDS.find(c => c.id === id);
-            if (card) totalIncome += card.income;
-        });
+        let totalIncome = getCurrentIncome();
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
     }
+
+    // Таблица лидеров
+    function renderLeaderboard() {
+        const topRef = ref(db, 'users');
+        onValue(topRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            let players = [];
+            for (let key in data) {
+                let p = data[key];
+                let income = 0;
+                if (p.equipped) {
+                    p.equipped.forEach(id => {
+                        let card = ALL_CARDS.find(c => c.id === id);
+                        if (card) income += card.income;
+                    });
+                }
+                players.push({ name: key, income: income });
+            }
+            const sorted = players.sort((a,b) => b.income - a.income).slice(0, 100);
+            const container = document.getElementById('leaderList');
+            const totalSpan = document.getElementById('totalCount');
+            const totalPlayersSpan = document.getElementById('totalPlayers');
+            totalSpan.textContent = sorted.length;
+            totalPlayersSpan.textContent = sorted.length;
+
+            let html = '';
+            sorted.forEach((player, index) => {
+                let rankClass = '';
+                if (index === 0) rankClass = 'gold';
+                else if (index === 1) rankClass = 'silver';
+                else if (index === 2) rankClass = 'bronze';
+                html += `
+                    <div class="leader-row">
+                        <div class="leader-rank ${rankClass}">${index+1}</div>
+                        <div class="leader-name">${player.name}</div>
+                        <div class="leader-income">💵 ${player.income}/сек</div>
+                    </div>
+                `;
+            });
+            if (sorted.length === 0) html = `<div class="leader-empty">😕 Пока нет игроков</div>`;
+            container.innerHTML = html;
+        });
+    }
+    window.filterPlayers = function() {
+        // Фильтрация в онлайне не нужна, так как onValue обновляет всё, но можно оставить для визуала
+        renderLeaderboard();
+    };
+
+    // ==========================================
+    // ОТРИСОВКА МАГАЗИНА И ИНВЕНТАРЯ
+    // ==========================================
 
     setInterval(() => {
         if (gameData.storeTimer > 0) {
@@ -529,6 +546,18 @@
             document.getElementById('shopTimer').innerText = `⏳ ${m}:${s < 10 ? '0'+s : s}`;
         } else {
             generateStore();
+            if (currentUser) saveCloudGame();
+        }
+    }, 1000);
+
+    // ДОХОД КАЖДУЮ СЕКУНДУ (СИНХРОНИЗАЦИЯ)
+    setInterval(() => {
+        let totalIncome = getCurrentIncome();
+        if (totalIncome > 0) {
+            gameData.balance = (gameData.balance || 0) + totalIncome;
+            saveLocalGame();
+            if (currentUser) saveCloudGame();
+            updateUI();
         }
     }, 1000);
 
@@ -563,11 +592,8 @@
             if (card) {
                 slot.innerHTML = card.emoji;
                 slot.title = `Надета: ${card.name}`;
-                // ДОБАВЛЕНА ЛОГИКА СНЯТИЯ ПО КЛИКУ
                 slot.onclick = () => {
-                    if (confirm(`Снять ${card.name}?`)) {
-                        unequipOne(cardId);
-                    }
+                    if (confirm(`Снять ${card.name}?`)) unequipOne(cardId);
                 };
             }
             equipContainer.appendChild(slot);
@@ -624,22 +650,84 @@
 
     window.showChances = function(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
-        if (!pack || pack.drops.length === 0) {
-            alert("Шансы не настроены.");
-            return;
-        }
+        if (!pack || pack.drops.length === 0) return;
         let msg = `📊 Шансы выпадения из ${pack.name}:\n\n`;
         let shuffled = [...pack.drops].sort((a,b) => a.dropRate - b.dropRate);
-        shuffled.forEach(c => {
-            msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`;
-        });
+        shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`; });
         alert(msg);
     };
 
     // ==========================================
-    // ВКЛАДКИ
+    // АВТОРИЗАЦИЯ И ЗАПУСК
     // ==========================================
 
+    document.getElementById('authLoginBtn').addEventListener('click', async () => {
+        const login = document.getElementById('loginInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+
+        const cloudData = await loadCloudData(login);
+        if (!cloudData) { alert("Такой пользователь не найден! Сначала создайте аккаунт."); return; }
+
+        gameData.balance = cloudData.balance || 10;
+        gameData.cards = cloudData.cards || {};
+        gameData.equipped = cloudData.equipped || [];
+        gameData.inventory = cloudData.inventory || [];
+        currentUser = login;
+        localStorage.setItem('cachedUser', login);
+        saveLocalGame();
+        document.getElementById('authOverlay').classList.add('hidden');
+        renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+    });
+
+    document.getElementById('authRegisterBtn').addEventListener('click', async () => {
+        const login = document.getElementById('loginInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+
+        const cloudData = await loadCloudData(login);
+        if (cloudData) { alert("Этот логин уже занят! Войдите."); return; }
+
+        gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
+        for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+        currentUser = login;
+        localStorage.setItem('cachedUser', login);
+        saveLocalGame();
+        await saveCloudGame();
+        document.getElementById('authOverlay').classList.add('hidden');
+        renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+    });
+
+    document.getElementById('authDeleteBtn').addEventListener('click', async () => {
+        const login = document.getElementById('loginInput').value.trim();
+        if (!login) return;
+        if (confirm(`Удалить аккаунт ${login}? Это навсегда!`)) {
+            await deleteAccount(login);
+        }
+    });
+
+    // Автоматический вход при загрузке страницы
+    const cachedUser = localStorage.getItem('cachedUser');
+    if (cachedUser) {
+        loadCloudData(cachedUser).then(data => {
+            if (data) {
+                gameData.balance = data.balance || 10;
+                gameData.cards = data.cards || {};
+                gameData.equipped = data.equipped || [];
+                gameData.inventory = data.inventory || [];
+                currentUser = cachedUser;
+                saveLocalGame();
+                document.getElementById('authOverlay').classList.add('hidden');
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+            } else {
+                document.getElementById('authOverlay').classList.remove('hidden');
+            }
+        });
+    } else {
+        document.getElementById('authOverlay').classList.remove('hidden');
+    }
+
+    // Вкладки
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
@@ -651,19 +739,6 @@
                 document.getElementById(this.getAttribute('data-tab')).classList.add('active');
             });
         });
-
-        // Инициализация и таблица лидеров
-        loadGame();
-        renderShop();
-        renderInventory();
-        updateUI();
-        renderLeaderboard();
-
-        // Автообновление топа каждые 15 секунд
-        setInterval(() => {
-            const search = document.getElementById('searchInput').value;
-            renderLeaderboard(search);
-        }, 15000);
     });
 </script>
 </body>
