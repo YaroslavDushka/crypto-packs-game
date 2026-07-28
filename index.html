@@ -68,8 +68,9 @@
         .modal-content p { font-size: 14px; color: #8892b0; margin-bottom: 16px; }
         .modal-btn { display: block; width: 100%; background: #2a3348; border: none; color: #fff; padding: 12px; border-radius: 12px; font-size: 16px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
         .modal-btn:hover { background: #64ffda; color: #000; }
-        .modal-btn.close-btn { background: #4a1a1a; color: #ff6b6b; }
-        .modal-btn.close-btn:hover { background: #ff6b6b; color: #fff; }
+        .modal-btn.sell-btn { background: #4a1a1a; color: #ff6b6b; }
+        .modal-btn.sell-btn:hover { background: #ff6b6b; color: #fff; }
+        .modal-btn.close-btn { background: #2a3348; }
 
         .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
         .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; background: transparent; border: none; color: #8892b0; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; gap: 2px; padding-top: 6px; border-radius: 12px; }
@@ -131,10 +132,9 @@
         <div class="modal-content">
             <h3 id="modalCardTitle">Название карты</h3>
             <p id="modalCardDesc">Информация о карте</p>
-            <button class="modal-btn" id="modalEquipBtn1">Надеть +1</button>
-            <button class="modal-btn" id="modalEquipBtn2">Надеть +2</button>
-            <button class="modal-btn" id="modalEquipBtn3">Надеть +3</button>
-            <button class="modal-btn close-btn" id="modalSellBtn">Продать за $0</button>
+            <button class="modal-btn" id="modalEquipBtn">Одеть</button>
+            <button class="modal-btn" id="modalUnequipBtn">Снять</button>
+            <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
             <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
         </div>
     </div>
@@ -150,10 +150,10 @@
 
 <script type="module">
     // ==========================================
-    // 0. ПОДКЛЮЧЕНИЕ FIREBASE (ТВОЙ КЛЮЧ)
+    // FIREBASE ПОДКЛЮЧЕНИЕ (твои данные)
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCNeATf03rnrmofZAilQeEGUrREt06F3I8",
@@ -169,7 +169,7 @@
     const db = getDatabase(app);
 
     // ==========================================
-    // 1. ВКЛАДКИ
+    // ВКЛАДКИ И ДОХОД
     // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
@@ -183,7 +183,6 @@
             });
         });
 
-        // ЗАПУСК ДОХОДА (КАЖДУЮ СЕКУНДУ ОБНОВЛЯЕМ ТОП)
         setInterval(() => {
             let totalIncome = 0;
             gameData.equipped.forEach(id => {
@@ -195,13 +194,12 @@
                 saveGame();
                 updateUI();
             }
-            // Обновляем лидеров каждые 3 секунды (чтобы не перегружать базу данных)
             updateOnlineLeaderboard(totalIncome);
         }, 1000);
     });
 
     // ==========================================
-    // 2. ДАННЫЕ ИГРЫ
+    // ДАННЫЕ ИГРЫ
     // ==========================================
     
     const COMMON_CARDS = [
@@ -255,7 +253,7 @@
     ];
 
     // ==========================================
-    // 3. СОХРАНЕНИЕ И ЛОГИКА
+    // ЛОГИКА ИГРЫ
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], store: {}, storeTimer: 300 };
@@ -321,31 +319,44 @@
     };
 
     let selectedCardId = null;
-    function equipMultiple(cardId, count) {
+    
+    function equipOne(cardId) {
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
-        const available = gameData.cards[cardId] || 0;
-        if (available < count) { alert(`У вас только ${available} шт.`); return; }
-
-        for (let i = 0; i < count; i++) gameData.equipped.push(cardId);
-        saveGame();
-        renderCards(); updateUI();
-        closeModal();
-        alert(`Надено ${count} шт. ${card.name}!`);
+        if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
+            alert("У вас нет этой карты!");
+            return;
+        }
+        gameData.equipped.push(cardId);
+        saveGame(); renderCards(); updateUI(); closeModal();
+        alert(`Одета 1 шт. ${card.name}!`);
     }
 
-    function sellCard(cardId) {
+    function unequipOne(cardId) {
+        const idx = gameData.equipped.indexOf(cardId);
+        if (idx === -1) {
+            alert("Эта карта не надета!");
+            return;
+        }
+        gameData.equipped.splice(idx, 1);
+        saveGame(); renderCards(); updateUI(); closeModal();
+        alert(`Снята 1 шт. ${card.name}!`);
+    }
+
+    function sellOne(cardId) {
         const card = ALL_CARDS.find(c => c.id === cardId);
         if (!card) return;
-        if (gameData.cards[cardId] > 0) {
-            const sellPrice = Math.floor(card.price / 2);
-            gameData.cards[cardId]--;
-            gameData.balance += sellPrice;
-            const idx = gameData.equipped.indexOf(cardId);
-            if (idx !== -1) gameData.equipped.splice(idx, 1);
-            saveGame(); renderCards(); updateUI(); closeModal();
-            alert(`Вы продали ${card.name} за $${sellPrice}!`);
-        } else alert("У вас больше нет этой карты!");
+        if (gameData.cards[cardId] <= 0) {
+            alert("У вас нет этой карты для продажи!");
+            return;
+        }
+        const sellPrice = Math.floor(card.price / 2);
+        gameData.cards[cardId]--;
+        gameData.balance += sellPrice;
+        const idx = gameData.equipped.indexOf(cardId);
+        if (idx !== -1) gameData.equipped.splice(idx, 1);
+        saveGame(); renderCards(); updateUI(); closeModal();
+        alert(`Продана 1 шт. ${card.name} за $${sellPrice}!`);
     }
 
     window.openCardMenu = function(cardId) {
@@ -355,11 +366,11 @@
         const modal = document.getElementById('cardModal');
         document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
         document.getElementById('modalCardDesc').innerHTML = `💰 Цена: $${card.price}<br>📈 Доход: +$${card.income}/сек<br>📦 В наличии: ${gameData.cards[card.id] || 0} шт.`;
-        document.getElementById('modalEquipBtn1').onclick = () => equipMultiple(cardId, 1);
-        document.getElementById('modalEquipBtn2').onclick = () => equipMultiple(cardId, 2);
-        document.getElementById('modalEquipBtn3').onclick = () => equipMultiple(cardId, 3);
+        
+        document.getElementById('modalEquipBtn').onclick = () => equipOne(cardId);
+        document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
         document.getElementById('modalSellBtn').innerText = `Продать за $${Math.floor(card.price/2)}`;
-        document.getElementById('modalSellBtn').onclick = () => sellCard(cardId);
+        document.getElementById('modalSellBtn').onclick = () => sellOne(cardId);
         document.getElementById('modalCloseBtn').onclick = closeModal;
         modal.classList.add('active');
     };
@@ -367,29 +378,19 @@
     function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // 4. ОНЛАЙН ТАБЛИЦА ЛИДЕРОВ
+    // ОНЛАЙН ТОП
     // ==========================================
 
     let leaderboardReady = false;
-
     function updateOnlineLeaderboard(income) {
-        const playerName = localStorage.getItem('playerName') || 'Игрок';
-        const playerKey = localStorage.getItem('playerId') || 'anonymous';
-
-        if (!localStorage.getItem('playerId')) {
-            const newId = 'user_' + Date.now() + Math.floor(Math.random() * 1000);
-            localStorage.setItem('playerId', newId);
-        }
+        const playerKey = localStorage.getItem('playerId') || 'guest_' + Date.now();
+        if (!localStorage.getItem('playerId')) localStorage.setItem('playerId', playerKey);
 
         if (gameData.equipped.length > 0) {
             const myRef = ref(db, 'leaderboard/' + playerKey);
-            set(myRef, {
-                name: playerName,
-                income: income
-            }).catch(() => {});
+            set(myRef, { name: 'Игрок', income: income }).catch(() => {});
         }
 
-        // Читаем топ раз в 3 секунды
         if (!leaderboardReady) {
             leaderboardReady = true;
             const topRef = ref(db, 'leaderboard');
@@ -413,7 +414,7 @@
     }
 
     // ==========================================
-    // 5. ИНТЕРФЕЙС
+    // ОТРИСОВКА
     // ==========================================
 
     function updateUI() {
@@ -503,7 +504,7 @@
         container.appendChild(grid);
     }
 
-    // Инициализация
+    // Запуск
     renderShop();
     renderCards();
     updateUI();
