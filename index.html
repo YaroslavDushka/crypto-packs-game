@@ -171,8 +171,8 @@
             <div class="content-card">
                 <h2>₿ Криптовалюта</h2>
                 <div class="placeholder" style="padding:30px; text-align:center;">
-                    💰 Здесь будет раздел криптовалют<br>
-                    <span style="font-size:12px; color:#8892b0;">Следите за обновлениями!</span>
+                    <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
+                    <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
                 </div>
             </div>
         </div>
@@ -441,7 +441,7 @@
     function closeCardModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // СИСТЕМА АККАУНТОВ (ИСПРАВЛЕННАЯ!)
+    // СИСТЕМА АККАУНТОВ
     // ==========================================
 
     let currentUser = null;
@@ -503,7 +503,6 @@
                 return;
             }
             
-            // Создаём нового пользователя
             gameData.balance = 10;
             gameData.cards = {};
             gameData.equipped = [];
@@ -565,7 +564,9 @@
 
     function updateUI() {
         document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
-        document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
+        const cryptoElem = document.getElementById('cryptoBalance');
+        if (cryptoElem) cryptoElem.innerText = `$${Math.floor(gameData.balance)}`;
+        
         let totalIncome = 0;
         if (gameData.equipped && gameData.equipped.length > 0) {
             gameData.equipped.forEach(id => {
@@ -575,6 +576,10 @@
         }
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
         document.getElementById('yourBestScore').innerText = `$${totalIncome}/сек`;
+        
+        // Обновляем текст дохода во вкладке крипто
+        const cryptoDesc = document.querySelector('#crypto .placeholder span:last-child');
+        if (cryptoDesc) cryptoDesc.innerText = `Доход: +$${totalIncome} / сек`;
     }
 
     function renderProfile() {
