@@ -93,7 +93,7 @@
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
-            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой логин, чтобы загрузить прогресс<br>или оставь пустым для нового аккаунта</p>
+            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой логин или оставь пустым для нового</p>
             <input type="text" class="auth-input" id="loginInput" placeholder="Введи логин (никнейм)">
             <button class="auth-btn" id="authLoginBtn">🚀 Войти / Создать</button>
         </div>
@@ -190,6 +190,10 @@
                         </div>
                         <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;">
                         <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">📸 Загрузить аватарку</button>
+                        
+                        <div id="clockDisplay" style="margin-top:20px; font-size:18px; color:#ffb347; border-top:1px solid #2a3348; padding-top:20px;">
+                            🕒 Текущее время: <span id="currentTimeText">--:--:--</span>
+                        </div>
                         <div style="font-size:12px; color:#8892b0; margin-top:10px;">Все изменения сохраняются в облаке!</div>
                     </div>
                 </div>
@@ -561,6 +565,13 @@
             }
         }, 1000);
 
+        // ТАЙМЕР ТЕКУЩЕГО ВРЕМЕНИ В ПРОФИЛЕ
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ru-RU');
+            document.getElementById('currentTimeText').innerText = timeString;
+        }, 1000);
+
         function renderShop() {
             const container = document.getElementById('packsContainer');
             container.innerHTML = '';
@@ -658,20 +669,17 @@
         };
 
         // ==========================================
-        // АВТО-АККАУНТ И ВХОД
+        // ВХОД И ЗАГРУЗКА
         // ==========================================
 
-        // Функция входа / создания по логину
         document.getElementById('authLoginBtn').onclick = function() {
             let login = document.getElementById('loginInput').value.trim();
             
-            // Если поле пустое — создаём рандомный аккаунт
             if (!login) {
                 login = 'Игрок_' + Math.floor(Math.random() * 1000000);
             }
 
             loadCloudData(login, function(data) {
-                // Если аккаунт уже есть в облаке — загружаем
                 if (data) {
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
@@ -680,7 +688,6 @@
                     gameData.avatar = data.avatar || '👤';
                     gameData.name = data.name || login;
                 } else {
-                    // Создаём новый аккаунт
                     gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', name: login };
                     for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 }
@@ -693,7 +700,6 @@
             });
         };
 
-        // Автоматический вход при загрузке страницы
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser, function(data) {
@@ -716,7 +722,6 @@
             document.getElementById('authOverlay').style.display = 'flex';
         }
 
-        // Переименование профиля
         document.getElementById('profileRenameBtn').onclick = function() {
             const newName = document.getElementById('profileNameInput').value.trim();
             if (!newName) return;
@@ -726,7 +731,6 @@
             renderLeaderboard();
         };
 
-        // Загрузка аватарки
         document.getElementById('avatarUploadBtn').onclick = function() {
             document.getElementById('avatarUploadInput').click();
         };
