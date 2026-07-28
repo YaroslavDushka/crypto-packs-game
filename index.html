@@ -232,7 +232,7 @@
 
 <script type="module">
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ (НЕ МЕНЯЙ!)
+    // FIREBASE ПОДКЛЮЧЕНИЕ
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -251,7 +251,7 @@
     const db = getDatabase(app);
 
     // ==========================================
-    // ДАННЫЕ ИГРЫ (НЕ МЕНЯЙ!)
+    // ДАННЫЕ ИГРЫ
     // ==========================================
     
     const COMMON_CARDS = [
@@ -441,41 +441,53 @@
     function closeCardModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // СИСТЕМА АККАУНТОВ (ПАРОЛЬ И АВАТАРКА)
+    // СИСТЕМА АККАУНТОВ (ИСПРАВЛЕННАЯ!)
     // ==========================================
 
     let currentUser = null;
     let currentAvatarBase64 = '';
 
     async function loadCloudData(username) {
-        const userRef = ref(db, 'users/' + username);
-        const snapshot = await get(userRef);
-        if (snapshot.exists()) {
-            return snapshot.val();
+        try {
+            const userRef = ref(db, 'users/' + username);
+            const snapshot = await get(userRef);
+            if (snapshot.exists()) {
+                return snapshot.val();
+            }
+        } catch (e) {
+            console.error("Ошибка загрузки:", e);
         }
         return null;
     }
 
     async function saveCloudGame() {
         if (!currentUser) return;
-        const userRef = ref(db, 'users/' + currentUser);
-        await set(userRef, {
-            password: gameData.password || '',
-            balance: gameData.balance,
-            cards: gameData.cards,
-            equipped: gameData.equipped,
-            inventory: gameData.inventory,
-            avatar: gameData.avatar || ''
-        });
+        try {
+            const userRef = ref(db, 'users/' + currentUser);
+            await set(userRef, {
+                password: gameData.password || '',
+                balance: gameData.balance,
+                cards: gameData.cards || {},
+                equipped: gameData.equipped || [],
+                inventory: gameData.inventory || [],
+                avatar: gameData.avatar || ''
+            });
+        } catch (e) {
+            console.error("Ошибка сохранения:", e);
+        }
     }
 
     async function deleteAccount(username) {
-        const userRef = ref(db, 'users/' + username);
-        await remove(userRef);
-        localStorage.removeItem('cryptoGameData');
-        localStorage.removeItem('cachedUser');
-        currentUser = null;
-        location.reload();
+        try {
+            const userRef = ref(db, 'users/' + username);
+            await remove(userRef);
+            localStorage.removeItem('cryptoGameData');
+            localStorage.removeItem('cachedUser');
+            currentUser = null;
+            location.reload();
+        } catch (e) {
+            console.error("Ошибка удаления:", e);
+        }
     }
 
     function handleRegister() {
@@ -483,7 +495,6 @@
         const pass = document.getElementById('passInput').value.trim();
         if (!login || !pass) { alert("Введите логин и пароль!"); return; }
 
-        // Читаем превью аватарки
         let avatar = currentAvatarBase64;
 
         loadCloudData(login).then(data => {
@@ -492,6 +503,7 @@
                 return;
             }
             
+            // Создаём нового пользователя
             gameData.balance = 10;
             gameData.cards = {};
             gameData.equipped = [];
@@ -548,17 +560,19 @@
     }
 
     // ==========================================
-    // UI И ЛИДЕРБОРД
+    // UI
     // ==========================================
 
     function updateUI() {
         document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
         document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
         let totalIncome = 0;
-        gameData.equipped.forEach(id => {
-            let card = ALL_CARDS.find(c => c.id === id);
-            if (card) totalIncome += card.income;
-        });
+        if (gameData.equipped && gameData.equipped.length > 0) {
+            gameData.equipped.forEach(id => {
+                let card = ALL_CARDS.find(c => c.id === id);
+                if (card) totalIncome += card.income;
+            });
+        }
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
         document.getElementById('yourBestScore').innerText = `$${totalIncome}/сек`;
     }
@@ -596,20 +610,22 @@
     function renderInventory() {
         const equipContainer = document.getElementById('equipContainer');
         equipContainer.innerHTML = '';
-        gameData.equipped.forEach(cardId => {
-            const slot = document.createElement('div');
-            slot.className = 'equip-slot filled';
-            let card = ALL_CARDS.find(c => c.id === cardId);
-            if (card) {
-                slot.innerHTML = card.emoji;
-                slot.title = `Надета: ${card.name}`;
-            }
-            equipContainer.appendChild(slot);
-        });
+        if (gameData.equipped && gameData.equipped.length > 0) {
+            gameData.equipped.forEach(cardId => {
+                const slot = document.createElement('div');
+                slot.className = 'equip-slot filled';
+                let card = ALL_CARDS.find(c => c.id === cardId);
+                if (card) {
+                    slot.innerHTML = card.emoji;
+                    slot.title = `Надета: ${card.name}`;
+                }
+                equipContainer.appendChild(slot);
+            });
+        }
 
         const invCont = document.getElementById('invPacksContainer');
         invCont.innerHTML = '';
-        if (gameData.inventory.length === 0) {
+        if (!gameData.inventory || gameData.inventory.length === 0) {
             invCont.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:#8892b0;">У вас нет закрытых пакетов. Купите в магазине!</div>`;
         } else {
             gameData.inventory.forEach((packId, index) => {
@@ -626,14 +642,16 @@
         const container = document.getElementById('cardsContainer');
         container.innerHTML = '';
         let has = false;
-        for (let k in gameData.cards) if (gameData.cards[k] > 0) has = true;
+        if (gameData.cards) {
+            for (let k in gameData.cards) if (gameData.cards[k] > 0) has = true;
+        }
         if (!has) { 
             container.innerHTML = `<div class="placeholder" style="padding:30px; text-align:center;">📭 У вас пока нет открытых карт.</div>`; 
             return; 
         }
         const grid = document.createElement('div'); grid.className = 'cards-grid';
         ALL_CARDS.forEach(card => {
-            if ((gameData.cards[card.id] || 0) > 0) {
+            if (gameData.cards && (gameData.cards[card.id] || 0) > 0) {
                 const item = document.createElement('div'); 
                 item.className = `card-item rarity-${card.rarity}`;
                 let imgHtml = `<span class="card-img">${card.emoji}</span>`;
@@ -717,6 +735,7 @@
         }
     });
 
+    // Таймер
     setInterval(() => {
         if (gameData.storeTimer > 0) {
             gameData.storeTimer--;
@@ -728,12 +747,15 @@
         }
     }, 1000);
 
+    // Доход
     setInterval(() => {
         let totalIncome = 0;
-        gameData.equipped.forEach(id => {
-            let card = ALL_CARDS.find(c => c.id === id);
-            if (card) totalIncome += card.income;
-        });
+        if (gameData.equipped && gameData.equipped.length > 0) {
+            gameData.equipped.forEach(id => {
+                let card = ALL_CARDS.find(c => c.id === id);
+                if (card) totalIncome += card.income;
+            });
+        }
         if (totalIncome > 0) {
             gameData.balance = (gameData.balance || 0) + totalIncome;
             saveLocalGame(); saveCloudGame();
@@ -741,6 +763,7 @@
         }
     }, 1000);
 
+    // Вкладки
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
@@ -753,7 +776,7 @@
             });
         });
 
-        // Автоматический вход при запуске
+        // Автоматический вход
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser).then(data => {
