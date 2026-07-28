@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки - Магазин</title>
+    <title>Крипто-паки - Новая экономика</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -54,16 +54,29 @@
 
         /* КАРТЫ В КОЛЛЕКЦИИ */
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; display: flex; flex-direction: column; align-items: center; }
+        .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: 0.2s; }
+        .card-item:hover { border-color: #64ffda; }
         .card-item img { width: 60px; height: 60px; object-fit: contain; border-radius: 8px; margin-bottom: 4px; background: #0b0e1a; }
         .card-item .card-img { font-size: 40px; display: block; margin-bottom: 4px; }
         .card-item .card-count { font-size: 12px; color: #8892b0; margin-bottom: 6px; }
         .card-item .card-income { font-size: 11px; color: #64ffda; font-weight: bold; margin-bottom: 6px; }
+        .card-item .card-price { font-size: 11px; color: #f7931a; margin-bottom: 6px; }
         
-        /* ЭКИПИРОВКА */
-        .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; }
+        /* ЭКИПИРОВКА (БЕЗ ОГРАНИЧЕНИЙ) */
+        .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; min-height: 70px; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
+
+        /* ВСПЛЫВАЮЩЕЕ МЕНЮ (ПРИ КЛИКЕ НА КАРТУ) */
+        .card-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 999; }
+        .card-modal.active { display: flex; }
+        .modal-content { background: #1a2133; padding: 24px; border-radius: 20px; max-width: 320px; width: 90%; border: 1px solid #2a3348; text-align: center; }
+        .modal-content h3 { font-size: 20px; margin-bottom: 12px; }
+        .modal-content p { font-size: 14px; color: #8892b0; margin-bottom: 16px; }
+        .modal-btn { display: block; width: 100%; background: #2a3348; border: none; color: #fff; padding: 12px; border-radius: 12px; font-size: 16px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+        .modal-btn:hover { background: #64ffda; color: #000; }
+        .modal-btn.close-btn { background: #4a1a1a; color: #ff6b6b; }
+        .modal-btn.close-btn:hover { background: #ff6b6b; color: #fff; }
 
         /* ПОДВАЛ */
         .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
@@ -110,6 +123,17 @@
         <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
     </div>
 
+    <!-- ВСПЛЫВАЮЩЕЕ МЕНЮ ДЛЯ КАРТ -->
+    <div class="card-modal" id="cardModal">
+        <div class="modal-content">
+            <h3 id="modalCardTitle">Название карты</h3>
+            <p id="modalCardDesc">Информация о карте</p>
+            <button class="modal-btn" id="modalEquipBtn">Надеть</button>
+            <button class="modal-btn" id="modalSellBtn">Продать за $0</button>
+            <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
+        </div>
+    </div>
+
     <div class="tabs-bottom" id="tabBar">
         <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
         <button class="tab-btn" data-tab="cards"><span class="icon">🃏</span><span class="label">Карты</span></button>
@@ -133,7 +157,7 @@
             });
         });
 
-        // ЗАПУСКАЕМ ДОХОД
+        // ДОХОД КАЖДУЮ СЕКУНДУ
         setInterval(() => {
             let totalIncome = 0;
             gameData.equipped.forEach(id => {
@@ -149,9 +173,10 @@
     });
 
     // ==========================================
-    // 1. ДАННЫЕ
+    // 1. ДАННЫЕ (ПЕРЕСТАВЛЕНЫ ПО ТВОЕЙ ПРОСЬБЕ)
     // ==========================================
     
+    // Обычные (дешёвые карты)
     const COMMON_CARDS = [
         { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 10, income: 1, dropRate: 0.35 },
         { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'пепе/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 15, income: 2, dropRate: 0.30 },
@@ -160,44 +185,51 @@
         { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 40, income: 10, dropRate: 0.05 }
     ];
 
+    // СМЕРТЕЛЬНЫЕ (САМЫЕ РЕДКИЕ, $50,000) - Только 3 главные карты
     const DEADLY_CARDS = [
-        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, income: 75, dropRate: 0.40 },
-        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, income: 60, dropRate: 0.30 },
-        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'deadly', price: 90, income: 45, dropRate: 0.20 },
-        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'deadly', price: 60, income: 30, dropRate: 0.08 },
-        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, income: 20, dropRate: 0.02 }
+        { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'deadly', price: 150, income: 600, dropRate: 0.40 },
+        { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'deadly', price: 120, income: 500, dropRate: 0.35 },
+        { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'deadly', price: 40, income: 400, dropRate: 0.25 }
     ];
 
-    const EPIC_CARDS = [
-        { id: 'bmw_x5', name: 'BMW X5', img: 'бмв/bmw_x5.png', emoji: '🏎️', rarity: 'epic', price: 150, income: 150 },
-        { id: 'bmw_m5', name: 'BMW M5', img: 'бмв/bmw_m5.png', emoji: '💨', rarity: 'epic', price: 150, income: 150 },
-        { id: 'bmw_i8', name: 'BMW i8', img: 'бмв/bmw_i8.png', emoji: '⚡', rarity: 'epic', price: 150, income: 150 },
-        { id: 'bmw_5_series', name: 'THE 5 Series', img: 'бмв/bmw_5_series.png', emoji: '🌃', rarity: 'epic', price: 150, income: 150 },
-        { id: 'bmw_m5_2026', name: '2026 BMW M5', img: 'бмв/bmw_m5_2026.png', emoji: '🏁', rarity: 'epic', price: 150, income: 150 },
-        { id: 'tea_despair', name: 'Отчаяние', img: 'чай/tea_despair.png', emoji: '🍵', rarity: 'epic', price: 50, income: 25 },
-        { id: 'tea_cat', name: 'Кот и Чай', img: 'чай/tea_cat.png', emoji: '🐈', rarity: 'epic', price: 50, income: 25 },
-        { id: 'tea_black_cat', name: 'Пойдем пить чай', img: 'чай/tea_black_cat.png', emoji: '🐈‍⬛', rarity: 'epic', price: 50, income: 25 },
-        { id: 'tea_poseidon', name: 'Посейдон', img: 'чай/tea_poseidon.png', emoji: '🌊', rarity: 'epic', price: 50, income: 25 },
-        { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'epic', price: 50, income: 25 }
-    ];
-
+    // ЛЕГЕНДАРНЫЕ ($10,000) - Новые мемы + оставшиеся 2 скелета
     const LEGENDARY_CARDS = [
-        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'legendary', price: 200, income: 400 },
-        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'legendary', price: 200, income: 400 },
-        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'legendary', price: 200, income: 400 },
-        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'legendary', price: 200, income: 400 },
-        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'legendary', price: 200, income: 400 }
+        { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
+        { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
+        { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
+        { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
+        { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'legendary', price: 200, income: 500, dropRate: 0.20 },
+        { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 90, income: 300, dropRate: 0.20 }, // Оставил только этого
+        { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 60, income: 300, dropRate: 0.20 }
     ];
 
-    const ALL_CARDS = [...LEGENDARY_CARDS, ...EPIC_CARDS, ...DEADLY_CARDS, ...COMMON_CARDS];
+    // Эпические (BMW)
+    const EPIC_CARDS = [
+        { id: 'bmw_x5', name: 'BMW X5', img: 'бмв/bmw_x5.png', emoji: '🏎️', rarity: 'epic', price: 150, income: 150, dropRate: 0.20 },
+        { id: 'bmw_m5', name: 'BMW M5', img: 'бмв/bmw_m5.png', emoji: '💨', rarity: 'epic', price: 150, income: 150, dropRate: 0.20 },
+        { id: 'bmw_i8', name: 'BMW i8', img: 'бмв/bmw_i8.png', emoji: '⚡', rarity: 'epic', price: 150, income: 150, dropRate: 0.20 },
+        { id: 'bmw_5_series', name: 'THE 5 Series', img: 'бмв/bmw_5_series.png', emoji: '🌃', rarity: 'epic', price: 150, income: 150, dropRate: 0.20 },
+        { id: 'bmw_m5_2026', name: '2026 BMW M5', img: 'бмв/bmw_m5_2026.png', emoji: '🏁', rarity: 'epic', price: 150, income: 150, dropRate: 0.20 }
+    ];
 
-    // ПАКЕТЫ И ЦЕНЫ (Обычный стоит $10)
+    // Редкие (ЧАЙ)
+    const RARE_CARDS = [
+        { id: 'tea_despair', name: 'Отчаяние', img: 'чай/tea_despair.png', emoji: '🍵', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 },
+        { id: 'tea_cat', name: 'Кот и Чай', img: 'чай/tea_cat.png', emoji: '🐈', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 },
+        { id: 'tea_black_cat', name: 'Пойдем пить чай', img: 'чай/tea_black_cat.png', emoji: '🐈‍⬛', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 },
+        { id: 'tea_poseidon', name: 'Посейдон', img: 'чай/tea_poseidon.png', emoji: '🌊', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 },
+        { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'rare', price: 50, income: 25, dropRate: 0.20 }
+    ];
+
+    const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
+
+    // ПАКЕТЫ
     const PACK_DATA = [
         { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS },
-        { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: [] },
-        { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 2500, drops: DEADLY_CARDS },
+        { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS },
         { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 2, price: 6700, drops: EPIC_CARDS },
-        { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS }
+        { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS },
+        { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 50000, drops: DEADLY_CARDS }
     ];
 
     // ==========================================
@@ -222,7 +254,6 @@
     function generateStore() {
         gameData.store = {};
         gameData.storeTimer = 300; // 5 минут
-        // Для каждого типа пакета генерируем 0-3 штуки
         PACK_DATA.forEach(p => {
             let count = Math.floor(Math.random() * 4); // 0, 1, 2 или 3
             gameData.store[p.id] = count;
@@ -240,22 +271,19 @@
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
         
-        // Проверяем наличие в магазине
         if (!gameData.store[packId] || gameData.store[packId] <= 0) {
             alert("Этого пакета нет в наличии! Подождите обновления магазина.");
             return;
         }
-        // Проверяем деньги (обычный стоит $10)
         if (gameData.balance < pack.price) {
             alert(`Не хватает денег! Нужно $${pack.price}`);
             return;
         }
         if (pack.drops.length === 0) {
-            alert("Этот пакет пока пуст! Загляни в другие.");
+            alert("Этот пакет пуст!");
             return;
         }
 
-        // Списание денег и уменьшение количества
         gameData.balance -= pack.price;
         gameData.store[packId]--;
 
@@ -289,9 +317,57 @@
         alert(msg);
     }
 
-    // Экипировка
+    // МОДАЛЬНОЕ ОКНО
+    let selectedCardId = null;
+    window.openCardMenu = function(cardId) {
+        selectedCardId = cardId;
+        const card = ALL_CARDS.find(c => c.id === cardId);
+        if (!card) return;
+
+        const modal = document.getElementById('cardModal');
+        document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
+        document.getElementById('modalCardDesc').innerHTML = `💰 Цена: $${card.price}<br>📈 Доход: +$${card.income}/сек<br>📦 В наличии: ${gameData.cards[card.id]} шт.`;
+        
+        const equipBtn = document.getElementById('modalEquipBtn');
+        if (gameData.equipped.includes(cardId)) {
+            equipBtn.innerText = 'Снять с экипировки';
+            equipBtn.onclick = () => { unequipCard(cardId); closeModal(); };
+        } else {
+            equipBtn.innerText = 'Надеть';
+            equipBtn.onclick = () => { equipCard(cardId); closeModal(); };
+        }
+
+        const sellPrice = Math.floor(card.price / 2);
+        document.getElementById('modalSellBtn').innerText = `Продать за $${sellPrice}`;
+        document.getElementById('modalSellBtn').onclick = () => { sellCard(cardId); closeModal(); };
+
+        document.getElementById('modalCloseBtn').onclick = closeModal;
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('cardModal').classList.remove('active');
+    }
+
+    function sellCard(cardId) {
+        const card = ALL_CARDS.find(c => c.id === cardId);
+        if (!card) return;
+        if (gameData.cards[cardId] > 0) {
+            const sellPrice = Math.floor(card.price / 2);
+            gameData.cards[cardId]--;
+            gameData.balance += sellPrice;
+            if (gameData.equipped.includes(cardId)) {
+                gameData.equipped = gameData.equipped.filter(id => id !== cardId);
+            }
+            saveGame();
+            renderCards();
+            updateUI();
+            alert(`Вы продали ${card.name} за $${sellPrice}!`);
+        }
+    }
+
+    // Экипировка (теперь без ограничений)
     function equipCard(cardId) {
-        if (gameData.equipped.length >= 10) { alert("Максимум 10 карт!"); return; }
         if (gameData.equipped.includes(cardId)) return;
         gameData.equipped.push(cardId);
         saveGame(); renderCards(); updateUI();
@@ -299,10 +375,6 @@
     function unequipCard(cardId) {
         gameData.equipped = gameData.equipped.filter(id => id !== cardId);
         saveGame(); renderCards(); updateUI();
-    }
-    window.toggleEquip = function(cardId) {
-        if (gameData.equipped.includes(cardId)) unequipCard(cardId);
-        else equipCard(cardId);
     }
 
     // ==========================================
@@ -321,7 +393,7 @@
         document.querySelector('#crypto .placeholder span:last-child').innerText = `Доход: +$${totalIncome} / сек`;
     }
 
-    // Обработчик таймера (вызывается каждую секунду)
+    // Таймер
     setInterval(() => {
         if (gameData.storeTimer > 0) {
             gameData.storeTimer--;
@@ -340,21 +412,18 @@
     function renderShop() {
         const container = document.getElementById('packsContainer');
         container.innerHTML = '';
-        // Сортируем пакеты (чтобы обычный был в самом низу, как раньше)
         let sorted = [...PACK_DATA].sort((a,b) => a.order - b.order);
         
         sorted.forEach(pack => {
             const count = gameData.store[pack.id] || 0;
             const card = document.createElement('div');
             card.className = `pack-card rarity-${pack.rarity}`;
-            const priceText = `$${pack.price}`;
-            
             card.innerHTML = `
                 <div class="chance-btn" onclick="event.stopPropagation(); showChances('${pack.id}')">!</div>
                 <img src="${pack.img}" onerror="this.remove()">
                 <div class="pack-name">${pack.name}</div>
                 <div class="pack-rarity">${pack.rarity.toUpperCase()}</div>
-                <div class="pack-price">${priceText}</div>
+                <div class="pack-price">$${pack.price}</div>
                 <div class="pack-count">В наличии: ${count} шт.</div>
             `;
             card.onclick = () => openPack(pack.id);
@@ -368,21 +437,16 @@
         const equipContainer = document.getElementById('equipContainer');
         
         equipContainer.innerHTML = '';
-        for (let i = 0; i < 10; i++) {
+        gameData.equipped.forEach(cardId => {
             const slot = document.createElement('div');
-            slot.className = 'equip-slot';
-            const equippedCardId = gameData.equipped[i];
-            if (equippedCardId) {
-                let card = ALL_CARDS.find(c => c.id === equippedCardId);
-                if (card) {
-                    slot.classList.add('filled');
-                    slot.innerHTML = card.emoji;
-                    slot.title = `Снять ${card.name}`;
-                    slot.onclick = () => unequipCard(card.id);
-                }
+            slot.className = 'equip-slot filled';
+            let card = ALL_CARDS.find(c => c.id === cardId);
+            if (card) {
+                slot.innerHTML = card.emoji;
+                slot.title = `Надета: ${card.name}`;
             }
             equipContainer.appendChild(slot);
-        }
+        });
 
         let has = false;
         for (let k in gameData.cards) if (gameData.cards[k] > 0) has = true;
@@ -404,11 +468,10 @@
                     ${imgHtml}
                     <div style="font-size:12px">${card.name}</div>
                     <div class="card-income">+$${card.income}/сек</div>
+                    <div class="card-price">💰 $${card.price}</div>
                     <div class="card-count">${gameData.cards[card.id]} шт.</div>
-                    <button class="btn-equip ${gameData.equipped.includes(card.id) ? 'equipped' : ''}" onclick="toggleEquip('${card.id}')" style="background:#2a3348; border:none; color:#fff; padding:4px 8px; border-radius:8px; font-size:10px; cursor:pointer; width:100%; margin-top:4px;">
-                        ${gameData.equipped.includes(card.id) ? 'Снять' : 'Надеть'}
-                    </button>
                 `;
+                item.onclick = () => openCardMenu(card.id);
                 grid.appendChild(item);
             }
         });
