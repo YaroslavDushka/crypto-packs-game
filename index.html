@@ -106,7 +106,7 @@
             <div class="content-card">
                 <h2>🏆 Лидеры</h2>
                 <div id="leadersContainer" style="text-align:center; padding:10px 0;">
-                    <div style="font-size:14px; color:#8892b0;">Таблица лидеров доступна только в онлайн-версии</div>
+                    <div id="onlineTopList" style="padding:10px; width:100%;"></div>
                 </div>
             </div>
         </div>
@@ -145,7 +145,26 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+    // ==========================================
+    // FIREBASE ПОДКЛЮЧЕНИЕ (ТОЛЬКО ДЛЯ ТОПА)
+    // ==========================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNeATf03rnrmofZAilQeEGUrREt06F3I8",
+      authDomain: "cryptopacks-798d3.firebaseapp.com",
+      projectId: "cryptopacks-798d3",
+      storageBucket: "cryptopacks-798d3.firebasestorage.app",
+      messagingSenderId: "243185920568",
+      appId: "1:243185920568:web:a619151012e40e0e15d4cd",
+      measurementId: "G-EY0K2YKD6T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     // ==========================================
     // ДАННЫЕ ИГРЫ
     // ==========================================
@@ -200,10 +219,12 @@
     ];
 
     // ==========================================
-    // ЛОГИКА ИГРЫ
+    // ЛОГИКА ИГРЫ (БЕЗ АККАУНТОВ, ТОЛЬКО LOCALSTORAGE)
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
+    let playerId = localStorage.getItem('cryptoPlayerId') || 'player_' + Date.now();
+    localStorage.setItem('cryptoPlayerId', playerId);
     
     function loadLocalGame() {
         let data = localStorage.getItem('cryptoGameData');
@@ -451,6 +472,44 @@
     };
 
     // ==========================================
+    // ОНЛАЙН ТОП (FIREBASE)
+    // ==========================================
+
+    function renderLeaders() {
+        const myIncome = gameData.equipped.reduce((sum, id) => {
+            let card = ALL_CARDS.find(c => c.id === id);
+            return sum + (card ? card.income : 0);
+        }, 0);
+
+        // Отправляем свой доход в Firebase
+        const myRef = ref(db, 'leaderboard/' + playerId);
+        set(myRef, { income: myIncome });
+
+        // Слушаем всех игроков
+        const topRef = ref(db, 'leaderboard');
+        onValue(topRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            let allPlayers = [];
+            for (let key in data) {
+                let p = data[key];
+                allPlayers.push({ name: 'Игрок ' + key.slice(-4), income: p.income || 0 });
+            }
+            const sorted = allPlayers.sort((a,b) => b.income - a.income).slice(0, 10);
+            const container = document.getElementById('onlineTopList');
+            let html = `<h3 style="color:#64ffda; margin-bottom:10px;">🏆 Топ игроков</h3>`;
+            sorted.forEach((player, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
+                html += `<div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #2a3348;">
+                            <span>${medal} ${player.name}</span>
+                            <span style="color:#ffd700;">$${player.income}/сек</span>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        });
+    }
+
+    // ==========================================
     // ТАЙМЕР И ДОХОД
     // ==========================================
 
@@ -477,6 +536,7 @@
             gameData.balance = (gameData.balance || 0) + totalIncome;
             saveLocalGame();
             updateUI();
+            renderLeaders(); // Обновляем топ
         }
     }, 1000);
 
@@ -501,6 +561,7 @@
         renderShop();
         renderInventory();
         updateUI();
+        renderLeaders();
     });
 </script>
 </body>
