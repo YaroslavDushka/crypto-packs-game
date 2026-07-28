@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки - Скелеты</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -21,7 +21,7 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
-        /* МАГАЗИН - ПАКЕТЫ С КАРТИНКАМИ (БЕСПЛАТНО) */
+        /* МАГАЗИН - ПАКЕТЫ С КАРТИНКАМИ */
         .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .pack-card { background: #111722; border-radius: 16px; padding: 16px; text-align: center; border: 2px solid #2a3348; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; position: relative; }
         .pack-card:active { transform: scale(0.95); }
@@ -35,19 +35,28 @@
         .rarity-legendary .pack-rarity { background: #ffd700; color: #000; }
         .rarity-epic { border-color: #a855f7 !important; background: #1a0b2e !important; }
         .rarity-epic .pack-rarity { background: #a855f7; color: #fff; }
-        .rarity-deadly { border-color: #ef4444 !important; background: #2a0a0a !important; }
+        .rarity-deadly { border-color: #ef4444 !important; background: #1a0808 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
         .rarity-deadly .pack-rarity { background: #ef4444; color: #fff; }
         .rarity-rare { border-color: #3b82f6 !important; background: #0b1a2e !important; }
         .rarity-rare .pack-rarity { background: #3b82f6; color: #fff; }
         .rarity-common { border-color: #6b7280 !important; }
         .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
 
-        /* КАРТЫ В КОЛЛЕКЦИИ */
+        /* КАРТЫ В КОЛЛЕКЦИИ И ЭКИПИРОВКА */
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .card-item { background: #111722; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #2a3348; }
+        .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; position: relative; display: flex; flex-direction: column; align-items: center; }
         .card-item .card-img { font-size: 40px; display: block; margin-bottom: 4px; }
-        .card-item .card-count { font-size: 12px; color: #8892b0; }
-        
+        .card-item .card-count { font-size: 12px; color: #8892b0; margin-bottom: 6px; }
+        .card-item .btn-equip { background: #2a3348; border: none; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 10px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 4px; }
+        .card-item .btn-equip:hover { background: #64ffda; color: #000; }
+        .card-item .btn-equip.equipped { background: #64ffda; color: #000; }
+
+        /* ЭКИПИРОВКА (10 слотов) */
+        .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; }
+        .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; cursor: pointer; transition: 0.2s; }
+        .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
+        .equip-slot.filled:hover { background: #ef4444; border-color: #ef4444; }
+
         /* ПОДВАЛ */
         .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
         .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; background: transparent; border: none; color: #8892b0; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; gap: 2px; padding-top: 6px; border-radius: 12px; }
@@ -74,6 +83,10 @@
         <div class="tab-pane" id="cards">
             <div class="content-card">
                 <h2>🃏 Мои карты</h2>
+                
+                <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка (0/10)</h3>
+                <div class="equip-slots" id="equipContainer"></div>
+
                 <div id="cardsContainer">
                     <div class="placeholder" style="text-align:center; padding: 30px 0; border: 2px dashed #2a3348; border-radius: 16px; background: #101826;">
                         <span style="font-size:40px; display:block;">📭</span>
@@ -83,19 +96,10 @@
             </div>
         </div>
 
-        <!-- КРИПТОВАЛЮТА (просто раздел без монет) -->
-        <div class="tab-pane" id="crypto">
-            <div class="content-card">
-                <h2>₿ Криптовалюта</h2>
-                <div class="placeholder" style="padding:30px; text-align:center;">
-                    Здесь будет информация<br>о криптовалюте и курсах.
-                </div>
-            </div>
-        </div>
-
-        <!-- Остальные вкладки (заглушки) -->
+        <!-- Остальные вкладки -->
         <div class="tab-pane" id="leaders"><div class="content-card"><h2>🏆 Лидеры</h2><div class="placeholder" style="padding:30px; text-align:center;">Скоро будет рейтинг!</div></div></div>
         <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="padding:30px; text-align:center;">Скоро здесь будет биржа!</div></div></div>
+        <div class="tab-pane" id="crypto"><div class="content-card"><h2>₿ Криптовалюта</h2><div class="placeholder" style="padding:30px; text-align:center;">Здесь будет информация о курсах.</div></div></div>
         <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="padding:30px; text-align:center;">Игровые достижения в разработке!</div></div></div>
     </div>
 
@@ -113,31 +117,49 @@
     // 1. ДАННЫЕ ИГРЫ
     // ==========================================
     
+    // Обычные карты
     const ALL_CARDS = [
-        { id: 'tsum', name: 'Пакет ЦУМ', emoji: '🛍️', rarity: 'legendary' },
-        { id: 'bmw', name: 'Пакет BMW', emoji: '👜', rarity: 'epic' },
-        { id: 'skull', name: 'Череп', emoji: '💀', rarity: 'deadly' },
-        { id: 'tea', name: 'Чайный пакетик', emoji: '🫖', rarity: 'rare' },
-        { id: 'pepe', name: 'Pepe', emoji: '🐸', rarity: 'common' }
+        { id: 'tsum', name: 'Пакет ЦУМ', emoji: '🛍️', rarity: 'legendary', price: 200 },
+        { id: 'bmw', name: 'Пакет BMW', emoji: '👜', rarity: 'epic', price: 100 },
+        { id: 'skull', name: 'Череп', emoji: '💀', rarity: 'deadly', price: 50 },
+        { id: 'tea', name: 'Чайный пакетик', emoji: '🫖', rarity: 'rare', price: 30 },
+        { id: 'pepe', name: 'Pepe', emoji: '🐸', rarity: 'common', price: 10 }
     ];
 
-    // Картинки загружаются из папки с игрой
+    // НОВЫЕ СМЕРТЕЛЬНЫЕ КАРТЫ (выпадают только из Смертельного пакета)
+    const DEADLY_CARDS = [
+        { id: 'skull_meme', name: 'Интернет помнит всё', emoji: '🖤', rarity: 'deadly', price: 150, dropRate: 0.40 },
+        { id: 'skull_moon', name: 'Помни о смерти', emoji: '🌙', rarity: 'deadly', price: 120, dropRate: 0.30 },
+        { id: 'skull_wait', name: 'Кто следующий?', emoji: '⏳', rarity: 'deadly', price: 90, dropRate: 0.20 },
+        { id: 'skull_finger', name: 'Крутые скелеты', emoji: '🖕', rarity: 'deadly', price: 60, dropRate: 0.08 },
+        { id: 'skull_fh', name: 'Фулл хаус', emoji: '🃏', rarity: 'deadly', price: 40, dropRate: 0.02 } // Самая редкая
+    ];
+
+    // Пакеты (добавлен восклицательный знак и поле для описания шансов)
     const PACKS = [
-        { id: 'pack1', name: 'Легендарный пакет', img: 'pack_legendary.png', rarity: 'legendary', order: 1 },
-        { id: 'pack2', name: 'Эпический пакет', img: 'pack_epic.png', rarity: 'epic', order: 2 },
-        { id: 'pack3', name: 'Смертельный пакет', img: 'pack_deadly.png', rarity: 'deadly', order: 3 },
-        { id: 'pack4', name: 'Редкий пакет', img: 'pack_rare.png', rarity: 'rare', order: 4 },
-        { id: 'pack5', name: 'Обычный пакет', img: 'pack_common.png', rarity: 'common', order: 5 }
+        { id: 'pack1', name: 'Легендарный пакет!', img: 'pack_legendary.png', rarity: 'legendary', order: 1, 
+          drops: ALL_CARDS.filter(c => c.rarity === 'legendary') },
+        { id: 'pack2', name: 'Эпический пакет!', img: 'pack_epic.png', rarity: 'epic', order: 2,
+          drops: ALL_CARDS.filter(c => c.rarity === 'epic') },
+        { id: 'pack3', name: 'Смертельный пакет!', img: 'pack_deadly.png', rarity: 'deadly', order: 3,
+          drops: DEADLY_CARDS },
+        { id: 'pack4', name: 'Редкий пакет!', img: 'pack_rare.png', rarity: 'rare', order: 4,
+          drops: ALL_CARDS.filter(c => c.rarity === 'rare') },
+        { id: 'pack5', name: 'Обычный пакет!', img: 'pack_common.png', rarity: 'common', order: 5,
+          drops: ALL_CARDS.filter(c => c.rarity === 'common') }
     ];
 
     // ==========================================
-    // 2. СОХРАНЕНИЕ (LocalStorage)
+    // 2. СОХРАНЕНИЕ
     // ==========================================
 
     function getSaveData() {
         let data = localStorage.getItem('cryptoGameData');
         if (data) return JSON.parse(data);
-        return { cards: {} };
+        return { 
+            cards: {}, // Все карты
+            equipped: [] // Экипированные карты (макс 10)
+        };
     }
 
     function saveGame() {
@@ -147,17 +169,36 @@
     let gameData = getSaveData();
 
     // ==========================================
-    // 3. БЕСПЛАТНОЕ ОТКРЫТИЕ ПАКЕТОВ
+    // 3. ЛОГИКА ИГРЫ
     // ==========================================
 
     function openPack(packId) {
         const pack = PACKS.find(p => p.id === packId);
         if (!pack) return;
 
-        let possibleCards = ALL_CARDS.filter(c => c.rarity === pack.rarity);
-        if (possibleCards.length === 0) possibleCards = ALL_CARDS.filter(c => c.rarity === 'common');
+        let randomCard;
 
-        const randomCard = possibleCards[Math.floor(Math.random() * possibleCards.length)];
+        // Если это Смертельный пакет, выбираем из списка Смертельных карт с учётом шансов
+        if (pack.rarity === 'deadly') {
+            let rand = Math.random();
+            let cumulative = 0;
+            let shuffled = [...DEADLY_CARDS].sort(() => Math.random() - 0.5);
+            
+            for (let card of shuffled) {
+                cumulative += card.dropRate;
+                if (rand <= cumulative) {
+                    randomCard = card;
+                    break;
+                }
+            }
+            if (!randomCard) randomCard = shuffled[shuffled.length - 1];
+            
+        } else {
+            // Для остальных пакетов
+            let possibleCards = ALL_CARDS.filter(c => c.rarity === pack.rarity);
+            if (possibleCards.length === 0) possibleCards = ALL_CARDS.filter(c => c.rarity === 'common');
+            randomCard = possibleCards[Math.floor(Math.random() * possibleCards.length)];
+        }
 
         if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
         gameData.cards[randomCard.id]++;
@@ -165,7 +206,60 @@
         saveGame();
         renderCards();
 
-        alert(`Вы открыли пакет и получили: ${randomCard.emoji} ${randomCard.name}!`);
+        alert(`Вы открыли пакет и получили: ${randomCard.emoji} ${randomCard.name}!\nЦена продажи: ${randomCard.price} монет`);
+    }
+
+    // Экипировать карту
+    function equipCard(cardId) {
+        if (gameData.equipped.length >= 10) {
+            alert("У вас уже экипировано 10 карт! Снимите одну, чтобы надеть новую.");
+            return;
+        }
+        if (gameData.equipped.includes(cardId)) {
+            return; // Уже надета
+        }
+        gameData.equipped.push(cardId);
+        saveGame();
+        renderCards();
+    }
+
+    // Снять карту с экипировки
+    function unequipCard(cardId) {
+        gameData.equipped = gameData.equipped.filter(id => id !== cardId);
+        saveGame();
+        renderCards();
+    }
+
+    // Функция переключения (надеть/снять)
+    window.toggleEquip = function(cardId) {
+        if (gameData.equipped.includes(cardId)) {
+            unequipCard(cardId);
+        } else {
+            equipCard(cardId);
+        }
+    }
+
+    // Показать шансы выпадения пакета
+    window.showDropRates = function(packId) {
+        const pack = PACKS.find(p => p.id === packId);
+        if (!pack) return;
+
+        let message = `📦 Шансы выпадения из ${pack.name}:\n\n`;
+        
+        if (pack.rarity === 'deadly') {
+            // Для смертельного пакета выводим проценты
+            DEADLY_CARDS.forEach(card => {
+                message += `${card.emoji} ${card.name}: ${(card.dropRate * 100).toFixed(0)}%\n`;
+            });
+        } else {
+            // Для обычных пакетов шанс равномерный
+            const count = pack.drops.length;
+            const chance = (100 / count).toFixed(1);
+            pack.drops.forEach(card => {
+                message += `${card.emoji} ${card.name}: ${chance}%\n`;
+            });
+        }
+        alert(message);
     }
 
     // ==========================================
@@ -186,9 +280,12 @@
                 <div class="pack-emoji" style="font-size:50px; display:none;">${pack.rarity === 'legendary' ? '🌟' : pack.rarity === 'epic' ? '💜' : pack.rarity === 'deadly' ? '☠️' : pack.rarity === 'rare' ? '🔵' : '🟤'}</div>
                 <div class="pack-name">${pack.name}</div>
                 <div class="pack-rarity">${pack.rarity.toUpperCase()}</div>
-                <div style="font-size:11px; color:#8892b0; margin-top:6px;">Нажми, чтобы открыть</div>
+                <div style="font-size:11px; color:#8892b0; margin-top:6px;">👆 Нажми открыть</div>
             `;
+            // Двойной клик для шансов, одиночный для открытия
             card.onclick = () => openPack(pack.id);
+            card.ondblclick = () => showDropRates(pack.id);
+            
             container.appendChild(card);
         });
     }
@@ -196,7 +293,31 @@
     function renderCards() {
         const container = document.getElementById('cardsContainer');
         container.innerHTML = '';
+        const equipContainer = document.getElementById('equipContainer');
 
+        // Обновляем слоты экипировки
+        equipContainer.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'equip-slot';
+            
+            const equippedCardId = gameData.equipped[i];
+            if (equippedCardId) {
+                let card = ALL_CARDS.find(c => c.id === equippedCardId);
+                if (!card) card = DEADLY_CARDS.find(c => c.id === equippedCardId);
+                
+                if (card) {
+                    slot.classList.add('filled');
+                    slot.innerHTML = card.emoji;
+                    slot.title = `Снять ${card.name}`;
+                    slot.onclick = () => unequipCard(card.id);
+                }
+            }
+            equipContainer.appendChild(slot);
+        }
+        document.querySelector('.equip-slots').previousElementSibling.innerText = `⚔️ Экипировка (${gameData.equipped.length}/10)`;
+
+        // Проверим, есть ли вообще карты
         let hasCards = false;
         for (let key in gameData.cards) if (gameData.cards[key] > 0) hasCards = true;
 
@@ -213,15 +334,22 @@
         const grid = document.createElement('div');
         grid.className = 'cards-grid';
 
-        ALL_CARDS.forEach(card => {
+        const allCards = [...ALL_CARDS, ...DEADLY_CARDS];
+
+        allCards.forEach(card => {
             const count = gameData.cards[card.id] || 0;
+            const isEquipped = gameData.equipped.includes(card.id);
+
             if (count > 0) {
                 const item = document.createElement('div');
                 item.className = `card-item rarity-${card.rarity}`;
                 item.innerHTML = `
                     <span class="card-img">${card.emoji}</span>
                     <div style="font-size: 12px; margin-bottom: 2px;">${card.name}</div>
-                    <div class="card-count">${count} шт.</div>
+                    <div class="card-count">${count} шт. | 💰 ${card.price}</div>
+                    <button class="btn-equip ${isEquipped ? 'equipped' : ''}" onclick="toggleEquip('${card.id}')">
+                        ${isEquipped ? 'Снять' : 'Надеть'}
+                    </button>
                 `;
                 grid.appendChild(item);
             }
