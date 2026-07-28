@@ -192,6 +192,21 @@
                 </div>
             </div>
 
+            <div class="tab-pane" id="profile">
+                <div class="content-card">
+                    <h2>👤 Профиль</h2>
+                    <div style="text-align:center; padding:10px 0;">
+                        <h3 style="color:#64ffda; margin-bottom:10px;">Ваша аватарка</h3>
+                        <div id="profileAvatarPreview" style="width:120px; height:120px; border-radius:50%; background:#0b0e1a; border:2px solid #ffb347; margin:0 auto 15px auto; display:flex; align-items:center; justify-content:center; font-size:60px; overflow:hidden;">
+                            👤
+                        </div>
+                        <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;">
+                        <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; margin-bottom:10px; width:auto; padding:10px 20px;">📸 Загрузить новую аватарку</button>
+                        <div style="font-size:12px; color:#8892b0;">Аватарка сохранится в облаке и будет видна всем в таблице лидеров!</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
@@ -221,13 +236,14 @@
             <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
             <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
             <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
+            <button class="tab-btn" data-tab="profile"><span class="icon">👤</span><span class="label">Профиль</span></button>
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
             <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
             <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
         </div>
     </div>
 
-    <!-- ПОДКЛЮЧЕНИЕ FIREBASE ЧЕРЕЗ СТАРЫЕ ТЕГИ (ГАРАНТИРОВАННО РАБОТАЕТ) -->
+    <!-- ПОДКЛЮЧЕНИЕ FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
@@ -305,6 +321,7 @@
 
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
         let currentUser = null;
+        let currentAvatar = '👤';
 
         function safePath(str) {
             return str.replace(/[.#$\/\[\]]/g, '_');
@@ -333,7 +350,8 @@
                 balance: gameData.balance,
                 cards: gameData.cards || {},
                 equipped: gameData.equipped || [],
-                inventory: gameData.inventory || []
+                inventory: gameData.inventory || [],
+                avatar: gameData.avatar || '👤'
             }).catch((err) => console.error(err));
         }
 
@@ -357,7 +375,8 @@
             }
             if (gameData.balance === undefined) gameData.balance = 10;
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
-
+            if (!gameData.avatar) gameData.avatar = '👤';
+            
             if (gameData.balance === 10 && gameData.inventory.length === 0) {
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
             }
@@ -482,11 +501,23 @@
             document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
         }
 
+        function updateProfileUI() {
+            const preview = document.getElementById('profileAvatarPreview');
+            if (gameData.avatar && gameData.avatar.startsWith('data:image')) {
+                preview.innerHTML = `<img src="${gameData.avatar}" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                preview.innerHTML = `👤`;
+            }
+        }
+
         function renderLeaderboard() {
             const topRef = db.ref('users');
             topRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (!data) return;
+                if (!data) {
+                    document.getElementById('leaderList').innerHTML = `<div class="leader-empty">😕 Пока нет игроков</div>`;
+                    return;
+                }
                 let players = [];
                 for (let key in data) {
                     let p = data[key];
@@ -497,7 +528,7 @@
                             if (card) income += card.income;
                         });
                     }
-                    players.push({ name: key, income: income });
+                    players.push({ name: key, income: income, avatar: p.avatar || '👤' });
                 }
                 const sorted = players.sort((a,b) => b.income - a.income).slice(0, 100);
                 const container = document.getElementById('leaderList');
@@ -512,15 +543,17 @@
                     if (index === 0) rankClass = 'gold';
                     else if (index === 1) rankClass = 'silver';
                     else if (index === 2) rankClass = 'bronze';
+                    let avatarHtml = player.avatar && player.avatar.startsWith('data:image') 
+                        ? `<img src="${player.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;">` 
+                        : `<span style="margin-right:4px;">👤</span>`;
                     html += `
                         <div class="leader-row">
                             <div class="leader-rank ${rankClass}">${index+1}</div>
-                            <div class="leader-name">${player.name}</div>
+                            <div class="leader-name">${avatarHtml} ${player.name}</div>
                             <div class="leader-income">💵 ${player.income}/сек</div>
                         </div>
                     `;
                 });
-                if (sorted.length === 0) html = `<div class="leader-empty">😕 Пока нет игроков</div>`;
                 container.innerHTML = html;
             });
         }
@@ -647,7 +680,7 @@
         };
 
         // ==========================================
-        // АВТОРИЗАЦИЯ И ЗАПУСК
+        // АВТОРИЗАЦИЯ
         // ==========================================
 
         document.getElementById('authLoginBtn').onclick = function() {
@@ -661,11 +694,12 @@
                 gameData.cards = data.cards || {};
                 gameData.equipped = data.equipped || [];
                 gameData.inventory = data.inventory || [];
+                gameData.avatar = data.avatar || '👤';
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
                 saveLocalGame();
                 document.getElementById('authOverlay').classList.add('hidden');
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
             });
         };
 
@@ -676,14 +710,14 @@
 
             loadCloudData(login, function(data) {
                 if (data) { alert("Этот логин уже занят! Войдите."); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
                 saveLocalGame();
                 saveCloudGame();
                 document.getElementById('authOverlay').classList.add('hidden');
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
             });
         };
 
@@ -703,10 +737,11 @@
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
+                    gameData.avatar = data.avatar || '👤';
                     currentUser = cachedUser;
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
-                    renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
                 } else {
                     document.getElementById('authOverlay').classList.remove('hidden');
                 }
@@ -727,6 +762,26 @@
                 });
             });
         });
+
+        // Загрузка аватарки
+        document.getElementById('avatarUploadBtn').onclick = function() {
+            document.getElementById('avatarUploadInput').click();
+        };
+        document.getElementById('avatarUploadInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    gameData.avatar = event.target.result;
+                    saveLocalGame();
+                    saveCloudGame();
+                    updateProfileUI();
+                    renderLeaderboard();
+                    alert("✅ Аватарка успешно обновлена!");
+                };
+                reader.readAsDataURL(file);
+            }
+        };
     </script>
 </body>
 </html>
