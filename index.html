@@ -102,11 +102,11 @@
 </head>
 <body>
 
-    <!-- ОКНО ВХОДА (ПОКАЗЫВАЕТСЯ ПЕРЕД ИГРОЙ) -->
+    <!-- ОКНО ВХОДА -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
-            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Войди, чтобы синхронизировать прогресс между ПК и телефоном!</p>
+            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Войди, чтобы синхронизировать прогресс</p>
             <input type="text" class="auth-input" id="loginInput" placeholder="Введи логин (никнейм)">
             <input type="password" class="auth-input" id="passInput" placeholder="Введи пароль">
             <button class="auth-btn" id="authLoginBtn">🔓 Войти / Загрузить</button>
@@ -229,7 +229,7 @@
 
 <script type="module">
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ (ОНЛАЙН БАЗА)
+    // FIREBASE ПОДКЛЮЧЕНИЕ
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -248,7 +248,7 @@
     const db = getDatabase(app);
 
     // ==========================================
-    // ДАННЫЕ ИГРЫ (ВСЕ КАРТЫ)
+    // ДАННЫЕ ИГРЫ
     // ==========================================
     const COMMON_CARDS = [
         { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 10, income: 1, dropRate: 0.35 },
@@ -301,14 +301,12 @@
     ];
 
     // ==========================================
-    // ЛОГИКА ИГРЫ И СИНХРОНИЗАЦИЯ
+    // ЛОГИКА ИГРЫ
     // ==========================================
 
     let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
     let currentUser = null;
-    let isSaving = false;
 
-    // ИСПРАВЛЕНИЕ: Функция безопасного преобразования логина
     function safePath(str) {
         return str.replace(/[.#$\/\[\]]/g, '_');
     }
@@ -322,19 +320,15 @@
     }
 
     async function saveCloudGame() {
-        if (!currentUser || isSaving) return;
-        isSaving = true;
-        try {
-            const safeUsername = safePath(currentUser);
-            const userRef = ref(db, 'users/' + safeUsername);
-            await set(userRef, {
-                balance: gameData.balance,
-                cards: gameData.cards || {},
-                equipped: gameData.equipped || [],
-                inventory: gameData.inventory || []
-            });
-        } catch (e) { console.error("Ошибка сохранения в облако:", e); }
-        isSaving = false;
+        if (!currentUser) return;
+        const safeUsername = safePath(currentUser);
+        const userRef = ref(db, 'users/' + safeUsername);
+        await set(userRef, {
+            balance: gameData.balance,
+            cards: gameData.cards || {},
+            equipped: gameData.equipped || [],
+            inventory: gameData.inventory || []
+        });
     }
 
     async function deleteAccount(username) {
@@ -357,7 +351,6 @@
         if (gameData.balance === undefined) gameData.balance = 10;
         if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
 
-        // При балансе 10 выдаём 3 пакета
         if (gameData.balance === 10 && gameData.inventory.length === 0) {
             for(let i=0; i<3; i++) gameData.inventory.push('pack5');
         }
@@ -376,10 +369,6 @@
         updateUI();
         renderInventory();
     }
-
-    // ==========================================
-    // ИГРОВЫЕ ДЕЙСТВИЯ
-    // ==========================================
 
     function buyPack(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
@@ -421,10 +410,6 @@
         renderInventory(); updateUI();
         alert(`🎉 Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
     }
-
-    // ==========================================
-    // УПРАВЛЕНИЕ КАРТАМИ
-    // ==========================================
 
     function equipOne(cardId) {
         if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { alert("Нет этой карты!"); return; }
@@ -474,10 +459,6 @@
     };
     function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
 
-    // ==========================================
-    // ИНТЕРФЕЙС И ТАБЛИЦА ЛИДЕРОВ
-    // ==========================================
-
     function getCurrentIncome() {
         let total = 0;
         gameData.equipped.forEach(id => {
@@ -494,7 +475,6 @@
         document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
     }
 
-    // Таблица лидеров (работает с безопасным ключом)
     function renderLeaderboard() {
         const topRef = ref(db, 'users');
         onValue(topRef, (snapshot) => {
@@ -541,10 +521,6 @@
         renderLeaderboard();
     };
 
-    // ==========================================
-    // ОТРИСОВКА МАГАЗИНА И ИНВЕНТАРЯ
-    // ==========================================
-
     setInterval(() => {
         if (gameData.storeTimer > 0) {
             gameData.storeTimer--;
@@ -557,7 +533,6 @@
         }
     }, 1000);
 
-    // ДОХОД КАЖДУЮ СЕКУНДУ (СИНХРОНИЗАЦИЯ)
     setInterval(() => {
         let totalIncome = getCurrentIncome();
         if (totalIncome > 0) {
@@ -665,55 +640,56 @@
     };
 
     // ==========================================
-    // АВТОРИЗАЦИЯ И ЗАПУСК
+    // АВТОРИЗАЦИЯ И ЗАПУСК (ПРЯМЫЕ ФУНКЦИИ ДЛЯ НАДЕЖНОСТИ)
     // ==========================================
 
-    document.getElementById('authLoginBtn').addEventListener('click', async () => {
+    document.getElementById('authLoginBtn').onclick = function() {
         const login = document.getElementById('loginInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
         if (!login || !pass) { alert("Введите логин и пароль!"); return; }
 
-        const cloudData = await loadCloudData(login);
-        if (!cloudData) { alert("Такой пользователь не найден! Сначала создайте аккаунт."); return; }
+        loadCloudData(login).then(data => {
+            if (!data) { alert("Такой пользователь не найден! Сначала создайте аккаунт."); return; }
+            gameData.balance = data.balance || 10;
+            gameData.cards = data.cards || {};
+            gameData.equipped = data.equipped || [];
+            gameData.inventory = data.inventory || [];
+            currentUser = login;
+            localStorage.setItem('cachedUser', login);
+            saveLocalGame();
+            document.getElementById('authOverlay').classList.add('hidden');
+            renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+        });
+    };
 
-        gameData.balance = cloudData.balance || 10;
-        gameData.cards = cloudData.cards || {};
-        gameData.equipped = cloudData.equipped || [];
-        gameData.inventory = cloudData.inventory || [];
-        currentUser = login;
-        localStorage.setItem('cachedUser', login);
-        saveLocalGame();
-        document.getElementById('authOverlay').classList.add('hidden');
-        renderShop(); renderInventory(); updateUI(); renderLeaderboard();
-    });
-
-    document.getElementById('authRegisterBtn').addEventListener('click', async () => {
+    document.getElementById('authRegisterBtn').onclick = function() {
         const login = document.getElementById('loginInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
         if (!login || !pass) { alert("Введите логин и пароль!"); return; }
 
-        const cloudData = await loadCloudData(login);
-        if (cloudData) { alert("Этот логин уже занят! Войдите."); return; }
+        loadCloudData(login).then(data => {
+            if (data) { alert("Этот логин уже занят! Войдите."); return; }
+            gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
+            for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+            currentUser = login;
+            localStorage.setItem('cachedUser', login);
+            saveLocalGame();
+            saveCloudGame().then(() => {
+                document.getElementById('authOverlay').classList.add('hidden');
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard();
+            });
+        });
+    };
 
-        gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300 };
-        for(let i=0; i<3; i++) gameData.inventory.push('pack5');
-        currentUser = login;
-        localStorage.setItem('cachedUser', login);
-        saveLocalGame();
-        await saveCloudGame();
-        document.getElementById('authOverlay').classList.add('hidden');
-        renderShop(); renderInventory(); updateUI(); renderLeaderboard();
-    });
-
-    document.getElementById('authDeleteBtn').addEventListener('click', async () => {
+    document.getElementById('authDeleteBtn').onclick = function() {
         const login = document.getElementById('loginInput').value.trim();
         if (!login) return;
         if (confirm(`Удалить аккаунт ${login}? Это навсегда!`)) {
-            await deleteAccount(login);
+            deleteAccount(login);
         }
-    });
+    };
 
-    // Автоматический вход при загрузке страницы
+    // Автоматический вход
     const cachedUser = localStorage.getItem('cachedUser');
     if (cachedUser) {
         loadCloudData(cachedUser).then(data => {
@@ -734,7 +710,6 @@
         document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    // Вкладки
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
