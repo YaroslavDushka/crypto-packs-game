@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки (Инвентарь и Аккаунты)</title>
+    <title>Крипто-паки (Аккаунты)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -36,11 +36,9 @@
         .pack-card .pack-price { font-size: 13px; color: #f7931a; background: #1e222d; padding: 4px 12px; border-radius: 12px; margin-top: 4px; }
         .pack-card .pack-count { font-size: 11px; color: #8892b0; margin-top: 4px; }
 
-        /* Кнопка шансов (!) в углу */
         .chance-btn { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; background: rgba(255,255,255,0.1); border: 1px solid #8892b0; color: #fff; border-radius: 50%; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; transition: 0.2s; z-index: 10; }
         .chance-btn:hover { background: #fff; color: #000; }
 
-        /* Цвета редкостей */
         .rarity-legendary { border-color: #ffd700 !important; background: #1a1600 !important; }
         .rarity-legendary .pack-rarity { background: #ffd700; color: #000; }
         .rarity-epic { border-color: #a855f7 !important; background: #1a0b2e !important; }
@@ -52,14 +50,13 @@
         .rarity-common { border-color: #6b7280 !important; }
         .rarity-common .pack-rarity { background: #6b7280; color: #fff; }
 
-        /* ИНВЕНТАРЬ (ЗАКРЫТЫЕ ПАКЕТЫ И КАРТЫ) */
+        /* ИНВЕНТАРЬ */
         .inv-packs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
         .inv-pack-item { background: #111722; border: 2px solid #2a3348; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
         .inv-pack-item:active { transform: scale(0.95); }
         .inv-pack-item img { width: 60px; height: 60px; object-fit: contain; border-radius: 6px; background: #0b0e1a; }
         .inv-pack-item .p-name { font-size: 12px; margin-top: 4px; }
         
-        /* КАРТЫ В КОЛЛЕКЦИИ */
         .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .card-item { background: #111722; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #2a3348; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; transition: 0.2s; }
         .card-item:hover { border-color: #64ffda; }
@@ -69,7 +66,7 @@
         .card-item .card-income { font-size: 11px; color: #64ffda; font-weight: bold; margin-bottom: 6px; }
         .card-item .card-price { font-size: 11px; color: #f7931a; margin-bottom: 6px; }
         
-        /* ЭКИПИРОВКА (10 СЛОТОВ) */
+        /* 10 СЛОТОВ ЭКИПИРОВКИ */
         .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; min-height: 70px; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
@@ -86,21 +83,37 @@
         .modal-btn.sell-btn:hover { background: #ff6b6b; color: #fff; }
         .modal-btn.close-btn { background: #2a3348; }
 
-        /* ПРОФИЛЬ */
-        .profile-btn { position: fixed; top: 15px; left: 15px; width: 44px; height: 44px; background: #1a2133; border: 1px solid #2a3348; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; font-size: 20px; transition: 0.2s; color: #fff; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        /* АВТОРИЗАЦИЯ И ПРОФИЛЬ */
+        .profile-btn { position: fixed; top: 15px; left: 15px; width: 44px; height: 44px; background: #1a2133; border: 1px solid #2a3348; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         .profile-btn:hover { border-color: #64ffda; }
-        .profile-btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-btn .placeholder-emoji { font-size: 22px; }
 
         .auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 999; }
         .auth-modal.active { display: flex; }
-        .auth-content { background: #1a2133; padding: 30px; border-radius: 24px; max-width: 380px; width: 90%; border: 1px solid #2a3348; text-align: center; }
+        .auth-content { background: #1a2133; padding: 30px; border-radius: 24px; max-width: 380px; width: 90%; border: 1px solid #2a3348; text-align: center; max-height: 90vh; overflow-y: auto; }
         .auth-content h2 { font-size: 22px; margin-bottom: 10px; color: #fff; }
-        .auth-content input { width: 100%; padding: 12px; margin: 8px 0; background: #0b0e1a; border: 1px solid #2a3348; border-radius: 12px; color: #fff; font-size: 16px; }
-        .auth-content input:focus { outline: 2px solid #64ffda; }
-        .auth-content button { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; background: #2a3348; color: #fff; transition: 0.2s; }
-        .auth-content button:hover { background: #64ffda; color: #000; }
-        .auth-content .del-btn { background: #4a1a1a; color: #ff6b6b; }
-        .auth-content .del-btn:hover { background: #ff6b6b; color: #fff; }
+        .auth-input { width: 100%; padding: 12px; margin: 8px 0; background: #0b0e1a; border: 1px solid #2a3348; border-radius: 12px; color: #fff; font-size: 16px; }
+        .auth-input:focus { outline: 2px solid #64ffda; }
+
+        /* Загрузка аватарки */
+        .avatar-upload-wrap { display: flex; flex-direction: column; align-items: center; margin: 10px 0; gap: 8px; }
+        .avatar-upload-wrap label { padding: 8px 16px; background: #2a3348; border-radius: 12px; cursor: pointer; transition: 0.2s; color: #ccc; font-size: 14px; }
+        .avatar-upload-wrap label:hover { background: #64ffda; color: #000; }
+        .avatar-upload-wrap input[type="file"] { display: none; }
+        .avatar-preview { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #2a3348; background: #0b0e1a; }
+
+        .auth-btn-group { display: flex; gap: 10px; margin-top: 5px; }
+        .auth-btn-group button { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .btn-create { background: #64ffda; color: #000; }
+        .btn-create:hover { background: #52d1b2; }
+        .btn-login { background: #f7931a; color: #fff; }
+        .btn-login:hover { background: #d47a15; }
+
+        .auth-btn-del { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; background: #4a1a1a; color: #ff6b6b; transition: 0.2s; }
+        .auth-btn-del:hover { background: #ff6b6b; color: #fff; }
+        .auth-btn-close { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 12px; font-size: 14px; cursor: pointer; background: #1a2133; color: #8892b0; transition: 0.2s; }
+        .auth-btn-close:hover { background: #2a3348; color: #fff; }
 
         /* ПОДВАЛ */
         .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
@@ -180,29 +193,30 @@
 
     <!-- КНОПКА ПРОФИЛЯ -->
     <div class="profile-btn" id="profileBtn">
-        <span id="profileEmoji">👤</span>
+        <span class="placeholder-emoji">👤</span>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ВХОДА И ПРОФИЛЯ -->
+    <!-- МОДАЛЬНОЕ ОКНО ВХОДА И РЕГИСТРАЦИИ -->
     <div class="auth-modal" id="authModal">
         <div class="auth-content">
-            <h2 id="authTitle">Вход в аккаунт</h2>
-            <input type="text" id="loginInput" placeholder="Введите ваш логин (никнейм)">
+            <h2 id="authTitle">Вход / Регистрация</h2>
             
-            <div style="margin:10px 0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                <span style="color:#8892b0; font-size:13px;">Выберите аватар:</span><br>
-                <div id="avatarSelector" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:5px;">
-                    <div class="av-opt" data-av="👤" style="font-size:30px; cursor:pointer; padding:5px; border:2px solid #2a3348; border-radius:8px;">👤</div>
-                    <div class="av-opt" data-av="🦊" style="font-size:30px; cursor:pointer; padding:5px; border:2px solid #2a3348; border-radius:8px;">🦊</div>
-                    <div class="av-opt" data-av="🐉" style="font-size:30px; cursor:pointer; padding:5px; border:2px solid #2a3348; border-radius:8px;">🐉</div>
-                    <div class="av-opt" data-av="🤖" style="font-size:30px; cursor:pointer; padding:5px; border:2px solid #2a3348; border-radius:8px;">🤖</div>
-                    <div class="av-opt" data-av="👾" style="font-size:30px; cursor:pointer; padding:5px; border:2px solid #2a3348; border-radius:8px;">👾</div>
-                </div>
+            <input type="text" class="auth-input" id="loginInput" placeholder="Ваш логин (никнейм)">
+            <input type="password" class="auth-input" id="passInput" placeholder="Ваш пароль">
+            
+            <div class="avatar-upload-wrap">
+                <label for="avatarInput">📸 Загрузить аватарку</label>
+                <input type="file" id="avatarInput" accept="image/*">
+                <img class="avatar-preview" id="avatarPreview" src="" style="display:none;">
+            </div>
+
+            <div class="auth-btn-group">
+                <button class="btn-create" id="authCreateBtn">➕ Создать</button>
+                <button class="btn-login" id="authLoginBtn">🔓 Войти</button>
             </div>
             
-            <button id="authLoginBtn">Войти / Создать</button>
-            <button id="authDeleteBtn" class="del-btn">🗑️ Удалить текущий аккаунт</button>
-            <button id="authCloseBtn" style="background:#1a2133; margin-top:5px;">Закрыть</button>
+            <button class="auth-btn-del" id="authDeleteBtn">🗑️ Удалить текущий аккаунт</button>
+            <button class="auth-btn-close" id="authCloseBtn">Закрыть</button>
         </div>
     </div>
 
@@ -218,7 +232,7 @@
 
 <script type="module">
     // ==========================================
-    // FIREBASE ПОДКЛЮЧЕНИЕ
+    // FIREBASE ПОДКЛЮЧЕНИЕ (НЕ МЕНЯЙ!)
     // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -237,7 +251,7 @@
     const db = getDatabase(app);
 
     // ==========================================
-    // ДАННЫЕ ИГРЫ
+    // ДАННЫЕ ИГРЫ (НЕ МЕНЯЙ!)
     // ==========================================
     
     const COMMON_CARDS = [
@@ -293,7 +307,7 @@
     // ЛОГИКА ИГРЫ
     // ==========================================
 
-    let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
+    let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '' };
     
     function loadLocalGame() {
         let data = localStorage.getItem('cryptoGameData');
@@ -302,11 +316,10 @@
             if (!gameData.store || Object.keys(gameData.store).length === 0) generateStore();
         } else {
             generateStore();
-            // При первом входе даём 3 обычных пакета в инвентарь!
             for(let i=0; i<3; i++) gameData.inventory.push('pack5');
         }
         if (gameData.balance === undefined) gameData.balance = 10;
-        if (!gameData.avatar) gameData.avatar = '👤';
+        if (!gameData.avatar) gameData.avatar = '';
     }
     function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
@@ -323,7 +336,6 @@
         renderInventory();
     }
 
-    // Покупка пакета (кладём в инвентарь!)
     function buyPack(packId) {
         const pack = PACK_DATA.find(p => p.id === packId);
         if (!pack) return;
@@ -332,14 +344,13 @@
 
         gameData.balance -= pack.price;
         gameData.store[packId]--;
-        gameData.inventory.push(packId); // Кладём закрытый пакет в инвентарь
+        gameData.inventory.push(packId);
 
         saveLocalGame(); saveCloudGame();
         renderShop(); updateUI(); renderInventory();
         alert(`✅ Вы купили ${pack.name}!\nОн лежит в вашем Инвентаре.`);
     }
 
-    // Открытие пакета ИЗ ИНВЕНТАРЯ
     function openPackFromInventory(index) {
         if (index >= gameData.inventory.length) return;
         const packId = gameData.inventory[index];
@@ -347,10 +358,8 @@
         if (!pack) return;
         if (pack.drops.length === 0) { alert("Этот пакет пуст!"); return; }
 
-        // Удаляем из инвентаря
         gameData.inventory.splice(index, 1);
 
-        // Выбираем карту
         let randomCard;
         let rand = Math.random(), cum = 0;
         let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
@@ -432,10 +441,11 @@
     function closeCardModal() { document.getElementById('cardModal').classList.remove('active'); }
 
     // ==========================================
-    // СИСТЕМА АККАУНТОВ (АВТОМАТИЧЕСКИЙ ВХОД)
+    // СИСТЕМА АККАУНТОВ (ПАРОЛЬ И АВАТАРКА)
     // ==========================================
 
     let currentUser = null;
+    let currentAvatarBase64 = '';
 
     async function loadCloudData(username) {
         const userRef = ref(db, 'users/' + username);
@@ -450,11 +460,12 @@
         if (!currentUser) return;
         const userRef = ref(db, 'users/' + currentUser);
         await set(userRef, {
+            password: gameData.password || '',
             balance: gameData.balance,
             cards: gameData.cards,
             equipped: gameData.equipped,
             inventory: gameData.inventory,
-            avatar: gameData.avatar
+            avatar: gameData.avatar || ''
         });
     }
 
@@ -467,47 +478,77 @@
         location.reload();
     }
 
-    async function handleAuth() {
+    function handleRegister() {
         const login = document.getElementById('loginInput').value.trim();
-        if (!login) { alert("Введите логин!"); return; }
+        const pass = document.getElementById('passInput').value.trim();
+        if (!login || !pass) { alert("Введите логин и пароль!"); return; }
 
-        // Выбираем аватарку
-        let avatar = '👤';
-        document.querySelectorAll('.av-opt').forEach(el => {
-            if (el.style.borderColor === '#64ffda') avatar = el.dataset.av;
-        });
+        // Читаем превью аватарки
+        let avatar = currentAvatarBase64;
 
-        const cloudData = await loadCloudData(login);
-        if (cloudData) {
-            // Вход в существующий аккаунт (загружаем прогресс из облака!)
-            gameData.balance = cloudData.balance || 10;
-            gameData.cards = cloudData.cards || {};
-            gameData.equipped = cloudData.equipped || [];
-            gameData.inventory = cloudData.inventory || [];
-            gameData.avatar = cloudData.avatar || '👤';
-            saveLocalGame();
-            currentUser = login;
-            localStorage.setItem('cachedUser', login);
-        } else {
-            // Создание нового аккаунта
+        loadCloudData(login).then(data => {
+            if (data) {
+                alert("Этот логин уже занят! Попробуйте другой или войдите.");
+                return;
+            }
+            
+            gameData.balance = 10;
+            gameData.cards = {};
+            gameData.equipped = [];
+            gameData.inventory = [];
             gameData.avatar = avatar;
+            gameData.password = pass;
             currentUser = login;
             localStorage.setItem('cachedUser', login);
-            // Сохраняем в облако сразу
-            await saveCloudGame();
+            
             saveLocalGame();
-        }
-        
-        document.getElementById('authModal').classList.remove('active');
-        renderProfile();
-        renderShop();
-        renderInventory();
-        updateUI();
-        renderLeaders();
+            saveCloudGame().then(() => {
+                document.getElementById('authModal').classList.remove('active');
+                renderProfile();
+                renderShop();
+                renderInventory();
+                updateUI();
+                renderLeaders();
+            });
+        });
+    }
+
+    function handleLogin() {
+        const login = document.getElementById('loginInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+
+        loadCloudData(login).then(data => {
+            if (!data) {
+                alert("Пользователь с таким логином не найден!");
+                return;
+            }
+            if (data.password !== pass) {
+                alert("Неверный пароль!");
+                return;
+            }
+            
+            gameData.balance = data.balance || 10;
+            gameData.cards = data.cards || {};
+            gameData.equipped = data.equipped || [];
+            gameData.inventory = data.inventory || [];
+            gameData.avatar = data.avatar || '';
+            gameData.password = data.password || pass;
+            currentUser = login;
+            localStorage.setItem('cachedUser', login);
+            saveLocalGame();
+            
+            document.getElementById('authModal').classList.remove('active');
+            renderProfile();
+            renderShop();
+            renderInventory();
+            updateUI();
+            renderLeaders();
+        });
     }
 
     // ==========================================
-    // UI
+    // UI И ЛИДЕРБОРД
     // ==========================================
 
     function updateUI() {
@@ -524,7 +565,11 @@
 
     function renderProfile() {
         const btn = document.getElementById('profileBtn');
-        btn.innerHTML = `<span>${gameData.avatar || '👤'}</span>`;
+        if (gameData.avatar && gameData.avatar.startsWith('data:image')) {
+            btn.innerHTML = `<img src="${gameData.avatar}" alt="Avatar">`;
+        } else {
+            btn.innerHTML = `<span class="placeholder-emoji">👤</span>`;
+        }
     }
 
     function renderShop() {
@@ -549,7 +594,6 @@
     }
 
     function renderInventory() {
-        // 1. Слоты экипировки (10 слотов восстановлены!)
         const equipContainer = document.getElementById('equipContainer');
         equipContainer.innerHTML = '';
         gameData.equipped.forEach(cardId => {
@@ -563,7 +607,6 @@
             equipContainer.appendChild(slot);
         });
 
-        // 2. Закрытые пакеты в инвентаре
         const invCont = document.getElementById('invPacksContainer');
         invCont.innerHTML = '';
         if (gameData.inventory.length === 0) {
@@ -580,7 +623,6 @@
             });
         }
 
-        // 3. Открытые карты (список)
         const container = document.getElementById('cardsContainer');
         container.innerHTML = '';
         let has = false;
@@ -621,17 +663,11 @@
         alert(msg);
     };
 
-    // ==========================================
-    // ОНЛАЙН ТОП
-    // ==========================================
-
-    let leaderboardReady = false;
     function renderLeaders() {
         const topRef = ref(db, 'users');
         onValue(topRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
-            
             let allPlayers = [];
             for (let key in data) {
                 let p = data[key];
@@ -642,15 +678,18 @@
                         if (card) income += card.income;
                     });
                 }
-                allPlayers.push({ name: key, income: income, avatar: p.avatar || '👤' });
+                allPlayers.push({ name: key, income: income, avatar: p.avatar || '' });
             }
             const sorted = allPlayers.sort((a,b) => b.income - a.income).slice(0, 10);
             const container = document.getElementById('onlineTopList');
             let html = '';
             sorted.forEach((player, index) => {
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index+1}.`;
+                let avatarHtml = player.avatar && player.avatar.startsWith('data:image') 
+                    ? `<img src="${player.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;">` 
+                    : '';
                 html += `<div style="display:flex; justify-content:space-between; padding:6px 10px; border-bottom:1px solid #2a3348; align-items:center;">
-                            <span>${medal} ${player.avatar} ${player.name}</span>
+                            <span>${medal} ${avatarHtml}${player.name}</span>
                             <span style="color:#ffd700;">$${player.income}/сек</span>
                         </div>`;
             });
@@ -660,10 +699,24 @@
     }
 
     // ==========================================
-    // ОБРАБОТЧИКИ СОБЫТИЙ
+    // ОБРАБОТЧИКИ
     // ==========================================
 
-    // Таймер обновления магазина
+    // Аватарка
+    document.getElementById('avatarInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentAvatarBase64 = event.target.result;
+                const preview = document.getElementById('avatarPreview');
+                preview.src = currentAvatarBase64;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     setInterval(() => {
         if (gameData.storeTimer > 0) {
             gameData.storeTimer--;
@@ -675,7 +728,6 @@
         }
     }, 1000);
 
-    // Доход каждую секунду
     setInterval(() => {
         let totalIncome = 0;
         gameData.equipped.forEach(id => {
@@ -689,7 +741,6 @@
         }
     }, 1000);
 
-    // Вкладки
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabPanes = document.querySelectorAll('.tab-pane');
@@ -702,7 +753,7 @@
             });
         });
 
-        // АВТОМАТИЧЕСКИЙ ВХОД
+        // Автоматический вход при запуске
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser).then(data => {
@@ -711,7 +762,8 @@
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
-                    gameData.avatar = data.avatar || '👤';
+                    gameData.avatar = data.avatar || '';
+                    gameData.password = data.password || '';
                     currentUser = cachedUser;
                     saveLocalGame();
                     renderProfile();
@@ -727,31 +779,18 @@
             document.getElementById('authModal').classList.add('active');
         }
 
-        // Настройка аватарок
-        document.querySelectorAll('.av-opt').forEach(el => {
-            el.onclick = function() {
-                document.querySelectorAll('.av-opt').forEach(e => e.style.borderColor = '#2a3348');
-                this.style.borderColor = '#64ffda';
-            };
-        });
-
-        // Кнопка профиля
+        // Кнопки
         document.getElementById('profileBtn').onclick = () => {
             document.getElementById('authModal').classList.add('active');
         };
-
-        // Вход/Создание
-        document.getElementById('authLoginBtn').onclick = handleAuth;
-
-        // Удаление
+        document.getElementById('authCreateBtn').onclick = handleRegister;
+        document.getElementById('authLoginBtn').onclick = handleLogin;
         document.getElementById('authDeleteBtn').onclick = async () => {
             if (!currentUser) return;
-            if (confirm(`Вы уверены, что хотите удалить аккаунт ${currentUser}? Это действие необратимо!`)) {
+            if (confirm(`Удалить аккаунт ${currentUser}?`)) {
                 await deleteAccount(currentUser);
             }
         };
-
-        // Закрыть окно авторизации
         document.getElementById('authCloseBtn').onclick = () => {
             if (!currentUser) {
                 alert("Вы должны войти или создать аккаунт, чтобы играть!");
@@ -760,7 +799,6 @@
             document.getElementById('authModal').classList.remove('active');
         };
 
-        // Загрузка при старте
         loadLocalGame();
         renderShop();
         renderInventory();
