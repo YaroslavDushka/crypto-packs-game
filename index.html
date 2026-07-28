@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Крипто-паки (Инвентарь + Таймер)</title>
+    <title>Крипто-паки</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; }
@@ -67,7 +67,9 @@
         /* ЭКИПИРОВКА */
         .equip-slots { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 15px; background: #0b0e1a; border-radius: 16px; border: 1px solid #2a3348; min-height: 70px; }
         .equip-slot { width: 50px; height: 50px; background: #111722; border: 2px dashed #2a3348; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #444; }
-        .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; }
+        .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; cursor: pointer; transition: 0.2s; }
+        .equip-slot.filled:hover { background: #ef4444; border-color: #ef4444; transform: scale(1.05); }
+        .equip-slot.filled:active { transform: scale(0.9); }
 
         /* МОДАЛЬНОЕ ОКНО КАРТЫ */
         .card-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 999; }
@@ -121,7 +123,6 @@
         <div class="tab-pane" id="leaders">
             <div class="content-card" style="padding:0; border:none; background:transparent; box-shadow:none;">
                 <style>
-                    /* Стили таблицы лидеров внутри игры */
                     .leader-wrapper { background: #16213e; border-radius: 20px; padding: 20px; border: 2px solid #ffb347; box-shadow: 0 0 40px rgba(255, 180, 71, 0.15); width:100%; box-sizing:border-box; }
                     .leader-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
                     .leader-header h2 { font-size: 22px; color: #ffb347; margin:0; display: flex; align-items: center; gap: 10px; }
@@ -562,6 +563,12 @@
             if (card) {
                 slot.innerHTML = card.emoji;
                 slot.title = `Надета: ${card.name}`;
+                // ДОБАВЛЕНА ЛОГИКА СНЯТИЯ ПО КЛИКУ
+                slot.onclick = () => {
+                    if (confirm(`Снять ${card.name}?`)) {
+                        unequipOne(cardId);
+                    }
+                };
             }
             equipContainer.appendChild(slot);
         });
