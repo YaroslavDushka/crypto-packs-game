@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки (ID система)</title>
+    <title>Крипто-паки (ID Авто-вход)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -88,16 +88,6 @@
     </style>
 </head>
 <body>
-
-    <!-- ОКНО ВХОДА ПО ID -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-box">
-            <h2>🛒 Крипто-паки</h2>
-            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой ID, чтобы загрузить прогресс</p>
-            <input type="text" class="auth-input" id="loginInput" placeholder="Введи свой ID (например, 1)">
-            <button class="auth-btn" id="authLoginBtn">🚀 Войти по ID</button>
-        </div>
-    </div>
 
     <div class="app" id="gameApp">
         <div class="content" id="contentArea">
@@ -660,42 +650,19 @@
         };
 
         // ==========================================
-        // ВХОД ПО ID И СЧЁТЧИК
+        // АВТОМАТИЧЕСКИЙ ВХОД
         // ==========================================
 
-        document.getElementById('authLoginBtn').onclick = function() {
-            let inputId = document.getElementById('loginInput').value.trim();
-            
-            // Если поле пустое — создаём следующего по счёту
-            if (!inputId) {
-                const counterRef = db.ref('counter/last_id');
-                counterRef.transaction((current) => {
-                    return (current || 0) + 1;
-                }, (error, committed, snapshot) => {
-                    if (error) { alert("Ошибка счётчика!"); return; }
-                    if (committed) {
-                        const newId = snapshot.val();
-                        loginWithId(String(newId));
-                    }
-                }, false);
-                return;
-            }
-
-            // Если введён ID, проверяем и входим
-            loginWithId(inputId);
-        };
-
+        // Функция входа по ID
         function loginWithId(id) {
             loadCloudData(id, function(data) {
                 if (data) {
-                    // Вход в существующий аккаунт
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
                 } else {
-                    // Создание нового аккаунта
                     gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
                     for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 }
@@ -703,32 +670,41 @@
                 localStorage.setItem('cachedUserId', id);
                 saveLocalGame();
                 saveCloudGame();
-                document.getElementById('authOverlay').style.display = 'none';
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
             });
         }
 
-        // Автоматический вход при загрузке страницы
+        // АВТОМАТИЧЕСКИЙ ЗАПУСК ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
         const cachedUserId = localStorage.getItem('cachedUserId');
         if (cachedUserId) {
-            loadCloudData(cachedUserId, function(data) {
-                if (data) {
-                    gameData.balance = data.balance || 10;
-                    gameData.cards = data.cards || {};
-                    gameData.equipped = data.equipped || [];
-                    gameData.inventory = data.inventory || [];
-                    gameData.avatar = data.avatar || '👤';
-                    currentUserId = cachedUserId;
-                    saveLocalGame();
-                    document.getElementById('authOverlay').style.display = 'none';
-                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
-                } else {
-                    document.getElementById('authOverlay').style.display = 'flex';
-                }
-            });
+            // Если ID уже сохранён в браузере, просто входим по нему
+            loginWithId(cachedUserId);
         } else {
-            document.getElementById('authOverlay').style.display = 'flex';
+            // Если это первый заход — берём следующий ID из счётчика
+            const counterRef = db.ref('counter/last_id');
+            counterRef.transaction((current) => {
+                return (current || 0) + 1;
+            }, (error, committed, snapshot) => {
+                if (error) { console.error("Ошибка счётчика:", error); return; }
+                if (committed) {
+                    const newId = String(snapshot.val());
+                    loginWithId(newId);
+                }
+            }, false);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    tabPanes.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+                });
+            });
+        });
 
         // Загрузка аватарки
         document.getElementById('avatarUploadBtn').onclick = function() {
@@ -748,19 +724,6 @@
                 reader.readAsDataURL(file);
             }
         };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            const tabPanes = document.querySelectorAll('.tab-pane');
-            tabButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    tabButtons.forEach(b => b.classList.remove('active'));
-                    tabPanes.forEach(p => p.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById(this.getAttribute('data-tab')).classList.add('active');
-                });
-            });
-        });
     </script>
 </body>
 </html>
