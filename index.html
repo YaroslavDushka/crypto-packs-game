@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки (ID система)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -89,13 +89,13 @@
 </head>
 <body>
 
-    <!-- ОКНО ВХОДА -->
+    <!-- ОКНО ВХОДА ПО ID -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
-            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой логин или оставь пустым для нового</p>
-            <input type="text" class="auth-input" id="loginInput" placeholder="Введи логин (никнейм)">
-            <button class="auth-btn" id="authLoginBtn">🚀 Войти / Создать</button>
+            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой ID, чтобы загрузить прогресс</p>
+            <input type="text" class="auth-input" id="loginInput" placeholder="Введи свой ID (например, 1)">
+            <button class="auth-btn" id="authLoginBtn">🚀 Войти по ID</button>
         </div>
     </div>
 
@@ -180,9 +180,9 @@
                 <div class="content-card">
                     <h2>👤 Профиль</h2>
                     <div style="text-align:center; padding:10px 0;">
-                        <h3 style="color:#64ffda; margin-bottom:10px;">Ваш никнейм</h3>
-                        <input type="text" id="profileNameInput" style="width:100%; padding:12px; background:#0b0e1a; border:1px solid #ffb347; border-radius:12px; color:#fff; font-size:16px; text-align:center; margin-bottom:20px;" placeholder="Введите новый никнейм">
-                        <button class="auth-btn" id="profileRenameBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px; margin-bottom:20px;">✏️ Сменить имя</button>
+                        <h3 style="color:#64ffda; margin-bottom:10px;">Ваш ID</h3>
+                        <div id="profileIdDisplay" style="font-size: 32px; font-weight: bold; color: #ffb347; margin-bottom: 20px;">Загрузка...</div>
+                        <div style="font-size:12px; color:#8892b0; margin-bottom:10px;">Введите этот ID на другом устройстве, чтобы загрузить прогресс!</div>
                         
                         <h3 style="color:#64ffda; margin-bottom:10px;">Ваша аватарка</h3>
                         <div id="profileAvatarPreview" style="width:120px; height:120px; border-radius:50%; background:#0b0e1a; border:2px solid #ffb347; margin:0 auto 15px auto; display:flex; align-items:center; justify-content:center; font-size:60px; overflow:hidden;">
@@ -190,11 +190,7 @@
                         </div>
                         <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;">
                         <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">📸 Загрузить аватарку</button>
-                        
-                        <div id="clockDisplay" style="margin-top:20px; font-size:18px; color:#ffb347; border-top:1px solid #2a3348; padding-top:20px;">
-                            🕒 Текущее время: <span id="currentTimeText">--:--:--</span>
-                        </div>
-                        <div style="font-size:12px; color:#8892b0; margin-top:10px;">Все изменения сохраняются в облаке!</div>
+                        <div style="font-size:12px; color:#8892b0; margin-top:10px;">Все изменения сохраняются в облаке (по ID)!</div>
                     </div>
                 </div>
             </div>
@@ -311,16 +307,16 @@
         // ЛОГИКА ИГРЫ
         // ==========================================
 
-        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', name: 'Игрок' };
-        let currentUser = null;
+        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
+        let currentUserId = null;
 
         function safePath(str) {
-            return str.replace(/[.#$\/\[\]]/g, '_');
+            return String(str).replace(/[.#$\/\[\]]/g, '_');
         }
 
-        function loadCloudData(username, callback) {
-            const safeUsername = safePath(username);
-            const userRef = db.ref('users/' + safeUsername);
+        function loadCloudData(userId, callback) {
+            const safeId = safePath(userId);
+            const userRef = db.ref('users/' + safeId);
             userRef.once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     callback(snapshot.val());
@@ -334,16 +330,15 @@
         }
 
         function saveCloudGame() {
-            if (!currentUser) return;
-            const safeUsername = safePath(currentUser);
-            const userRef = db.ref('users/' + safeUsername);
+            if (!currentUserId) return;
+            const safeId = safePath(currentUserId);
+            const userRef = db.ref('users/' + safeId);
             userRef.set({
                 balance: gameData.balance,
                 cards: gameData.cards || {},
                 equipped: gameData.equipped || [],
                 inventory: gameData.inventory || [],
-                avatar: gameData.avatar || '👤',
-                name: gameData.name || 'Игрок'
+                avatar: gameData.avatar || '👤'
             }).catch((err) => console.error(err));
         }
 
@@ -358,7 +353,6 @@
             if (gameData.balance === undefined) gameData.balance = 10;
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
             if (!gameData.avatar) gameData.avatar = '👤';
-            if (!gameData.name) gameData.name = 'Игрок';
             
             if (gameData.balance === 10 && gameData.inventory.length === 0) {
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
@@ -382,9 +376,9 @@
         function buyPack(packId) {
             const pack = PACK_DATA.find(p => p.id === packId);
             if (!pack) return;
-            if (!gameData.store[packId] || gameData.store[packId] <= 0) { return; }
-            if (gameData.balance < pack.price) { return; }
-            if (pack.drops.length === 0) { return; }
+            if (!gameData.store[packId] || gameData.store[packId] <= 0) { alert("Нет в наличии!"); return; }
+            if (gameData.balance < pack.price) { alert(`Не хватает денег! Нужно $${pack.price}`); return; }
+            if (pack.drops.length === 0) { alert("Этот пакет пока пуст! Загляни в другие."); return; }
 
             gameData.balance -= pack.price;
             gameData.store[packId]--;
@@ -392,6 +386,7 @@
 
             saveLocalGame(); saveCloudGame();
             renderShop(); updateUI(); renderInventory();
+            alert(`✅ Вы купили ${pack.name}!\nОн лежит в вашем Инвентаре.`);
         }
 
         function openPackFromInventory(index) {
@@ -416,10 +411,11 @@
 
             saveLocalGame(); saveCloudGame();
             renderInventory(); updateUI();
+            alert(`🎉 Вам выпала карта:\n${randomCard.emoji} ${randomCard.name}!\nДоход: +$${randomCard.income}/сек`);
         }
 
         function equipOne(cardId) {
-            if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { return; }
+            if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { alert("У вас нет этой карты!"); return; }
             gameData.cards[cardId]--;
             gameData.equipped.push(cardId);
 
@@ -429,7 +425,7 @@
 
         function unequipOne(cardId) {
             const idx = gameData.equipped.indexOf(cardId);
-            if (idx === -1) { return; }
+            if (idx === -1) { alert("Эта карта не надета!"); return; }
             gameData.equipped.splice(idx, 1);
             if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
             gameData.cards[cardId]++;
@@ -441,7 +437,7 @@
         function sellOne(cardId) {
             const card = ALL_CARDS.find(c => c.id === cardId);
             if (!card) return;
-            if (gameData.cards[cardId] <= 0) { return; }
+            if (gameData.cards[cardId] <= 0) { alert("У вас нет этой карты для продажи!"); return; }
             const sellPrice = Math.floor(card.price / 2);
             gameData.cards[cardId]--;
             gameData.balance += sellPrice;
@@ -489,7 +485,9 @@
             } else {
                 preview.innerHTML = `👤`;
             }
-            document.getElementById('profileNameInput').value = gameData.name || 'Игрок';
+            if (currentUserId) {
+                document.getElementById('profileIdDisplay').innerText = `Ваш ID: ${currentUserId}`;
+            }
         }
 
         function renderLeaderboard() {
@@ -510,7 +508,7 @@
                             if (card) income += card.income;
                         });
                     }
-                    players.push({ name: p.name || key, income: income, avatar: p.avatar || '👤' });
+                    players.push({ id: key, income: income, avatar: p.avatar || '👤' });
                 }
                 const sorted = players.sort((a,b) => b.income - a.income).slice(0, 100);
                 const container = document.getElementById('leaderList');
@@ -531,7 +529,7 @@
                     html += `
                         <div class="leader-row">
                             <div class="leader-rank ${rankClass}">${index+1}</div>
-                            <div class="leader-name">${avatarHtml} ${player.name}</div>
+                            <div class="leader-name">${avatarHtml} ID: ${player.id}</div>
                             <div class="leader-income">💵 ${player.income}/сек</div>
                         </div>
                     `;
@@ -551,7 +549,7 @@
                 document.getElementById('shopTimer').innerText = `⏳ ${m}:${s < 10 ? '0'+s : s}`;
             } else {
                 generateStore();
-                if (currentUser) saveCloudGame();
+                if (currentUserId) saveCloudGame();
             }
         }, 1000);
 
@@ -560,16 +558,9 @@
             if (totalIncome > 0) {
                 gameData.balance = (gameData.balance || 0) + totalIncome;
                 saveLocalGame();
-                if (currentUser) saveCloudGame();
+                if (currentUserId) saveCloudGame();
                 updateUI();
             }
-        }, 1000);
-
-        // ТАЙМЕР ТЕКУЩЕГО ВРЕМЕНИ В ПРОФИЛЕ
-        setInterval(() => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ru-RU');
-            document.getElementById('currentTimeText').innerText = timeString;
         }, 1000);
 
         function renderShop() {
@@ -604,7 +595,7 @@
                     slot.innerHTML = card.emoji;
                     slot.title = `Надета: ${card.name}`;
                     slot.onclick = () => {
-                        unequipOne(cardId);
+                        if (confirm(`Снять ${card.name}?`)) unequipOne(cardId);
                     };
                 }
                 equipContainer.appendChild(slot);
@@ -669,48 +660,65 @@
         };
 
         // ==========================================
-        // ВХОД И ЗАГРУЗКА
+        // ВХОД ПО ID И СЧЁТЧИК
         // ==========================================
 
         document.getElementById('authLoginBtn').onclick = function() {
-            let login = document.getElementById('loginInput').value.trim();
+            let inputId = document.getElementById('loginInput').value.trim();
             
-            if (!login) {
-                login = 'Игрок_' + Math.floor(Math.random() * 1000000);
+            // Если поле пустое — создаём следующего по счёту
+            if (!inputId) {
+                const counterRef = db.ref('counter/last_id');
+                counterRef.transaction((current) => {
+                    return (current || 0) + 1;
+                }, (error, committed, snapshot) => {
+                    if (error) { alert("Ошибка счётчика!"); return; }
+                    if (committed) {
+                        const newId = snapshot.val();
+                        loginWithId(String(newId));
+                    }
+                }, false);
+                return;
             }
 
-            loadCloudData(login, function(data) {
+            // Если введён ID, проверяем и входим
+            loginWithId(inputId);
+        };
+
+        function loginWithId(id) {
+            loadCloudData(id, function(data) {
                 if (data) {
+                    // Вход в существующий аккаунт
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
-                    gameData.name = data.name || login;
                 } else {
-                    gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', name: login };
+                    // Создание нового аккаунта
+                    gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
                     for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 }
-                currentUser = login;
-                localStorage.setItem('cachedUser', login);
+                currentUserId = id;
+                localStorage.setItem('cachedUserId', id);
                 saveLocalGame();
                 saveCloudGame();
                 document.getElementById('authOverlay').style.display = 'none';
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
             });
-        };
+        }
 
-        const cachedUser = localStorage.getItem('cachedUser');
-        if (cachedUser) {
-            loadCloudData(cachedUser, function(data) {
+        // Автоматический вход при загрузке страницы
+        const cachedUserId = localStorage.getItem('cachedUserId');
+        if (cachedUserId) {
+            loadCloudData(cachedUserId, function(data) {
                 if (data) {
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
-                    gameData.name = data.name || cachedUser;
-                    currentUser = cachedUser;
+                    currentUserId = cachedUserId;
                     saveLocalGame();
                     document.getElementById('authOverlay').style.display = 'none';
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
@@ -722,15 +730,7 @@
             document.getElementById('authOverlay').style.display = 'flex';
         }
 
-        document.getElementById('profileRenameBtn').onclick = function() {
-            const newName = document.getElementById('profileNameInput').value.trim();
-            if (!newName) return;
-            gameData.name = newName;
-            saveLocalGame(); saveCloudGame();
-            updateProfileUI();
-            renderLeaderboard();
-        };
-
+        // Загрузка аватарки
         document.getElementById('avatarUploadBtn').onclick = function() {
             document.getElementById('avatarUploadInput').click();
         };
