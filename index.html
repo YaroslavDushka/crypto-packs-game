@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки (Онлайн)</title>
+    <title>Крипто-паки (Игровые окна)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -93,6 +93,22 @@
         .modal-btn.sell-btn:hover { background: #ff6b6b; color: #fff; }
         .modal-btn.close-btn { background: #2a3348; }
 
+        /* --- ИГРОВОЕ СООБЩЕНИЕ (вместо alert и confirm) --- */
+        .game-msg-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; }
+        .game-msg-overlay.active { display:flex; }
+        .game-msg-box { background: #1a2133; padding: 30px; border-radius: 20px; border: 1px solid #ffb347; max-width: 360px; width: 90%; text-align: center; }
+        .game-msg-box h3 { color: #ffb347; font-size: 20px; margin-bottom: 12px; }
+        .game-msg-box p { color: #e0e6f0; font-size: 15px; margin-bottom: 20px; line-height: 1.4; }
+        .game-msg-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .game-msg-btn { padding: 10px 20px; border-radius: 12px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; min-width: 100px; }
+        .game-msg-btn:hover { transform: scale(1.02); }
+        .game-msg-btn.confirm { background: #ffb347; color: #000; }
+        .game-msg-btn.confirm:hover { background: #ffcc66; }
+        .game-msg-btn.cancel { background: #4a1a1a; color: #ff6b6b; }
+        .game-msg-btn.cancel:hover { background: #ff6b6b; color: #fff; }
+        .game-msg-btn.ok { background: #2a3348; color: #fff; }
+        .game-msg-btn.ok:hover { background: #64ffda; color: #000; }
+
         .tabs-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; display: flex; justify-content: space-around; align-items: center; padding: 8px 4px 12px; z-index: 100; backdrop-filter: blur(4px); }
         .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; background: transparent; border: none; color: #8892b0; font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.2s; gap: 2px; padding-top: 6px; border-radius: 12px; }
         .tab-btn .icon { font-size: 22px; line-height: 1.2; }
@@ -112,6 +128,15 @@
             <button class="auth-btn" id="authLoginBtn">🔓 Войти / Загрузить</button>
             <button class="auth-btn" id="authRegisterBtn">➕ Создать новый аккаунт</button>
             <button class="auth-btn danger" id="authDeleteBtn">🗑️ Удалить этот аккаунт</button>
+        </div>
+    </div>
+
+    <!-- ИГРОВОЕ ОКНО СООБЩЕНИЙ -->
+    <div class="game-msg-overlay" id="gameMsgOverlay">
+        <div class="game-msg-box">
+            <h3 id="gameMsgTitle">Сообщение</h3>
+            <p id="gameMsgText">Текст сообщения</p>
+            <div class="game-msg-btns" id="gameMsgBtns"></div>
         </div>
     </div>
 
@@ -248,6 +273,43 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <script>
+        // ==========================================
+        // ФУНКЦИЯ ИГРОВОГО ОКНА (замена alert и confirm)
+        // ==========================================
+        function showGameMsg(title, text, buttons) {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('gameMsgOverlay');
+                document.getElementById('gameMsgTitle').innerText = title;
+                document.getElementById('gameMsgText').innerText = text;
+                const btnContainer = document.getElementById('gameMsgBtns');
+                btnContainer.innerHTML = '';
+                
+                buttons.forEach((btn, index) => {
+                    const el = document.createElement('button');
+                    el.className = 'game-msg-btn ' + (btn.class || 'ok');
+                    el.innerText = btn.text;
+                    el.onclick = function() {
+                        overlay.classList.remove('active');
+                        resolve(index);
+                    };
+                    btnContainer.appendChild(el);
+                });
+                overlay.classList.add('active');
+            });
+        }
+
+        async function simpleMsg(title, text) {
+            await showGameMsg(title, text, [{ text: 'Ок', class: 'ok' }]);
+        }
+
+        async function confirmMsg(title, text) {
+            const res = await showGameMsg(title, text, [
+                { text: 'Да', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]);
+            return res === 0;
+        }
+
         // ==========================================
         // НАСТРОЙКА FIREBASE
         // ==========================================
@@ -399,9 +461,9 @@
         function buyPack(packId) {
             const pack = PACK_DATA.find(p => p.id === packId);
             if (!pack) return;
-            if (!gameData.store[packId] || gameData.store[packId] <= 0) { alert("Нет в наличии!"); return; }
-            if (gameData.balance < pack.price) { alert(`Нужно $${pack.price}`); return; }
-            if (pack.drops.length === 0) { alert("Пакет пуст!"); return; }
+            if (!gameData.store[packId] || gameData.store[packId] <= 0) { simpleMsg("Нет в наличии!", "Этого пакета больше нет."); return; }
+            if (gameData.balance < pack.price) { simpleMsg("Не хватает денег!", `Нужно $${pack.price}`); return; }
+            if (pack.drops.length === 0) { simpleMsg("Пакет пуст!", "В этом пакете пока нет карт."); return; }
 
             gameData.balance -= pack.price;
             gameData.store[packId]--;
@@ -409,7 +471,7 @@
 
             saveLocalGame(); saveCloudGame();
             renderShop(); updateUI(); renderInventory();
-            alert(`✅ Вы купили ${pack.name}!`);
+            simpleMsg("✅ Покупка успешна!", `Вы купили ${pack.name}! Он лежит в вашем Инвентаре.`);
         }
 
         function openPackFromInventory(index) {
@@ -434,11 +496,11 @@
 
             saveLocalGame(); saveCloudGame();
             renderInventory(); updateUI();
-            alert(`🎉 Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
+            simpleMsg("🎉 Открытие!", `Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
         }
 
         function equipOne(cardId) {
-            if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { alert("Нет этой карты!"); return; }
+            if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { simpleMsg("Ошибка", "У вас нет этой карты!"); return; }
             gameData.cards[cardId]--;
             gameData.equipped.push(cardId);
 
@@ -448,7 +510,7 @@
 
         function unequipOne(cardId) {
             const idx = gameData.equipped.indexOf(cardId);
-            if (idx === -1) { alert("Не надета!"); return; }
+            if (idx === -1) { simpleMsg("Ошибка", "Эта карта не надета!"); return; }
             gameData.equipped.splice(idx, 1);
             if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
             gameData.cards[cardId]++;
@@ -460,7 +522,7 @@
         function sellOne(cardId) {
             const card = ALL_CARDS.find(c => c.id === cardId);
             if (!card) return;
-            if (gameData.cards[cardId] <= 0) { alert("Нет для продажи!"); return; }
+            if (gameData.cards[cardId] <= 0) { simpleMsg("Ошибка", "У вас нет этой карты для продажи!"); return; }
             const sellPrice = Math.floor(card.price / 2);
             gameData.cards[cardId]--;
             gameData.balance += sellPrice;
@@ -615,7 +677,7 @@
                     slot.innerHTML = card.emoji;
                     slot.title = `Надета: ${card.name}`;
                     slot.onclick = () => {
-                        if (confirm(`Снять ${card.name}?`)) unequipOne(cardId);
+                        unequipOne(cardId);
                     };
                 }
                 equipContainer.appendChild(slot);
@@ -676,20 +738,20 @@
             let msg = `📊 Шансы выпадения из ${pack.name}:\n\n`;
             let shuffled = [...pack.drops].sort((a,b) => a.dropRate - b.dropRate);
             shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`; });
-            alert(msg);
+            simpleMsg(`📊 Шансы ${pack.name}`, msg);
         };
 
         // ==========================================
-        // АВТОРИЗАЦИЯ (ИСПРАВЛЕНА!)
+        // АВТОРИЗАЦИЯ
         // ==========================================
 
         document.getElementById('authLoginBtn').onclick = function() {
             const login = document.getElementById('loginInput').value.trim();
             const pass = document.getElementById('passInput').value.trim();
-            if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+            if (!login || !pass) { simpleMsg("Ошибка", "Введите логин и пароль!"); return; }
 
             loadCloudData(login, function(data) {
-                if (!data) { alert("Такой пользователь не найден! Сначала создайте аккаунт."); return; }
+                if (!data) { simpleMsg("Ошибка", "Такой пользователь не найден! Сначала создайте аккаунт."); return; }
                 gameData.balance = data.balance || 10;
                 gameData.cards = data.cards || {};
                 gameData.equipped = data.equipped || [];
@@ -706,10 +768,10 @@
         document.getElementById('authRegisterBtn').onclick = function() {
             const login = document.getElementById('loginInput').value.trim();
             const pass = document.getElementById('passInput').value.trim();
-            if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+            if (!login || !pass) { simpleMsg("Ошибка", "Введите логин и пароль!"); return; }
 
             loadCloudData(login, function(data) {
-                if (data) { alert("Этот логин уже занят! Войдите."); return; }
+                if (data) { simpleMsg("Ошибка", "Этот логин уже занят! Войдите."); return; }
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
@@ -723,16 +785,18 @@
 
         document.getElementById('authDeleteBtn').onclick = function() {
             const login = document.getElementById('loginInput').value.trim();
-            if (!login) { alert("Введите логин!"); return; }
+            if (!login) { simpleMsg("Ошибка", "Введите логин!"); return; }
             
             loadCloudData(login, function(data) {
                 if (!data) { 
-                    alert("Такого аккаунта не существует, нечего удалять!"); 
+                    simpleMsg("Ошибка", "Такого аккаунта не существует, нечего удалять!"); 
                     return; 
                 }
-                if (confirm(`Удалить аккаунт ${login}? Это навсегда!`)) {
-                    deleteAccount(login);
-                }
+                confirmMsg("Удаление аккаунта", `Вы уверены, что хотите удалить аккаунт ${login}? Это навсегда!`).then((confirmed) => {
+                    if (confirmed) {
+                        deleteAccount(login);
+                    }
+                });
             });
         };
 
@@ -784,7 +848,7 @@
                     saveCloudGame();
                     updateProfileUI();
                     renderLeaderboard();
-                    alert("✅ Аватарка успешно обновлена!");
+                    simpleMsg("✅ Успешно!", "Аватарка обновлена!");
                 };
                 reader.readAsDataURL(file);
             }
