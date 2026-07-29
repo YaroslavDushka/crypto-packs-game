@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки (Логин/Пароль)</title>
+    <title>Крипто-паки</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -21,13 +21,13 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
-        /* --- АВАТАРКА В УГЛУ (ВЕЗДЕ) --- */
+        /* --- АВАТАРКА В УГЛУ --- */
         .global-avatar-btn { position: fixed; top: 15px; left: 15px; width: 44px; height: 44px; background: #1a2133; border: 2px solid #ffb347; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; overflow: hidden; box-shadow: 0 0 15px rgba(255, 180, 71, 0.2); transition: 0.2s; }
         .global-avatar-btn:hover { border-color: #64ffda; transform: scale(1.05); }
         .global-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
         .global-avatar-btn .placeholder { font-size: 20px; }
 
-        /* --- ОКНО ВХОДА (ЛОГИН И ПАРОЛЬ, БЕЗ ПОЧТЫ) --- */
+        /* --- ОКНО ВХОДА --- */
         .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; align-items:center; justify-content:center; }
         .auth-overlay.hidden { display:none; }
         .auth-box { background:#1a2133; padding:30px; border-radius:20px; border:1px solid #ffb347; width:90%; max-width:380px; text-align:center; }
@@ -38,7 +38,22 @@
         .auth-btn:hover { background:#ffcc66; }
         .auth-btn.danger { background:#4a1a1a; color:#ff6b6b; }
         .auth-btn.danger:hover { background:#ff6b6b; color:#fff; }
-        
+
+        /* --- ОКНО СООБЩЕНИЙ (с подтверждением) --- */
+        .custom-msg-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; }
+        .custom-msg-overlay.active { display:flex; }
+        .custom-msg-box { background: #1a2133; padding: 25px; border-radius: 20px; border: 2px solid #ffb347; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 180, 71, 0.2); }
+        .custom-msg-box h3 { color: #ffb347; font-size: 20px; margin-bottom: 10px; }
+        .custom-msg-box p { color: #e0e6f0; font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
+        .custom-msg-btn { padding: 10px 20px; border-radius: 12px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 5px; min-width: 80px; }
+        .custom-msg-btn:hover { transform: scale(1.02); }
+        .custom-msg-btn.confirm { background: #ffb347; color: #000; }
+        .custom-msg-btn.confirm:hover { background: #ffcc66; }
+        .custom-msg-btn.cancel { background: #4a1a1a; color: #ff6b6b; }
+        .custom-msg-btn.cancel:hover { background: #ff6b6b; color: #fff; }
+        .custom-msg-btn.ok { background: #2a3348; color: #fff; }
+        .custom-msg-btn.ok:hover { background: #64ffda; color: #000; }
+
         /* --- МАГАЗИН И ИНВЕНТАРЬ --- */
         .top-info { display: flex; align-items: center; gap: 12px; }
         .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
@@ -108,12 +123,12 @@
 </head>
 <body>
 
-    <!-- АВАТАРКА В УГЛУ (ВИДНА ВЕЗДЕ) -->
+    <!-- АВАТАРКА В УГЛУ -->
     <div class="global-avatar-btn hidden" id="globalAvatarBtn">
         <span class="placeholder">👤</span>
     </div>
 
-    <!-- ОКНО ВХОДА (ЛОГИН И ПАРОЛЬ БЕЗ ПОЧТЫ) -->
+    <!-- ОКНО ВХОДА -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
@@ -122,6 +137,15 @@
             <input type="password" class="auth-input" id="authPassword" placeholder="Введи пароль">
             <button class="auth-btn" id="authRegisterBtn">➕ Создать аккаунт</button>
             <button class="auth-btn" id="authLoginBtn">🔓 Войти</button>
+        </div>
+    </div>
+
+    <!-- ОКНО СООБЩЕНИЙ (с подтверждением) -->
+    <div class="custom-msg-overlay" id="customMsgOverlay">
+        <div class="custom-msg-box">
+            <h3 id="customMsgTitle">Сообщение</h3>
+            <p id="customMsgText">Текст сообщения</p>
+            <div id="customMsgBtns"></div>
         </div>
     </div>
 
@@ -263,23 +287,7 @@
     
     <script>
         // ==========================================
-        // НАСТРОЙКА FIREBASE (ТОЛЬКО БАЗА ДАННЫХ)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDKMRdOJCYk0T8r9532sf4Lc_v087bVRpE",
-            authDomain: "crypropakonline.firebaseapp.com",
-            databaseURL: "https://crypropakonline-default-rtdb.firebaseio.com",
-            projectId: "crypropakonline",
-            storageBucket: "crypropakonline.firebasestorage.app",
-            messagingSenderId: "231495012300",
-            appId: "1:231495012300:web:9c1d4990d2e77fc98f9769",
-            measurementId: "G-QY2P24GM2Z"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // ==========================================
-        // КАСТОМНОЕ ОКНО СООБЩЕНИЙ
+        // КАСТОМНОЕ ОКНО (с обязательным подтверждением)
         // ==========================================
         function showCustomMsg(title, text, buttons) {
             return new Promise((resolve) => {
@@ -302,15 +310,25 @@
             });
         }
         async function customMsg(title, text) {
-            await showCustomMsg(title, text, [{ text: 'Ок', class: 'ok' }]);
+            // Показываем только с кнопкой Подтвердить
+            await showCustomMsg(title, text, [{ text: 'Подтвердить', class: 'confirm' }]);
         }
-        async function customConfirm(title, text) {
-            const res = await showCustomMsg(title, text, [
-                { text: 'Да', class: 'confirm' },
-                { text: 'Отмена', class: 'cancel' }
-            ]);
-            return res === 0;
-        }
+
+        // ==========================================
+        // НАСТРОЙКА FIREBASE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKMRdOJCYk0T8r9532sf4Lc_v087bVRpE",
+            authDomain: "crypropakonline.firebaseapp.com",
+            databaseURL: "https://crypropakonline-default-rtdb.firebaseio.com",
+            projectId: "crypropakonline",
+            storageBucket: "crypropakonline.firebasestorage.app",
+            messagingSenderId: "231495012300",
+            appId: "1:231495012300:web:9c1d4990d2e77fc98f9769",
+            measurementId: "G-QY2P24GM2Z"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         // ==========================================
         // ДАННЫЕ ИГРЫ
@@ -324,7 +342,8 @@
         ];
 
         const DEADLY_CARDS = [
-            { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
+            // Шедевр из снега — самый редкий (0.01% / 1000 в секунду)
+            { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 200, income: 1000, dropRate: 0.0001 },
             { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
             { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
             { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
@@ -360,8 +379,8 @@
             { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS },
             { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS },
             { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 2, price: 6700, drops: EPIC_CARDS },
-            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 10000, drops: DEADLY_CARDS },
-            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 50000, drops: LEGENDARY_CARDS }
+            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 3, price: 50000, drops: DEADLY_CARDS },
+            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 1, price: 10000, drops: LEGENDARY_CARDS }
         ];
 
         // ==========================================
@@ -569,6 +588,8 @@
                 let players = [];
                 for (let key in data) {
                     let p = data[key];
+                    // Скрываем админа из топа
+                    if (key === 'Dushka') continue; 
                     let income = 0;
                     if (p.equipped) {
                         p.equipped.forEach(id => {
@@ -663,9 +684,7 @@
                     slot.innerHTML = card.emoji;
                     slot.title = `Надета: ${card.name}`;
                     slot.onclick = () => {
-                        customConfirm("Снять карту", `Снять ${card.name}?`).then((confirmed) => {
-                            if (confirmed) unequipOne(cardId);
-                        });
+                        unequipOne(cardId); // прямое снятие без подтверждения
                     };
                 }
                 equipContainer.appendChild(slot);
@@ -725,7 +744,7 @@
             if (!pack || pack.drops.length === 0) return;
             let msg = `📊 Шансы выпадения из ${pack.name}:\n\n`;
             let shuffled = [...pack.drops].sort((a,b) => a.dropRate - b.dropRate);
-            shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(0)}%\n`; });
+            shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(4)}%\n`; });
             customMsg(`📊 Шансы ${pack.name}`, msg);
         };
 
@@ -741,7 +760,6 @@
 
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят! Придумай другой."); return; }
-                // Создаём нового пользователя
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
