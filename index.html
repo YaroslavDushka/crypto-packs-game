@@ -39,7 +39,7 @@
         .auth-btn.danger { background:#4a1a1a; color:#ff6b6b; }
         .auth-btn.danger:hover { background:#ff6b6b; color:#fff; }
 
-        /* --- ОКНО СООБЩЕНИЙ (с подтверждением) --- */
+        /* --- ОКНО СООБЩЕНИЙ --- */
         .custom-msg-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; }
         .custom-msg-overlay.active { display:flex; }
         .custom-msg-box { background: #1a2133; padding: 25px; border-radius: 20px; border: 2px solid #ffb347; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 180, 71, 0.2); }
@@ -140,7 +140,7 @@
         </div>
     </div>
 
-    <!-- ОКНО СООБЩЕНИЙ (с подтверждением) -->
+    <!-- ОКНО СООБЩЕНИЙ -->
     <div class="custom-msg-overlay" id="customMsgOverlay">
         <div class="custom-msg-box">
             <h3 id="customMsgTitle">Сообщение</h3>
@@ -239,13 +239,15 @@
                         </div>
                         <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;">
                         <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">📸 Загрузить аватарку</button>
-                        <button class="auth-btn" id="logoutBtn" style="background:#4a1a1a; color:#ff6b6b; width:auto; padding:10px 20px; margin-top:10px;">🚪 Выйти из аккаунта</button>
+                        
+                        <button class="auth-btn" id="changePasswordBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px; margin-top:10px;">🔑 Сменить пароль</button>
+                        <button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a; color:#ff6b6b; width:auto; padding:10px 20px; margin-top:10px;">🚪 Выйти из аккаунта</button>
                         <div style="font-size:12px; color:#8892b0; margin-top:10px;">Все изменения сохраняются в облаке!</div>
                     </div>
                 </div>
             </div>
 
-            <!-- АДМИН-ПАНЕЛЬ (видна только для Dushka) -->
+            <!-- АДМИН-ПАНЕЛЬ (видна ТОЛЬКО для Dushka) -->
             <div class="tab-pane" id="admin">
                 <div class="content-card">
                     <h2>🛠️ Админ-панель</h2>
@@ -255,17 +257,26 @@
                 </div>
             </div>
 
-            <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
+            <div class="tab-pane" id="market">
+                <div class="content-card">
+                    <h2>📊 Рынок</h2>
+                    <div style="padding:10px 0; text-align:center; color:#8892b0;">Здесь будет биржа карт между игроками</div>
+                </div>
+            </div>
+
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
                     <h2>₿ Криптовалюта</h2>
-                    <div class="placeholder" style="padding:30px; text-align:center;">
-                        Ваш баланс: <strong id="cryptoBalance" style="color:#f7931a; font-size:24px;">$10</strong><br>
-                        <span style="font-size:14px; color:#64ffda;">Доход: +$0 / сек</span>
-                    </div>
+                    <div id="cryptoContainer" style="padding:10px 0;"></div>
                 </div>
             </div>
-            <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div class="placeholder" style="text-align:center; padding:30px;">Достижения в разработке!</div></div></div>
+
+            <div class="tab-pane" id="roadmap">
+                <div class="content-card">
+                    <h2>🗺️ Дорожка</h2>
+                    <div style="padding:10px 0; text-align:center; color:#8892b0;">Карточные этапы и дроп карт появятся здесь</div>
+                </div>
+            </div>
         </div>
 
         <!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
@@ -280,12 +291,25 @@
             </div>
         </div>
 
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ -->
+        <div class="card-modal" id="cryptoCreateModal">
+            <div class="modal-content">
+                <h3>🪙 Создать свою криптовалюту</h3>
+                <p style="font-size:14px; color:#8892b0; margin-bottom:10px;">Стоимость создания: 100 000 монет</p>
+                <input type="text" id="cryptoNameInput" placeholder="Название крипты" style="width:100%; padding:10px; margin:6px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
+                <input type="text" id="cryptoDescInput" placeholder="Описание" style="width:100%; padding:10px; margin:6px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
+                <input type="file" id="cryptoImageInput" accept="image/*" style="margin:10px 0;">
+                <button class="auth-btn" id="cryptoCreateConfirm" style="background:#ffb347; color:#000;">Создать (100 000 $)</button>
+                <button class="auth-btn danger" id="cryptoCreateClose" style="background:#2a3348; color:#fff;">Отмена</button>
+            </div>
+        </div>
+
         <div class="tabs-bottom" id="tabBar">
             <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
             <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
             <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
             <button class="tab-btn" data-tab="profile"><span class="icon">👤</span><span class="label">Профиль</span></button>
-            <button class="tab-btn" data-tab="admin"><span class="icon">🛠️</span><span class="label">Админ</span></button>
+            <button class="tab-btn hidden-admin" data-tab="admin"><span class="icon">🛠️</span><span class="label">Админ</span></button>
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
             <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
             <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
@@ -298,7 +322,7 @@
     
     <script>
         // ==========================================
-        // КАСТОМНОЕ ОКНО (с обязательным подтверждением)
+        // КАСТОМНОЕ ОКНО
         // ==========================================
         function showCustomMsg(title, text, buttons) {
             return new Promise((resolve) => {
@@ -405,6 +429,7 @@
 
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
         let currentUser = null;
+        let banListener = null;
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
@@ -613,7 +638,6 @@
                             if (card) income += card.income;
                         });
                     }
-                    // Используем displayName или логин
                     const displayName = p.displayName || key;
                     players.push({ name: displayName, income: income, avatar: p.avatar || '👤' });
                 }
@@ -701,9 +725,6 @@
                 if (card) {
                     slot.innerHTML = card.emoji;
                     slot.title = `Надета: ${card.name}`;
-                    slot.onclick = () => {
-                        unequipOne(cardId); // прямое снятие без подтверждения
-                    };
                 }
                 equipContainer.appendChild(slot);
             });
@@ -783,10 +804,10 @@
                 }
                 let html = `<div style="overflow-x:auto; font-size:13px;">`;
                 html += `<table style="width:100%; border-collapse:collapse;">`;
-                html += `<tr style="background:#2a3348;"><th>Логин</th><th>Отобр. имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Статус</th><th>Действия</th></tr>`;
+                html += `<tr style="background:#2a3348;"><th>Логин</th><th>Имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Статус</th></tr>`;
                 for (let key in data) {
                     const p = data[key];
-                    if (key === 'Dushka') continue; // скрываем админа
+                    if (key === 'Dushka') continue;
                     const displayName = p.displayName || key;
                     const cardsCount = p.cards ? Object.keys(p.cards).filter(c => p.cards[c] > 0).length : 0;
                     const equippedCount = p.equipped ? p.equipped.length : 0;
@@ -798,13 +819,6 @@
                     html += `<td style="padding:8px;">${cardsCount}</td>`;
                     html += `<td style="padding:8px;">${equippedCount}</td>`;
                     html += `<td style="padding:8px;">${isBanned ? '<span style="color:#ff6b6b;">Забанен</span>' : '<span style="color:#64ffda;">Активен</span>'}</td>`;
-                    html += `<td style="padding:8px; display:flex; flex-wrap:wrap; gap:4px;">`;
-                    // Кнопки
-                    html += `<button onclick="adminBan('${key}')" style="background:#4a1a1a; color:#ff6b6b; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">${isBanned ? 'Разблокировать' : 'Заблокировать'}</button>`;
-                    html += `<button onclick="adminClearEquip('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Очистить экип.</button>`;
-                    html += `<button onclick="adminChangePassword('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Сменить пароль</button>`;
-                    html += `<button onclick="adminChangeDisplayName('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Сменить имя</button>`;
-                    html += `</td>`;
                     html += `</tr>`;
                 }
                 html += `</table></div>`;
@@ -812,59 +826,162 @@
             });
         }
 
-        // Админ функции
-        window.adminBan = function(login) {
-            const ref = db.ref('users/' + safePath(login) + '/banned');
-            ref.once('value').then(snap => {
-                const current = snap.val();
-                const newVal = !current;
-                ref.set(newVal).then(() => {
-                    customMsg('Статус изменён', `Пользователь ${login} теперь ${newVal ? 'забанен' : 'разблокирован'}`);
+        // ==========================================
+        // КРИПТОВАЛЮТА (СОЗДАНИЕ И ПОКУПКА ПО КАПИТАЛИЗАЦИИ)
+        // ==========================================
+
+        function renderCrypto() {
+            const container = document.getElementById('cryptoContainer');
+            const cryptoRef = db.ref('crypto');
+            cryptoRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span style="font-size:18px; font-weight:bold;">🪙 Крипто-биржа</span>
+                    <button class="auth-btn" onclick="openCryptoCreate()" style="width:auto; padding:8px 16px;">+ Создать крипту (100k$)</button>
+                </div>`;
+                
+                if (!data) {
+                    html += `<div style="text-align:center; padding:20px; color:#8892b0;">Пока никто не создал криптовалюту.</div>`;
+                    container.innerHTML = html;
+                    return;
+                }
+
+                html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                for (let key in data) {
+                    const c = data[key];
+                    const price = c.basePrice * Math.pow(1.05, c.supply || 0);
+                    const cap = price * (c.supply || 0);
+                    html += `
+                        <div style="background:#111722; border-radius:12px; padding:15px; border:1px solid #2a3348; display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                            <div style="width:50px; height:50px; background:#0b0e1a; border-radius:8px; overflow:hidden;">
+                                ${c.image ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:30px; display:flex; align-items:center; justify-content:center; height:100%;">🪙</span>`}
+                            </div>
+                            <div style="flex:1; min-width:120px;">
+                                <div style="font-weight:bold; font-size:16px;">${c.name || 'Без названия'}</div>
+                                <div style="font-size:12px; color:#8892b0;">${c.description || ''}</div>
+                                <div style="font-size:12px; color:#8892b0;">Создатель: ${c.creator || 'Аноним'}</div>
+                            </div>
+                            <div style="text-align:right; min-width:100px;">
+                                <div style="font-size:18px; color:#64ffda;">$${price.toFixed(2)}</div>
+                                <div style="font-size:11px; color:#8892b0;">Кап: $${cap.toFixed(0)}</div>
+                                <div style="font-size:11px; color:#8892b0;">В обращении: ${c.supply || 0}</div>
+                            </div>
+                            <button class="auth-btn" onclick="buyCrypto('${key}')" style="width:auto; padding:8px 16px;">Купить</button>
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+                container.innerHTML = html;
+            });
+        }
+
+        function openCryptoCreate() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            if (gameData.balance < 100000) { customMsg("Не хватает денег!", "Для создания крипты нужно 100 000 монет."); return; }
+            document.getElementById('cryptoCreateModal').classList.add('active');
+        }
+
+        document.getElementById('cryptoCreateClose').onclick = function() {
+            document.getElementById('cryptoCreateModal').classList.remove('active');
+        };
+
+        document.getElementById('cryptoCreateConfirm').onclick = function() {
+            const name = document.getElementById('cryptoNameInput').value.trim();
+            const desc = document.getElementById('cryptoDescInput').value.trim();
+            const file = document.getElementById('cryptoImageInput').files[0];
+            if (!name || !desc) { customMsg("Ошибка", "Введи название и описание!"); return; }
+
+            // Считываем фото в base64
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    createCryptoInDB(name, desc, e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                createCryptoInDB(name, desc, null);
+            }
+        };
+
+        function createCryptoInDB(name, desc, imageBase64) {
+            const cryptoRef = db.ref('crypto').push();
+            cryptoRef.set({
+                name: name,
+                description: desc,
+                image: imageBase64 || null,
+                creator: currentUser,
+                basePrice: 10,
+                supply: 0,
+                createdAt: Date.now()
+            }).then(() => {
+                // Списываем деньги
+                gameData.balance -= 100000;
+                saveLocalGame();
+                saveCloudGame();
+                document.getElementById('cryptoCreateModal').classList.remove('active');
+                document.getElementById('cryptoNameInput').value = '';
+                document.getElementById('cryptoDescInput').value = '';
+                document.getElementById('cryptoImageInput').value = '';
+                updateUI();
+                customMsg("✅ Крипта создана!", `${name} теперь в обороте!`);
+                renderCrypto();
+            });
+        }
+
+        window.buyCrypto = function(cryptoKey) {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            const cryptoRef = db.ref('crypto/' + cryptoKey);
+            cryptoRef.once('value').then((snapshot) => {
+                const c = snapshot.val();
+                if (!c) { customMsg("Ошибка", "Крипта не найдена!"); return; }
+                const price = c.basePrice * Math.pow(1.05, c.supply || 0);
+                if (gameData.balance < price) { customMsg("Не хватает денег!", `Нужно $${price.toFixed(2)}`); return; }
+                
+                // Покупаем (тратим деньги, увеличиваем предложение)
+                gameData.balance -= price;
+                cryptoRef.update({
+                    supply: (c.supply || 0) + 1
+                }).then(() => {
+                    saveLocalGame();
+                    saveCloudGame();
+                    updateUI();
+                    customMsg("✅ Покупка совершена!", `Вы купили ${c.name} за $${price.toFixed(2)}! Цена выросла!`);
+                    renderCrypto();
                 });
             });
         };
 
-        window.adminClearEquip = function(login) {
-            customConfirm('Очистить экипировку', `Удалить все надетые карты у ${login}?`).then(ok => {
-                if (ok) {
-                    db.ref('users/' + safePath(login) + '/equipped').set([]).then(() => {
-                        customMsg('Готово', `Экипировка ${login} очищена.`);
-                    });
-                }
-            });
-        };
-
-        window.adminChangePassword = function(login) {
-            // Простое окно с вводом пароля
-            showCustomMsg('Изменение пароля', `Введите новый пароль для ${login}:`, [
+        // ==========================================
+        // СМЕНА ПАРОЛЯ
+        // ==========================================
+        document.getElementById('changePasswordBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            // Запрашиваем новый пароль
+            showCustomMsg("Смена пароля", `Введите новый пароль для ${currentUser}:`, [
                 { text: 'Ввести', class: 'confirm' },
                 { text: 'Отмена', class: 'cancel' }
             ]).then(res => {
                 if (res === 0) {
-                    // Создаем поле ввода в сообщении, упрощенно - используем prompt
                     const newPass = prompt('Введите новый пароль:');
                     if (newPass && newPass.length > 0) {
-                        db.ref('users/' + safePath(login) + '/password').set(newPass).then(() => {
-                            customMsg('Готово', `Пароль ${login} изменён.`);
+                        const userRef = db.ref('users/' + safePath(currentUser) + '/password');
+                        userRef.set(newPass).then(() => {
+                            customMsg("✅ Пароль изменён!", "Теперь войдите с новым паролем.");
+                            // Выходим из аккаунта, чтобы игрок зашел с новым паролем
+                            if (banListener) banListener.off();
+                            localStorage.removeItem('cachedUser');
+                            currentUser = null;
+                            document.getElementById('authOverlay').classList.remove('hidden');
+                            document.getElementById('globalAvatarBtn').classList.add('hidden');
                         });
                     }
                 }
             });
         };
 
-        window.adminChangeDisplayName = function(login) {
-            const newName = prompt('Введите новое отображаемое имя для ' + login + ':');
-            if (newName && newName.trim().length > 0) {
-                db.ref('users/' + safePath(login) + '/displayName').set(newName.trim()).then(() => {
-                    customMsg('Готово', `Имя ${login} изменено на "${newName.trim()}"`);
-                });
-            }
-        };
-
         // ==========================================
-        // СЛУШАТЕЛЬ БАНА ДЛЯ ИГРОКА (реальное время)
+        // СЛУШАТЕЛЬ БАНА И АВТОРИЗАЦИЯ
         // ==========================================
-        let banListener = null;
         function setupBanListener() {
             if (!currentUser) return;
             const banRef = db.ref('users/' + safePath(currentUser) + '/banned');
@@ -872,29 +989,22 @@
             banListener = banRef.on('value', (snapshot) => {
                 const isBanned = snapshot.val();
                 if (isBanned === true) {
-                    customMsg('🚫 Вас забанили!', 'Администратор заблокировал ваш аккаунт. Попробуйте позже.');
+                    customMsg('🚫 Вас забанили!', 'Администратор заблокировал ваш аккаунт.');
+                    if (banListener) banListener.off();
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
                     document.getElementById('globalAvatarBtn').classList.add('hidden');
-                    if (banListener) banListener.off();
                 }
             });
         }
 
-        // ==========================================
-        // АВТОРИЗАЦИЯ (ЛОГИН + ПАРОЛЬ)
-        // ==========================================
-
-        // Создать аккаунт
         document.getElementById('authRegisterBtn').onclick = function() {
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
-            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль, бро!"); return; }
-
+            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
-                if (data) { customMsg("Ошибка", "Этот логин уже занят! Придумай другой."); return; }
-                // Создаём нового пользователя
+                if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
@@ -904,22 +1014,20 @@
                 document.getElementById('authOverlay').classList.add('hidden');
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
                 if (login === 'Dushka') renderAdminPanel();
+                renderCrypto();
                 customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
                 setupBanListener();
             });
         };
 
-        // Войти в аккаунт
         document.getElementById('authLoginBtn').onclick = function() {
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
-            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль, бро!"); return; }
-
+            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
-                if (!data) { customMsg("Ошибка", "Такой пользователь не найден! Сначала создай аккаунт."); return; }
-                if (data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован администратором."); return; }
+                if (!data) { customMsg("Ошибка", "Пользователь не найден!"); return; }
+                if (data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); return; }
                 if (data.password !== pass) { customMsg("Ошибка", "Неверный пароль!"); return; }
-                
                 gameData.balance = data.balance || 10;
                 gameData.cards = data.cards || {};
                 gameData.equipped = data.equipped || [];
@@ -932,16 +1040,16 @@
                 document.getElementById('authOverlay').classList.add('hidden');
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
                 if (login === 'Dushka') renderAdminPanel();
+                renderCrypto();
                 customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
                 setupBanListener();
             });
         };
 
-        // Выход
         document.getElementById('logoutBtn').onclick = function() {
             if (currentUser) {
-                localStorage.removeItem('cachedUser');
                 if (banListener) banListener.off();
+                localStorage.removeItem('cachedUser');
                 currentUser = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('globalAvatarBtn').classList.add('hidden');
@@ -949,7 +1057,7 @@
             }
         };
 
-        // Автоматический вход при загрузке страницы
+        // Автоматический вход
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser, function(data) {
@@ -965,11 +1073,10 @@
                     document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
                     if (cachedUser === 'Dushka') renderAdminPanel();
+                    renderCrypto();
                     setupBanListener();
                 } else {
-                    if (data && data.banned === true) {
-                        customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован администратором.");
-                    }
+                    if (data && data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); }
                     document.getElementById('authOverlay').classList.remove('hidden');
                 }
             });
@@ -1008,7 +1115,34 @@
                     document.getElementById(this.getAttribute('data-tab')).classList.add('active');
                 });
             });
+
+            // Скрываем админку для всех, кроме Dushka
+            const adminBtn = document.querySelector('.hidden-admin');
+            if (adminBtn) {
+                // При загрузке страницы скрываем кнопку админа из меню
+                // Она появится только после входа в функцию renderAdminPanel
+                adminBtn.style.display = 'none';
+            }
         });
+
+        // Дополнительно: при переключении вкладки на админ, перерисовываем
+        // и делаем проверку. Если юзер не Dushka, скрываем кнопку.
+        const origRenderAdmin = renderAdminPanel;
+        renderAdminPanel = function() {
+            const adminBtn = document.querySelector('.hidden-admin');
+            if (currentUser === 'Dushka') {
+                if (adminBtn) adminBtn.style.display = 'flex';
+                origRenderAdmin();
+            } else {
+                if (adminBtn) adminBtn.style.display = 'none';
+                document.getElementById('adminContainer').innerHTML = `<div class="placeholder" style="text-align:center; padding:20px; color:#ff6b6b;">⛔ У вас нет прав администратора!</div>`;
+            }
+        };
+        // Подменяем функцию, чтобы она вызывалась при старте и при входе
+        const origRenderCrypto = renderCrypto;
+        renderCrypto = function() {
+            origRenderCrypto();
+        };
     </script>
 </body>
 </html>
