@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки (ID)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -21,6 +21,17 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
+        /* --- ОКНО ВХОДА ПО ID --- */
+        .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .auth-overlay.hidden { display:none; }
+        .auth-box { background:#1a2133; padding:30px; border-radius:20px; border:1px solid #ffb347; width:90%; max-width:380px; text-align:center; }
+        .auth-box h2 { color:#fff; margin-bottom:20px; }
+        .auth-input { width:100%; padding:12px; margin:10px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:12px; color:#fff; font-size:16px; }
+        .auth-input:focus { outline:2px solid #64ffda; }
+        .auth-btn { width:100%; padding:12px; margin:6px 0; background:#ffb347; border:none; border-radius:12px; font-size:16px; font-weight:bold; cursor:pointer; color:#000; }
+        .auth-btn:hover { background:#ffcc66; }
+        
+        /* --- МАГАЗИН И ИНВЕНТАРЬ --- */
         .top-info { display: flex; align-items: center; gap: 12px; }
         .balance-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #f7931a; display: flex; align-items: center; gap: 6px; }
         .timer-box { background: #101826; padding: 8px 16px; border-radius: 40px; font-size: 14px; border: 1px solid #2a3348; color: #64ffda; display: flex; align-items: center; gap: 6px; }
@@ -89,15 +100,13 @@
 </head>
 <body>
 
-    <!-- ОКНО ВХОДА (ЛОГИН И ПАРОЛЬ) -->
+    <!-- ОКНО ВХОДА ПО ID -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
-            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Войди, чтобы синхронизировать прогресс</p>
-            <input type="text" class="auth-input" id="loginInput" placeholder="Введи логин (никнейм)">
-            <input type="password" class="auth-input" id="passInput" placeholder="Введи пароль">
-            <button class="auth-btn" id="authRegisterBtn">➕ Создать аккаунт</button>
-            <button class="auth-btn" id="authLoginBtn">🔓 Войти</button>
+            <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой ID, чтобы загрузить прогресс</p>
+            <input type="text" class="auth-input" id="loginInput" placeholder="Введи свой ID (например, 1)">
+            <button class="auth-btn" id="authLoginBtn">🚀 Войти по ID</button>
         </div>
     </div>
 
@@ -182,8 +191,9 @@
                 <div class="content-card">
                     <h2>👤 Профиль</h2>
                     <div style="text-align:center; padding:10px 0;">
-                        <h3 style="color:#64ffda; margin-bottom:10px;">Ваш логин</h3>
-                        <div id="profileLoginDisplay" style="font-size: 24px; font-weight: bold; color: #ffb347; margin-bottom: 20px;">Не авторизован</div>
+                        <h3 style="color:#64ffda; margin-bottom:10px;">Ваш ID</h3>
+                        <div id="profileIdDisplay" style="font-size: 32px; font-weight: bold; color: #ffb347; margin-bottom: 20px;">Загрузка...</div>
+                        <div style="font-size:12px; color:#8892b0; margin-bottom:10px;">Введите этот ID на другом устройстве, чтобы загрузить прогресс!</div>
                         
                         <h3 style="color:#64ffda; margin-bottom:10px;">Ваша аватарка</h3>
                         <div id="profileAvatarPreview" style="width:120px; height:120px; border-radius:50%; background:#0b0e1a; border:2px solid #ffb347; margin:0 auto 15px auto; display:flex; align-items:center; justify-content:center; font-size:60px; overflow:hidden;">
@@ -305,18 +315,18 @@
         ];
 
         // ==========================================
-        // ЛОГИКА ИГРЫ И АВТОРИЗАЦИЯ
+        // ЛОГИКА ИГРЫ
         // ==========================================
 
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
-        let currentUser = null;
+        let currentUserId = null;
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
         }
 
-        function loadCloudData(username, callback) {
-            const safeId = safePath(username);
+        function loadCloudData(userId, callback) {
+            const safeId = safePath(userId);
             const userRef = db.ref('users/' + safeId);
             userRef.once('value').then((snapshot) => {
                 if (snapshot.exists()) {
@@ -331,8 +341,8 @@
         }
 
         function saveCloudGame() {
-            if (!currentUser) return;
-            const safeId = safePath(currentUser);
+            if (!currentUserId) return;
+            const safeId = safePath(currentUserId);
             const userRef = db.ref('users/' + safeId);
             userRef.set({
                 balance: gameData.balance,
@@ -486,8 +496,8 @@
             } else {
                 preview.innerHTML = `👤`;
             }
-            if (currentUser) {
-                document.getElementById('profileLoginDisplay').innerText = `Ваш логин: ${currentUser}`;
+            if (currentUserId) {
+                document.getElementById('profileIdDisplay').innerText = `Ваш ID: ${currentUserId}`;
             }
         }
 
@@ -509,7 +519,7 @@
                             if (card) income += card.income;
                         });
                     }
-                    players.push({ name: key, income: income, avatar: p.avatar || '👤' });
+                    players.push({ id: key, income: income, avatar: p.avatar || '👤' });
                 }
                 const sorted = players.sort((a,b) => b.income - a.income).slice(0, 100);
                 const container = document.getElementById('leaderList');
@@ -530,7 +540,7 @@
                     html += `
                         <div class="leader-row">
                             <div class="leader-rank ${rankClass}">${index+1}</div>
-                            <div class="leader-name">${avatarHtml} ${player.name}</div>
+                            <div class="leader-name">${avatarHtml} ID: ${player.id}</div>
                             <div class="leader-income">💵 ${player.income}/сек</div>
                         </div>
                     `;
@@ -550,7 +560,7 @@
                 document.getElementById('shopTimer').innerText = `⏳ ${m}:${s < 10 ? '0'+s : s}`;
             } else {
                 generateStore();
-                if (currentUser) saveCloudGame();
+                if (currentUserId) saveCloudGame();
             }
         }, 1000);
 
@@ -559,7 +569,7 @@
             if (totalIncome > 0) {
                 gameData.balance = (gameData.balance || 0) + totalIncome;
                 saveLocalGame();
-                if (currentUser) saveCloudGame();
+                if (currentUserId) saveCloudGame();
                 updateUI();
             }
         }, 1000);
@@ -661,63 +671,65 @@
         };
 
         // ==========================================
-        // АВТОРИЗАЦИЯ (Логин и Пароль)
+        // ВХОД ПО ID И СЧЁТЧИК
         // ==========================================
 
-        // Создать аккаунт
-        document.getElementById('authRegisterBtn').onclick = function() {
-            const login = document.getElementById('loginInput').value.trim();
-            const pass = document.getElementById('passInput').value.trim();
-            if (!login || !pass) { alert("Введите логин и пароль!"); return; }
+        document.getElementById('authLoginBtn').onclick = function() {
+            let inputId = document.getElementById('loginInput').value.trim();
+            
+            // Если поле пустое — создаём следующего по счёту
+            if (!inputId) {
+                const counterRef = db.ref('counter/last_id');
+                counterRef.transaction((current) => {
+                    return (current || 0) + 1;
+                }, (error, committed, snapshot) => {
+                    if (error) { alert("Ошибка счётчика!"); return; }
+                    if (committed) {
+                        const newId = snapshot.val();
+                        loginWithId(String(newId));
+                    }
+                }, false);
+                return;
+            }
 
-            loadCloudData(login, function(data) {
-                if (data) { alert("Этот логин уже занят! Войдите."); return; }
-                // Создаём нового пользователя
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
-                for(let i=0; i<3; i++) gameData.inventory.push('pack5');
-                currentUser = login;
-                localStorage.setItem('cachedUser', login);
+            // Если введён ID, проверяем и входим
+            loginWithId(inputId);
+        };
+
+        function loginWithId(id) {
+            loadCloudData(id, function(data) {
+                if (data) {
+                    // Вход в существующий аккаунт
+                    gameData.balance = data.balance || 10;
+                    gameData.cards = data.cards || {};
+                    gameData.equipped = data.equipped || [];
+                    gameData.inventory = data.inventory || [];
+                    gameData.avatar = data.avatar || '👤';
+                } else {
+                    // Создание нового аккаунта
+                    gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
+                    for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+                }
+                currentUserId = id;
+                localStorage.setItem('cachedUserId', id);
                 saveLocalGame();
                 saveCloudGame();
                 document.getElementById('authOverlay').style.display = 'none';
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
-                alert(`✅ Аккаунт ${login} создан!`);
             });
-        };
-
-        // Войти в аккаунт
-        document.getElementById('authLoginBtn').onclick = function() {
-            const login = document.getElementById('loginInput').value.trim();
-            const pass = document.getElementById('passInput').value.trim();
-            if (!login || !pass) { alert("Введите логин и пароль!"); return; }
-
-            loadCloudData(login, function(data) {
-                if (!data) { alert("Такой пользователь не найден! Сначала создайте аккаунт."); return; }
-                gameData.balance = data.balance || 10;
-                gameData.cards = data.cards || {};
-                gameData.equipped = data.equipped || [];
-                gameData.inventory = data.inventory || [];
-                gameData.avatar = data.avatar || '👤';
-                currentUser = login;
-                localStorage.setItem('cachedUser', login);
-                saveLocalGame();
-                document.getElementById('authOverlay').style.display = 'none';
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
-                alert(`✅ Добро пожаловать, ${login}!`);
-            });
-        };
+        }
 
         // Автоматический вход при загрузке страницы
-        const cachedUser = localStorage.getItem('cachedUser');
-        if (cachedUser) {
-            loadCloudData(cachedUser, function(data) {
+        const cachedUserId = localStorage.getItem('cachedUserId');
+        if (cachedUserId) {
+            loadCloudData(cachedUserId, function(data) {
                 if (data) {
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
-                    currentUser = cachedUser;
+                    currentUserId = cachedUserId;
                     saveLocalGame();
                     document.getElementById('authOverlay').style.display = 'none';
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
