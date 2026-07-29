@@ -172,110 +172,47 @@
         .modal-overlay-simple.active { display: flex; }
 
         /* --- ФИКС ОКНА СОЗДАНИЯ КРИПТЫ --- */
-        #cryptoCreateModal {
-            position: fixed !important;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85) !important;
-            display: none;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 9999 !important;
-        }
-        #cryptoCreateModal.active {
-            display: flex !important;
-        }
-        #cryptoCreateModal .modal-box {
-            max-width: 400px !important;
-            width: 90% !important;
-            background: #1a2133 !important;
-            border: 2px solid #ffb347 !important;
-            border-radius: 20px !important;
-            padding: 24px !important;
-            box-shadow: 0 0 30px rgba(255, 180, 71, 0.2) !important;
-            overflow-y: auto !important;
-            max-height: 90vh !important;
-        }
-        #cryptoCreateModal .modal-box h2 {
-            color: #ffb347 !important;
-            font-size: 20px !important;
-            margin-bottom: 20px !important;
-            border-bottom: 1px solid #2a3348 !important;
-            padding-bottom: 10px !important;
-        }
-        #cryptoCreateModal .input-group label {
-            display: block !important;
-            font-size: 12px !important;
-            color: #848e9c !important;
-            margin-bottom: 5px !important;
-        }
-        #cryptoCreateModal .input-group input,
-        #cryptoCreateModal .input-group textarea {
-            background: #0b0e1a !important;
-            border: 1px solid #2a3348 !important;
-            color: #eaecef !important;
-            border-radius: 8px !important;
-            padding: 10px !important;
-            width: 100% !important;
-            font-family: inherit !important;
-        }
-        #cryptoCreateModal .input-group input:focus,
-        #cryptoCreateModal .input-group textarea:focus {
-            outline: 2px solid #64ffda !important;
-            border-color: transparent !important;
-        }
-        #cryptoCreateModal .upload-container {
-            display: flex !important;
-            align-items: center !important;
-            gap: 15px !important;
-            margin-bottom: 15px !important;
-        }
-        #cryptoCreateModal .upload-preview {
-            width: 60px !important;
-            height: 60px !important;
-            border-radius: 50% !important;
-            background: #0b0e1a !important;
-            border: 2px solid #2a3348 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 24px !important;
-            overflow: hidden !important;
-            color: #848e9c !important;
-        }
-        #cryptoCreateModal .upload-preview img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-        }
-        #cryptoCreateModal .modal-actions {
-            display: flex !important;
-            justify-content: space-between !important;
-            gap: 10px !important;
-            margin-top: 20px !important;
-        }
-        #cryptoCreateModal .modal-actions .btn {
-            flex: 1 !important;
-            padding: 10px !important;
-            border-radius: 8px !important;
-            font-weight: bold !important;
-            border: none !important;
-            cursor: pointer !important;
-            font-size: 14px !important;
-        }
-        #cryptoCreateModal .modal-actions .btn-buy {
-            background: #0ecb81 !important;
-            color: #fff !important;
-        }
-        #cryptoCreateModal .modal-actions .btn-sell {
-            background: #2a3348 !important;
-            color: #fff !important;
-        }
-        #cryptoCreateModal .modal-actions .btn:hover {
-            opacity: 0.8 !important;
-        }
+        #cryptoCreateModal { position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85) !important; display: none; align-items: center !important; justify-content: center !important; z-index: 9999 !important; }
+        #cryptoCreateModal.active { display: flex !important; }
+        #cryptoCreateModal .modal-box { max-width: 400px !important; width: 90% !important; background: #1a2133 !important; border: 2px solid #ffb347 !important; border-radius: 20px !important; padding: 24px !important; box-shadow: 0 0 30px rgba(255, 180, 71, 0.2) !important; overflow-y: auto !important; max-height: 90vh !important; }
+        #cryptoCreateModal .modal-box h2 { color: #ffb347 !important; font-size: 20px !important; margin-bottom: 20px !important; border-bottom: 1px solid #2a3348 !important; padding-bottom: 10px !important; }
+        #cryptoCreateModal .input-group label { display: block !important; font-size: 12px !important; color: #848e9c !important; margin-bottom: 5px !important; }
+        #cryptoCreateModal .input-group input, #cryptoCreateModal .input-group textarea { background: #0b0e1a !important; border: 1px solid #2a3348 !important; color: #eaecef !important; border-radius: 8px !important; padding: 10px !important; width: 100% !important; font-family: inherit !important; }
+        #cryptoCreateModal .input-group input:focus, #cryptoCreateModal .input-group textarea:focus { outline: 2px solid #64ffda !important; border-color: transparent !important; }
+        #cryptoCreateModal .upload-container { display: flex !important; align-items: center !important; gap: 15px !important; margin-bottom: 15px !important; }
+        #cryptoCreateModal .upload-preview { width: 60px !important; height: 60px !important; border-radius: 50% !important; background: #0b0e1a !important; border: 2px solid #2a3348 !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 24px !important; overflow: hidden !important; color: #848e9c !important; }
+        #cryptoCreateModal .upload-preview img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+        #cryptoCreateModal .modal-actions { display: flex !important; justify-content: space-between !important; gap: 10px !important; margin-top: 20px !important; }
+        #cryptoCreateModal .modal-actions .btn { flex: 1 !important; padding: 10px !important; border-radius: 8px !important; font-weight: bold !important; border: none !important; cursor: pointer !important; font-size: 14px !important; }
+        #cryptoCreateModal .modal-actions .btn-buy { background: #0ecb81 !important; color: #fff !important; }
+        #cryptoCreateModal .modal-actions .btn-sell { background: #2a3348 !important; color: #fff !important; }
+        #cryptoCreateModal .modal-actions .btn:hover { opacity: 0.8 !important; }
+
+        /* --- СТИЛИ ДЛЯ РЫНКА (P2P) --- */
+        .listing-card { background: #111722; border: 1px solid #2a3348; border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; transition: 0.2s; }
+        .listing-card:hover { border-color: #f0b90b; }
+        .listing-info { display: flex; align-items: center; gap: 12px; }
+        .listing-emoji { font-size: 28px; width: 40px; text-align: center; }
+        .listing-details { display: flex; flex-direction: column; }
+        .listing-name { font-weight: 600; font-size: 15px; }
+        .listing-rarity { font-size: 11px; font-weight: bold; padding: 2px 10px; border-radius: 10px; display: inline-block; margin-top: 2px; }
+        .listing-seller { font-size: 12px; color: #8892b0; }
+        .listing-price { font-weight: 700; color: #f7931a; font-size: 16px; }
+        .listing-actions { display: flex; gap: 8px; }
+        .btn-buy-listing { background: #0ecb81; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-buy-listing:hover { background: #1bd691; }
+        .btn-buy-listing:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- СТИЛИ ДЛЯ ДОРОЖКИ (РОТАЦИЯ) --- */
+        .roadmap-container { display: flex; flex-direction: column; gap: 20px; padding: 10px 0; }
+        .roadmap-slots { display: flex; justify-content: space-around; gap: 10px; }
+        .roadmap-slot { background: #0b0e1a; border: 2px dashed #2a3348; border-radius: 16px; width: 30%; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; transition: 0.3s; position: relative; }
+        .roadmap-slot.filled { border: 2px solid #64ffda; background: #111722; }
+        .roadmap-slot .card-emoji { font-size: 40px; }
+        .roadmap-slot .card-name { font-size: 12px; text-align: center; margin-top: 5px; font-weight: 600; }
+        .roadmap-slot .card-rarity { font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
+        .roadmap-slot .timer-label { font-size: 11px; color: #848e9c; margin-top: 6px; }
+        .roadmap-timer-container { text-align: center; font-size: 14px; color: #64ffda; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -438,10 +375,32 @@
                 </div>
             </div>
 
+            <!-- ВКЛАДКА РЫНОК (P2P) -->
             <div class="tab-pane" id="market">
                 <div class="content-card">
                     <h2>📊 Рынок</h2>
-                    <div style="padding:10px 0; text-align:center; color:#8892b0;">Здесь будет биржа карт между игроками</div>
+                    <div style="margin-bottom: 12px; font-size: 14px; color: #848e9c;">
+                        Здесь ты можешь выставить свои карты на продажу за доллары.
+                    </div>
+                    <div id="marketplaceContainer" style="padding: 10px 0;">
+                        <div class="empty-state">📭 Лотов пока нет. Выставь свою первую карту!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА ДОРОЖКА (РОТАЦИЯ) -->
+            <div class="tab-pane" id="roadmap">
+                <div class="content-card">
+                    <h2>🗺️ Дорожка</h2>
+                    <div style="font-size:14px; color:#848e9c; margin-bottom:15px;">3 карты сменяют друг друга каждые 3 секунды. Шансы: Обычная 51.5%, Редкая 41.5%, Эпическая 5%, Легендарная 1%, Дедли 1%.</div>
+                    <div class="roadmap-container">
+                        <div class="roadmap-slots" id="roadmapSlots">
+                            <div class="roadmap-slot" id="roadmapSlot0"><span style="color:#555;">Загрузка...</span></div>
+                            <div class="roadmap-slot" id="roadmapSlot1"><span style="color:#555;">Загрузка...</span></div>
+                            <div class="roadmap-slot" id="roadmapSlot2"><span style="color:#555;">Загрузка...</span></div>
+                        </div>
+                        <div class="roadmap-timer-container" id="roadmapTimerText">⏳ До следующей смены: 3 секунды</div>
+                    </div>
                 </div>
             </div>
 
@@ -459,12 +418,6 @@
                 </div>
             </div>
 
-            <div class="tab-pane" id="roadmap">
-                <div class="content-card">
-                    <h2>🗺️ Дорожка</h2>
-                    <div style="padding:10px 0; text-align:center; color:#8892b0;">Карточные этапы и дроп карт появятся здесь</div>
-                </div>
-            </div>
         </div>
 
         <!-- МОДАЛЬНОЕ ОКНО КАРТЫ -->
@@ -475,11 +428,12 @@
                 <button class="modal-btn" id="modalEquipBtn">Одеть</button>
                 <button class="modal-btn" id="modalUnequipBtn">Снять</button>
                 <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
+                <button class="modal-btn" id="modalMarketBtn" style="background:#f0b90b; color:#000;">📊 Выставить на рынок</button>
                 <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ (оно есть в коде) -->
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ -->
         <div class="modal-overlay" id="cryptoCreateModal">
             <div class="modal-box">
                 <h2>🪙 Создать новую монету (10k $)</h2>
@@ -525,8 +479,8 @@
             <button class="tab-btn" data-tab="profile"><span class="icon">👤</span><span class="label">Профиль</span></button>
             <button class="tab-btn hidden-admin" data-tab="admin"><span class="icon">🛠️</span><span class="label">Админ</span></button>
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
-            <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
             <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
+            <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
         </div>
     </div>
 
@@ -794,10 +748,15 @@
             const modal = document.getElementById('cardModal');
             document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
             document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/сек | 📦 ${gameData.cards[card.id] || 0} шт.`;
+            
             document.getElementById('modalEquipBtn').onclick = () => equipOne(cardId);
             document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
             document.getElementById('modalSellBtn').innerText = `Продать за $${Math.floor(card.price/2)}`;
             document.getElementById('modalSellBtn').onclick = () => sellOne(cardId);
+            
+            // Кнопка рынка
+            document.getElementById('modalMarketBtn').onclick = () => openSellModal(cardId);
+            
             document.getElementById('modalCloseBtn').onclick = closeModal;
             modal.classList.add('active');
         };
@@ -1266,7 +1225,6 @@
 
         function openCreateModal() {
             const modal = document.getElementById('cryptoCreateModal');
-            // ЗАЩИТА ОТ ОШИБКИ: если модалка не найдена, не падаем
             if (!modal) {
                 customMsg("Ошибка", "Окно создания монеты не найдено. Попробуйте обновить страницу (Ctrl+F5).");
                 return;
@@ -1517,8 +1475,9 @@
             gameData.cryptoState.portfolio[id] -= amount;
             
             coin.supply += amount;
-            let dropMultiplier = 1 - (0.005 * amount);
-            if (dropMultiplier < 0.1) dropMultiplier = 0.1;
+            // Плавное падение цены, а не обнуление
+            let dropMultiplier = 1 - (0.01 * amount);
+            if (dropMultiplier < 0.5) dropMultiplier = 0.5;
             let newPrice = price * dropMultiplier;
             newPrice = Math.max(0.01, newPrice);
             
@@ -1647,6 +1606,8 @@
                     if (login === 'Dushka') renderAdminPanel();
                     if (!silent) customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
                     setupBanListener();
+                    startRoadmap(); // Запускаем дорожку при входе
+                    renderMarketplace(); // Загружаем рынок
                     resolve();
                 });
             });
@@ -1656,6 +1617,7 @@
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
+            if (login.toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован для регистрации!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoState: { coins: {}, portfolio: {}, volume: {}, history: [] }, packPurchases: {} };
@@ -1670,6 +1632,8 @@
                 customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
                 setupBanListener();
                 renderSavedAccounts();
+                startRoadmap();
+                renderMarketplace();
             });
         };
 
@@ -1690,6 +1654,7 @@
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('globalAvatarBtn').classList.add('hidden');
                 customMsg("Выход", "Ты вышел из аккаунта.");
+                stopRoadmap();
             }
         };
 
@@ -1714,6 +1679,8 @@
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
                     if (cachedUser === 'Dushka') renderAdminPanel();
                     setupBanListener();
+                    startRoadmap();
+                    renderMarketplace();
                 } else {
                     if (data && data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); }
                     document.getElementById('authOverlay').classList.remove('hidden');
@@ -1779,6 +1746,7 @@
             const newNick = prompt('Введите новый ник (логин):');
             if (!newNick || newNick.trim().length === 0) { customMsg("Ошибка", "Ник не может быть пустым!"); return; }
             if (newNick.trim() === currentUser) { customMsg("Ошибка", "Это твой текущий ник!"); return; }
+            if (newNick.trim().toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован!"); return; }
             loadCloudData(newNick.trim(), function(data) {
                 if (data) { customMsg("Ошибка", "Этот ник уже занят!"); return; }
                 const newSafeId = safePath(newNick.trim());
@@ -1819,6 +1787,283 @@
                 document.getElementById('authOverlay').classList.remove('hidden');
             });
         };
+
+        // ==========================================
+        // РЫНОК (P2P ТОРГОВЛЯ)
+        // ==========================================
+        function openSellModal(cardId) {
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+            const count = gameData.cards[cardId] || 0;
+            if (count <= 0) {
+                customMsg("Ошибка", "У тебя нет этой карты для продажи!");
+                return;
+            }
+            if (gameData.equipped.includes(cardId)) {
+                customMsg("Ошибка", "Сначала сними карту с экипировки!");
+                return;
+            }
+
+            showCustomMsg(`💰 Продажа: ${card.emoji} ${card.name}`, 
+                `У тебя: ${count} шт. Введи цену (от 1 до 500000 $):`, 
+                [
+                    { text: 'Ввести', class: 'confirm' },
+                    { text: 'Отмена', class: 'cancel' }
+                ]
+            ).then(res => {
+                if (res === 0) {
+                    const price = prompt('Цена в $ (целое число):');
+                    const numPrice = parseInt(price);
+                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 500000) {
+                        customMsg("Ошибка", "Цена должна быть от 1 до 500 000 $");
+                        return;
+                    }
+                    createListing(cardId, numPrice);
+                }
+            });
+        }
+
+        function createListing(cardId, price) {
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+            if (!gameData.cards[cardId] || gameData.cards[cardId] < 1) {
+                customMsg("Ошибка", "Карта уже продана или исчезла.");
+                return;
+            }
+            gameData.cards[cardId]--;
+            saveLocalGame();
+            saveCloudGame();
+            
+            const listingRef = db.ref('marketplace/listings').push();
+            const listingData = {
+                seller: currentUser,
+                cardId: cardId,
+                price: price,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                cardName: card.name,
+                cardEmoji: card.emoji,
+                cardRarity: card.rarity
+            };
+            listingRef.set(listingData).then(() => {
+                customMsg("✅ Выставлено!", `${card.emoji} ${card.name} выставлен за $${price}.`);
+                renderInventory();
+                updateUI();
+                renderMarketplace();
+            }).catch(err => {
+                customMsg("❌ Ошибка", "Не удалось выставить лот. Попробуй позже.");
+                console.error(err);
+                gameData.cards[cardId] = (gameData.cards[cardId] || 0) + 1;
+                saveLocalGame();
+                renderInventory();
+            });
+        }
+
+        function renderMarketplace() {
+            const container = document.getElementById('marketplaceContainer');
+            container.innerHTML = `<div class="empty-state" style="color:#848e9c;">Загрузка лотов...</div>`;
+            
+            const listingsRef = db.ref('marketplace/listings').orderByChild('timestamp').limitToLast(100);
+            
+            listingsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = `<div class="empty-state">📭 Лотов пока нет. Выставь свою первую карту!</div>`;
+                    return;
+                }
+                
+                const ids = Object.keys(data);
+                let html = '';
+                for (let i = ids.length - 1; i >= 0; i--) {
+                    const id = ids[i];
+                    const lot = data[id];
+                    if (!lot) continue;
+                    
+                    const isMyListing = lot.seller === currentUser;
+                    const canBuy = !isMyListing && gameData.balance >= lot.price;
+                    
+                    let rarityColor = '';
+                    if (lot.cardRarity === 'deadly') rarityColor = '#ef4444';
+                    else if (lot.cardRarity === 'legendary') rarityColor = '#ffd700';
+                    else if (lot.cardRarity === 'epic') rarityColor = '#a855f7';
+                    else if (lot.cardRarity === 'rare') rarityColor = '#3b82f6';
+                    else rarityColor = '#6b7280';
+                    
+                    html += `
+                        <div class="listing-card" id="listing_${id}">
+                            <div class="listing-info">
+                                <div class="listing-emoji">${lot.cardEmoji || '🃏'}</div>
+                                <div class="listing-details">
+                                    <div class="listing-name">${lot.cardName || 'Неизвестно'}</div>
+                                    <div class="listing-rarity" style="background:${rarityColor}; color:#fff;">${(lot.cardRarity || 'common').toUpperCase()}</div>
+                                    <div class="listing-seller">Продавец: ${lot.seller}</div>
+                                </div>
+                            </div>
+                            <div class="listing-actions">
+                                <div class="listing-price">$${lot.price}</div>
+                                ${isMyListing ? `<button class="btn btn-sell" onclick="cancelListing('${id}')">Отменить</button>` : 
+                                `<button class="btn-buy-listing" ${canBuy ? `onclick="buyListing('${id}')"` : 'disabled'}>
+                                    ${canBuy ? 'Купить' : 'Не хватает денег'}
+                                </button>`}
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html || `<div class="empty-state">📭 Нет доступных лотов.</div>`;
+            });
+        }
+
+        window.buyListing = function(listingId) {
+            const listingRef = db.ref('marketplace/listings/' + listingId);
+            listingRef.once('value', (snap) => {
+                const lot = snap.val();
+                if (!lot) { customMsg("Ошибка", "Этот лот уже куплен или удален."); return; }
+                if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя купить свой же лот!"); return; }
+                if (gameData.balance < lot.price) { customMsg("Ошибка", "Не хватает денег!"); return; }
+
+                // Транзакция покупки
+                const sellerRef = db.ref('users/' + safePath(lot.seller) + '/balance');
+                const buyerRef = db.ref('users/' + safePath(currentUser) + '/balance');
+                const buyerCardsRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
+
+                // Списываем с покупателя, добавляем продавцу, добавляем карту, удаляем лот
+                const updates = {};
+                updates['users/' + safePath(currentUser) + '/balance'] = gameData.balance - lot.price;
+                updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.price * 0.9); // 10% комиссия
+                updates['users/' + safePath(currentUser) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
+                updates['marketplace/listings/' + listingId] = null;
+
+                db.ref().update(updates).then(() => {
+                    // Обновляем локальные данные
+                    gameData.balance -= lot.price;
+                    if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+                    gameData.cards[lot.cardId]++;
+                    saveLocalGame();
+                    
+                    customMsg("✅ Покупка успешна!", `Вы купили ${lot.cardName || 'карту'} за $${lot.price}.`);
+                    updateUI();
+                    renderInventory();
+                    renderMarketplace();
+                }).catch(err => {
+                    customMsg("❌ Ошибка", "Что-то пошло не так. Попробуй позже.");
+                    console.error(err);
+                });
+            });
+        };
+
+        window.cancelListing = function(listingId) {
+            const listingRef = db.ref('marketplace/listings/' + listingId);
+            listingRef.once('value', (snap) => {
+                const lot = snap.val();
+                if (lot && lot.seller === currentUser) {
+                    // Возвращаем карту
+                    const cardRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
+                    cardRef.set(firebase.database.ServerValue.increment(1)).then(() => {
+                        listingRef.remove().then(() => {
+                            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+                            gameData.cards[lot.cardId]++;
+                            saveLocalGame();
+                            customMsg("✅ Лот отменен", "Карта возвращена в инвентарь.");
+                            renderInventory();
+                            renderMarketplace();
+                        });
+                    });
+                } else {
+                    customMsg("Ошибка", "Вы не являетесь продавцом этого лота.");
+                }
+            });
+        };
+
+        // ==========================================
+        // ДОРОЖКА (РОТАЦИЯ КАРТ)
+        // ==========================================
+        let roadmapInterval = null;
+        let roadmapTimerCounter = 0;
+        let roadmapSlotsData = [null, null, null];
+
+        function generateRoadmapCard() {
+            // Шансы: Обычная 51.5%, Редкая 41.5%, Эпическая 5%, Легендарная 1%, Дедли 1%
+            const rand = Math.random() * 100;
+            let rarityGroup;
+            if (rand < 51.5) rarityGroup = 'common';
+            else if (rand < 51.5 + 41.5) rarityGroup = 'rare';
+            else if (rand < 51.5 + 41.5 + 5) rarityGroup = 'epic';
+            else if (rand < 51.5 + 41.5 + 5 + 1) rarityGroup = 'legendary';
+            else rarityGroup = 'deadly';
+            
+            const pool = ALL_CARDS.filter(c => c.rarity === rarityGroup);
+            if (pool.length === 0) return { name: 'Пусто', emoji: '💀', rarity: rarityGroup, id: 'empty' };
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function renderRoadmapSlots() {
+            const slots = document.querySelectorAll('.roadmap-slot');
+            const timerText = document.getElementById('roadmapTimerText');
+            
+            // Показываем карты (индекс 0 - левая, 2 - правая)
+            roadmapSlotsData.forEach((card, idx) => {
+                const slot = slots[idx];
+                if (card) {
+                    let rarityColor = '';
+                    if (card.rarity === 'deadly') rarityColor = '#ef4444';
+                    else if (card.rarity === 'legendary') rarityColor = '#ffd700';
+                    else if (card.rarity === 'epic') rarityColor = '#a855f7';
+                    else if (card.rarity === 'rare') rarityColor = '#3b82f6';
+                    else rarityColor = '#6b7280';
+
+                    slot.className = 'roadmap-slot filled';
+                    slot.innerHTML = `
+                        <div class="card-emoji">${card.emoji}</div>
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-rarity" style="background:${rarityColor}; color:#fff;">${card.rarity.toUpperCase()}</div>
+                        <div class="timer-label">${idx === 0 ? '9с' : idx === 1 ? '6с' : '3с'}</div>
+                    `;
+                } else {
+                    slot.className = 'roadmap-slot';
+                    slot.innerHTML = `<span style="color:#555;">Пусто</span>`;
+                }
+            });
+
+            // Обновляем таймер
+            const secondsLeft = 3 - (roadmapTimerCounter % 3);
+            timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
+        }
+
+        function startRoadmap() {
+            if (roadmapInterval) clearInterval(roadmapInterval);
+            roadmapTimerCounter = 0;
+            // Инициализируем 3 карты
+            roadmapSlotsData = [generateRoadmapCard(), generateRoadmapCard(), generateRoadmapCard()];
+            renderRoadmapSlots();
+
+            roadmapInterval = setInterval(() => {
+                roadmapTimerCounter++;
+                
+                // Каждые 3 секунды сдвигаем
+                if (roadmapTimerCounter % 3 === 0) {
+                    // Сдвиг вправо: левая -> средняя -> правая -> исчезает, новая слева
+                    roadmapSlotsData[2] = roadmapSlotsData[1];
+                    roadmapSlotsData[1] = roadmapSlotsData[0];
+                    roadmapSlotsData[0] = generateRoadmapCard();
+                    renderRoadmapSlots();
+                } else {
+                    // Просто обновляем таймер
+                    renderRoadmapSlots();
+                }
+            }, 1000);
+        }
+
+        function stopRoadmap() {
+            if (roadmapInterval) {
+                clearInterval(roadmapInterval);
+                roadmapInterval = null;
+            }
+            const slots = document.querySelectorAll('.roadmap-slot');
+            slots.forEach(slot => {
+                slot.className = 'roadmap-slot';
+                slot.innerHTML = `<span style="color:#555;">Остановлено</span>`;
+            });
+            document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
+        }
 
         // ==========================================
         // ИНИЦИАЛИЗАЦИЯ И СОБЫТИЯ
