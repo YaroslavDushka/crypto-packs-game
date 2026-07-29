@@ -152,11 +152,11 @@
         .trade-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .trade-input-row input[type="number"] { width: 70px; padding: 6px; background: #0b0e11; border: 1px solid #2a3348; border-radius: 4px; color: #eaecef; font-size: 14px; text-align: center; }
         .trade-input-row input[type="number"]:focus { outline: none; border-color: #f0b90b; }
-        .trade-input-row input[type="range"] { flex: 1; accent-color: #f0b90b; height: 4px; background: #2a3348; }
+        .trade-input-row input[type="range"] { flex: 1; accent-color: #f0b90b; height: 4px; background: #2b3139; }
         .trade-buttons { display: flex; gap: 10px; }
         .trade-buttons .btn { flex: 1; padding: 8px; }
 
-        /* Лента истории внизу (поверх старого меню) */
+        /* Лента истории внизу */
         .history-bar { position: fixed; bottom: 60px; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; padding: 6px 15px; display: flex; align-items: center; gap: 15px; overflow-x: auto; height: 40px; z-index: 90; white-space: nowrap; }
         .history-bar span.h-item { font-size: 12px; color: #848e9c; }
         .history-bar span.h-item strong { color: #eaecef; }
@@ -170,6 +170,112 @@
         .empty-state .big-icon { font-size: 60px; display: block; margin-bottom: 15px; }
         .modal-overlay-simple { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
         .modal-overlay-simple.active { display: flex; }
+
+        /* --- ФИКС ОКНА СОЗДАНИЯ КРИПТЫ (встроен в итоговый код) --- */
+        #cryptoCreateModal {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85) !important;
+            display: none;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 9999 !important;
+        }
+        #cryptoCreateModal.active {
+            display: flex !important;
+        }
+        #cryptoCreateModal .modal-box {
+            max-width: 400px !important;
+            width: 90% !important;
+            background: #1a2133 !important;
+            border: 2px solid #ffb347 !important;
+            border-radius: 20px !important;
+            padding: 24px !important;
+            box-shadow: 0 0 30px rgba(255, 180, 71, 0.2) !important;
+            overflow-y: auto !important;
+            max-height: 90vh !important;
+        }
+        #cryptoCreateModal .modal-box h2 {
+            color: #ffb347 !important;
+            font-size: 20px !important;
+            margin-bottom: 20px !important;
+            border-bottom: 1px solid #2a3348 !important;
+            padding-bottom: 10px !important;
+        }
+        #cryptoCreateModal .input-group label {
+            display: block !important;
+            font-size: 12px !important;
+            color: #848e9c !important;
+            margin-bottom: 5px !important;
+        }
+        #cryptoCreateModal .input-group input,
+        #cryptoCreateModal .input-group textarea {
+            background: #0b0e1a !important;
+            border: 1px solid #2a3348 !important;
+            color: #eaecef !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            width: 100% !important;
+            font-family: inherit !important;
+        }
+        #cryptoCreateModal .input-group input:focus,
+        #cryptoCreateModal .input-group textarea:focus {
+            outline: 2px solid #64ffda !important;
+            border-color: transparent !important;
+        }
+        #cryptoCreateModal .upload-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 15px !important;
+            margin-bottom: 15px !important;
+        }
+        #cryptoCreateModal .upload-preview {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            background: #0b0e1a !important;
+            border: 2px solid #2a3348 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 24px !important;
+            overflow: hidden !important;
+            color: #848e9c !important;
+        }
+        #cryptoCreateModal .upload-preview img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+        #cryptoCreateModal .modal-actions {
+            display: flex !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            margin-top: 20px !important;
+        }
+        #cryptoCreateModal .modal-actions .btn {
+            flex: 1 !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            border: none !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+        }
+        #cryptoCreateModal .modal-actions .btn-buy {
+            background: #0ecb81 !important;
+            color: #fff !important;
+        }
+        #cryptoCreateModal .modal-actions .btn-sell {
+            background: #2a3348 !important;
+            color: #fff !important;
+        }
+        #cryptoCreateModal .modal-actions .btn:hover {
+            opacity: 0.8 !important;
+        }
     </style>
 </head>
 <body>
@@ -339,7 +445,7 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА КРИПТОВАЛЮТЫ (НОВАЯ БИРЖА) -->
+            <!-- ВКЛАДКА КРИПТОВАЛЮТЫ (БИРЖА) -->
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
                     <h2>₿ Крипто-биржа <span id="cryptoBalance" style="font-size:14px; color:#f7931a; background:#101826; padding:4px 10px; border-radius:20px;">$0</span></h2>
@@ -370,39 +476,6 @@
                 <button class="modal-btn" id="modalUnequipBtn">Снять</button>
                 <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
                 <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
-            </div>
-        </div>
-
-        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ -->
-        <div class="modal-overlay" id="cryptoCreateModal">
-            <div class="modal-box">
-                <h2>🪙 Создать новую монету (10k $)</h2>
-                <div class="upload-container">
-                    <div class="upload-preview" id="imgPreview">📁</div>
-                    <div class="file-input-wrapper">
-                        <button class="btn btn-buy" style="font-size:12px; padding:6px 12px; pointer-events:none;">📁 Загрузить иконку</button>
-                        <input type="file" accept="image/*" onchange="previewImage(event)">
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label>Название монеты</label>
-                    <input type="text" id="coinName" placeholder="Например: Bitcoin">
-                </div>
-                <div class="input-group">
-                    <label>Тикер (Символ)</label>
-                    <input type="text" id="coinSymbol" placeholder="Например: BTC" style="text-transform:uppercase;">
-                </div>
-                <div class="input-group">
-                    <label>Описание</label>
-                    <textarea id="coinDesc" rows="2" placeholder="Краткое описание"></textarea>
-                </div>
-                <div style="font-size:12px; color:#0ecb81; margin-bottom:15px; text-align:center;">
-                    💡 Стоимость: 10 000 $<br>Вы получите: <strong>100 монет</strong><br>В пул уходит: 20 монет + 10 000 $<br>Стартовая цена: <strong>500 $</strong>
-                </div>
-                <div class="modal-actions" style="display:flex; gap:10px;">
-                    <button class="btn btn-buy" style="flex:1;" onclick="createCoin()">💸 Создать</button>
-                    <button class="btn btn-sell" style="flex:1;" onclick="closeCreateModal()">Отмена</button>
-                </div>
             </div>
         </div>
 
@@ -1290,13 +1363,12 @@
                 container.appendChild(card);
             });
             
-            // Обновляем ленту и баланс
             renderHistory();
             updateUI();
         }
 
         // ==========================================
-        // ЛОГИКА ТОРГОВЛИ КРИПТОЙ (Без автокачелей)
+        // ЛОГИКА ТОРГОВЛИ КРИПТОЙ
         // ==========================================
         function toggleTrade(id) {
             const box = document.getElementById(`tradeBox_${id}`);
@@ -1429,7 +1501,7 @@
         }
 
         // ==========================================
-        // СЛУЧАЙНЫЕ НОВОСТИ (Ручной триггер)
+        // СЛУЧАЙНЫЕ НОВОСТИ
         // ==========================================
         function triggerRandomNews() {
             if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
@@ -1482,7 +1554,7 @@
         }
 
         // ==========================================
-        // АВТОРИЗАЦИЯ (Вход / Регистрация)
+        // АВТОРИЗАЦИЯ
         // ==========================================
         function setupBanListener() {
             if (!currentUser) return;
