@@ -157,7 +157,7 @@
                         🛒 Магазин 
                         <div class="top-info">
                             <span class="balance-box" id="shopBalance">💵 $10</span>
-                            <span class="timer-box" id="shopTimer">⏳ 5:00</span>
+                            <span class="timer-box" id="shopTimer">⏳ 3:00</span>
                         </div>
                     </h2>
                     <div class="packs-grid" id="packsContainer"></div>
@@ -247,10 +247,19 @@
                 </div>
             </div>
 
-            <!-- АДМИН-ПАНЕЛЬ (видна ТОЛЬКО для Dushka) -->
+            <!-- АДМИН-ПАНЕЛЬ -->
             <div class="tab-pane" id="admin">
                 <div class="content-card">
                     <h2>🛠️ Админ-панель</h2>
+                    
+                    <!-- Форма выдачи денег -->
+                    <div style="background:#111722; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #2a3348;">
+                        <h3 style="color:#64ffda; font-size:16px; margin-bottom:10px;">💰 Выдать деньги</h3>
+                        <input type="text" id="adminGiveLogin" placeholder="Ник игрока" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
+                        <input type="number" id="adminGiveAmount" placeholder="Сумма $" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
+                        <button class="auth-btn" id="adminGiveBtn" style="width:auto; padding:8px 20px; margin-top:6px;">➕ Выдать</button>
+                    </div>
+
                     <div id="adminContainer" style="padding:10px 0;">
                         <div class="placeholder" style="text-align:center; padding:20px; color:#8892b0;">Загрузка списка пользователей...</div>
                     </div>
@@ -439,7 +448,7 @@
         // ЛОГИКА ИГРЫ
         // ==========================================
 
-        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
+        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤' };
         let currentUser = null;
         let banListener = null;
 
@@ -492,11 +501,23 @@
 
         function generateStore() {
             gameData.store = {};
-            gameData.storeTimer = 300;
+            gameData.storeTimer = 180; // 3 минуты
+            
+            // Гарантируем хотя бы один пакет в магазине!
+            let atLeastOne = false;
             PACK_DATA.forEach(p => {
-                let count = Math.floor(Math.random() * 4);
+                // Делаем так, чтобы чаще выпадало 1-2, но был шанс на 0
+                let count = Math.floor(Math.random() * 4); // 0, 1, 2, 3
                 gameData.store[p.id] = count;
+                if (count > 0) atLeastOne = true;
             });
+
+            // Если вдруг выпали все нули, принудительно выдаем 1 рандомному пакету
+            if (!atLeastOne) {
+                const randomPack = PACK_DATA[Math.floor(Math.random() * PACK_DATA.length)];
+                gameData.store[randomPack.id] = 1;
+            }
+
             saveLocalGame();
             renderShop();
             updateUI();
@@ -800,7 +821,7 @@
         };
 
         // ==========================================
-        // АДМИН-ПАНЕЛЬ (видна только Dushka)
+        // АДМИН-ПАНЕЛЬ (ВЫДАЧА ДЕНЕГ И БАН)
         // ==========================================
         function renderAdminPanel() {
             if (currentUser !== 'Dushka') {
@@ -816,27 +837,71 @@
                 }
                 let html = `<div style="overflow-x:auto; font-size:13px;">`;
                 html += `<table style="width:100%; border-collapse:collapse;">`;
-                html += `<tr style="background:#2a3348;"><th>Логин</th><th>Имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Статус</th></tr>`;
+                html += `<tr style="background:#2a3348;"><th>Логин</th><th>Имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Действия</th></tr>`;
                 for (let key in data) {
                     const p = data[key];
-                    if (key === 'Dushka') continue;
+                    if (key === 'Dushka') continue; // Не даем банить админа
                     const displayName = p.displayName || key;
                     const cardsCount = p.cards ? Object.keys(p.cards).filter(c => p.cards[c] > 0).length : 0;
                     const equippedCount = p.equipped ? p.equipped.length : 0;
                     const isBanned = p.banned === true;
+                    
                     html += `<tr style="border-bottom:1px solid #2a3348;">`;
                     html += `<td style="padding:8px;">${key}</td>`;
                     html += `<td style="padding:8px;">${displayName}</td>`;
                     html += `<td style="padding:8px;">$${p.balance || 0}</td>`;
                     html += `<td style="padding:8px;">${cardsCount}</td>`;
                     html += `<td style="padding:8px;">${equippedCount}</td>`;
-                    html += `<td style="padding:8px;">${isBanned ? '<span style="color:#ff6b6b;">Забанен</span>' : '<span style="color:#64ffda;">Активен</span>'}</td>`;
+                    html += `<td style="padding:8px;">
+                        <button class="auth-btn danger" onclick="adminBanUser('${key}')" style="width:auto; padding:2px 10px; font-size:11px; margin:0;">
+                            ${isBanned ? '✅ Забанен' : '⛔ Забанить'}
+                        </button>
+                    </td>`;
                     html += `</tr>`;
                 }
                 html += `</table></div>`;
                 document.getElementById('adminContainer').innerHTML = html;
             });
         }
+
+        // Функция бана
+        window.adminBanUser = function(username) {
+            if (!confirm(`Точно забанить игрока ${username}?`)) return;
+            const userRef = db.ref('users/' + safePath(username) + '/banned');
+            userRef.set(true).then(() => {
+                customMsg("✅ Забанен", `Игрок ${username} заблокирован.`);
+                renderAdminPanel();
+            });
+        }
+
+        // Функция выдачи денег
+        document.getElementById('adminGiveBtn').onclick = function() {
+            if (currentUser !== 'Dushka') {
+                customMsg("Ошибка", "Только для админа!");
+                return;
+            }
+            const targetLogin = document.getElementById('adminGiveLogin').value.trim();
+            const amount = parseInt(document.getElementById('adminGiveAmount').value);
+            if (!targetLogin || isNaN(amount) || amount <= 0) {
+                customMsg("Ошибка", "Введи корректный ник и сумму!");
+                return;
+            }
+            
+            loadCloudData(targetLogin, function(data) {
+                if (!data) {
+                    customMsg("Ошибка", "Игрок с таким ником не найден!");
+                    return;
+                }
+                const userRef = db.ref('users/' + safePath(targetLogin) + '/balance');
+                const newBalance = (data.balance || 0) + amount;
+                userRef.set(newBalance).then(() => {
+                    customMsg("✅ Деньги выданы!", `Игроку ${targetLogin} выдано $${amount}. Новый баланс: $${newBalance}`);
+                    document.getElementById('adminGiveLogin').value = '';
+                    document.getElementById('adminGiveAmount').value = '';
+                    renderAdminPanel();
+                });
+            });
+        };
 
         // ==========================================
         // КРИПТОВАЛЮТА (СОЗДАНИЕ И ПОКУПКА ПО КАПИТАЛИЗАЦИИ)
@@ -1056,7 +1121,7 @@
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
@@ -1242,7 +1307,7 @@
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
