@@ -21,12 +21,6 @@
         .content-card { background: #1a2133; border-radius: 20px; padding: 24px; border: 1px solid #2a3348; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .content-card h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #f0f6fc; display: flex; align-items: center; justify-content: space-between; }
 
-        /* --- АВАТАРКА В УГЛУ --- */
-        .global-avatar-btn { position: fixed; top: 15px; left: 15px; width: 44px; height: 44px; background: #1a2133; border: 2px solid #ffb347; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 150; overflow: hidden; box-shadow: 0 0 15px rgba(255, 180, 71, 0.2); transition: 0.2s; }
-        .global-avatar-btn:hover { border-color: #64ffda; transform: scale(1.05); }
-        .global-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .global-avatar-btn .placeholder { font-size: 20px; }
-
         /* --- ОКНО ВХОДА --- */
         .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; align-items:center; justify-content:center; }
         .auth-overlay.hidden { display:none; }
@@ -122,11 +116,6 @@
     </style>
 </head>
 <body>
-
-    <!-- АВАТАРКА В УГЛУ -->
-    <div class="global-avatar-btn hidden" id="globalAvatarBtn">
-        <span class="placeholder">👤</span>
-    </div>
 
     <!-- ОКНО ВХОДА -->
     <div class="auth-overlay" id="authOverlay">
@@ -226,7 +215,7 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА ПРОФИЛЬ (ТЕПЕРЬ ТУТ ЖЕ И АККАУНТЫ) -->
+            <!-- ВКЛАДКА ПРОФИЛЬ (ВСЕ ФУНКЦИИ) -->
             <div class="tab-pane" id="profile">
                 <div class="content-card">
                     <h2>👤 Профиль</h2>
@@ -240,9 +229,14 @@
                         </div>
                         <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;">
                         <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">📸 Загрузить аватарку</button>
-                        
-                        <button class="auth-btn" id="changePasswordBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px; margin-top:10px;">🔑 Сменить пароль</button>
-                        <button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a; color:#ff6b6b; width:auto; padding:10px 20px; margin-top:10px;">🚪 Выйти из аккаунта</button>
+                    </div>
+
+                    <!-- НОВЫЕ КНОПКИ УПРАВЛЕНИЯ -->
+                    <div style="text-align:center; padding:10px 0; display:flex; flex-direction:column; gap:10px; border-top:1px solid #2a3348; margin-top:15px;">
+                        <button class="auth-btn" id="changeNickBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">✏️ Сменить ник</button>
+                        <button class="auth-btn" id="changePasswordBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">🔑 Сменить пароль</button>
+                        <button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a; color:#ff6b6b; width:auto; padding:10px 20px;">🗑️ Удалить аккаунт навсегда</button>
+                        <button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a; color:#ff6b6b; width:auto; padding:10px 20px;">🚪 Выйти из аккаунта</button>
                         <div style="font-size:12px; color:#8892b0; margin-top:10px;">Все изменения сохраняются в облаке!</div>
                     </div>
                 </div>
@@ -262,12 +256,15 @@
                 <div class="content-card">
                     <h2>🛠️ Админ-панель</h2>
                     
-                    <!-- Форма выдачи денег -->
+                    <!-- Форма выдачи/забора денег -->
                     <div style="background:#111722; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #2a3348;">
-                        <h3 style="color:#64ffda; font-size:16px; margin-bottom:10px;">💰 Выдать деньги</h3>
+                        <h3 style="color:#64ffda; font-size:16px; margin-bottom:10px;">💸 Управление балансом</h3>
                         <input type="text" id="adminGiveLogin" placeholder="Ник игрока" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
                         <input type="number" id="adminGiveAmount" placeholder="Сумма $" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
-                        <button class="auth-btn" id="adminGiveBtn" style="width:auto; padding:8px 20px; margin-top:6px;">➕ Выдать</button>
+                        <div style="display:flex; gap:10px; margin-top:6px;">
+                            <button class="auth-btn" id="adminGiveBtn" style="width:auto; padding:8px 20px;">💰 Выдать</button>
+                            <button class="auth-btn danger" id="adminTakeBtn" style="width:auto; padding:8px 20px;">💸 Забрать</button>
+                        </div>
                     </div>
 
                     <div id="adminContainer" style="padding:10px 0;">
@@ -327,6 +324,7 @@
             <button class="tab-btn active" data-tab="shop"><span class="icon">🛒</span><span class="label">Магазин</span></button>
             <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
             <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
+            <button class="tab-btn" data-tab="profile"><span class="icon">👤</span><span class="label">Профиль</span></button>
             <button class="tab-btn hidden-admin" data-tab="admin"><span class="icon">🛠️</span><span class="label">Админ</span></button>
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
             <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
@@ -504,18 +502,12 @@
             gameData.store = {};
             gameData.storeTimer = 180; // 3 минуты
             
-            // Гарантируем хотя бы один пакет в магазине!
-            let atLeastOne = false;
+            // Гарантируем минимум 1 пакет КАЖДОЙ редкости!
             PACK_DATA.forEach(p => {
-                let count = Math.floor(Math.random() * 4);
+                // Минимум 1, максимум 4
+                let count = 1 + Math.floor(Math.random() * 4); 
                 gameData.store[p.id] = count;
-                if (count > 0) atLeastOne = true;
             });
-
-            if (!atLeastOne) {
-                const randomPack = PACK_DATA[Math.floor(Math.random() * PACK_DATA.length)];
-                gameData.store[randomPack.id] = 1;
-            }
 
             saveLocalGame();
             renderShop();
@@ -527,16 +519,28 @@
             const pack = PACK_DATA.find(p => p.id === packId);
             if (!pack) return;
             if (!gameData.store[packId] || gameData.store[packId] <= 0) { customMsg("Нет в наличии!", "Этого пакета больше нет."); return; }
-            if (gameData.balance < pack.price) { customMsg("Не хватает денег!", `Нужно $${pack.price}`); return; }
+            
+            // Вычисляем персональную цену для игрока (+5% за каждую предыдущую покупку)
+            if (!gameData.packPurchases) gameData.packPurchases = {};
+            if (!gameData.packPurchases[packId]) gameData.packPurchases[packId] = 0;
+            
+            const basePrice = pack.price;
+            const currentPurchaseCount = gameData.packPurchases[packId];
+            let currentPrice = basePrice * Math.pow(1.05, currentPurchaseCount);
+            // Округляем до 2 знаков
+            currentPrice = Math.floor(currentPrice * 100) / 100;
+
+            if (gameData.balance < currentPrice) { customMsg("Не хватает денег!", `Сейчас этот пакет для тебя стоит $${currentPrice.toFixed(2)}`); return; }
             if (pack.drops.length === 0) { customMsg("Пакет пуст!", "В этом пакете пока нет карт."); return; }
 
-            gameData.balance -= pack.price;
+            gameData.balance -= currentPrice;
             gameData.store[packId]--;
             gameData.inventory.push(packId);
+            gameData.packPurchases[packId]++; // Увеличиваем счетчик покупок для этого пакета
 
             saveLocalGame(); saveCloudGame();
             renderShop(); updateUI(); renderInventory();
-            customMsg("✅ Покупка успешна!", `Вы купили ${pack.name}! Он лежит в вашем Инвентаре.`);
+            customMsg("✅ Покупка успешна!", `Вы купили ${pack.name} за $${currentPrice.toFixed(2)}! Он лежит в вашем Инвентаре.`);
         }
 
         function openPackFromInventory(index) {
@@ -637,16 +641,8 @@
             }
             if (currentUser) {
                 document.getElementById('profileLoginDisplay').innerText = `Ваш логин: ${currentUser}`;
-                document.getElementById('globalAvatarBtn').classList.remove('hidden');
-                const btn = document.getElementById('globalAvatarBtn');
-                if (gameData.avatar && gameData.avatar.startsWith('data:image')) {
-                    btn.innerHTML = `<img src="${gameData.avatar}" alt="avatar">`;
-                } else {
-                    btn.innerHTML = `<span class="placeholder">👤</span>`;
-                }
             } else {
                 document.getElementById('profileLoginDisplay').innerText = 'Не авторизован';
-                document.getElementById('globalAvatarBtn').classList.add('hidden');
             }
         }
 
@@ -731,6 +727,14 @@
             let sorted = [...PACK_DATA].sort((a,b) => a.order - b.order);
             sorted.forEach(pack => {
                 const count = gameData.store[pack.id] || 0;
+                
+                // Вычисляем цену с учетом персональных покупок
+                let currentPrice = pack.price;
+                if (gameData.packPurchases && gameData.packPurchases[pack.id]) {
+                    currentPrice = pack.price * Math.pow(1.05, gameData.packPurchases[pack.id]);
+                    currentPrice = Math.floor(currentPrice * 100) / 100;
+                }
+
                 const card = document.createElement('div');
                 card.className = `pack-card rarity-${pack.rarity}`;
                 card.innerHTML = `
@@ -738,7 +742,7 @@
                     <img src="${pack.img}" onerror="this.remove()">
                     <div class="pack-name">${pack.name}</div>
                     <div class="pack-rarity">${pack.rarity.toUpperCase()}</div>
-                    <div class="pack-price">$${pack.price}</div>
+                    <div class="pack-price">$${currentPrice.toFixed(2)}</div>
                     <div class="pack-count">В наличии: ${count} шт.</div>
                 `;
                 card.onclick = () => buyPack(pack.id);
@@ -756,7 +760,6 @@
                 if (card) {
                     slot.innerHTML = card.emoji;
                     slot.title = `Надета: ${card.name}`;
-                    // ДОБАВЛЕНО: по клику на надетую карту она снимается
                     slot.onclick = function() {
                         unequipOne(cardId);
                     };
@@ -823,7 +826,7 @@
         };
 
         // ==========================================
-        // АДМИН-ПАНЕЛЬ
+        // АДМИН-ПАНЕЛЬ (ВЫДАЧА/ЗАБОР, БАН/РАЗБАН)
         // ==========================================
         function renderAdminPanel() {
             if (currentUser !== 'Dushka') {
@@ -876,6 +879,7 @@
             });
         }
 
+        // Функция выдачи денег
         document.getElementById('adminGiveBtn').onclick = function() {
             if (currentUser !== 'Dushka') {
                 customMsg("Ошибка", "Только для админа!");
@@ -904,9 +908,69 @@
             });
         };
 
+        // Функция забора денег
+        document.getElementById('adminTakeBtn').onclick = function() {
+            if (currentUser !== 'Dushka') {
+                customMsg("Ошибка", "Только для админа!");
+                return;
+            }
+            const targetLogin = document.getElementById('adminGiveLogin').value.trim();
+            const amount = parseInt(document.getElementById('adminGiveAmount').value);
+            if (!targetLogin || isNaN(amount) || amount <= 0) {
+                customMsg("Ошибка", "Введи корректный ник и сумму!");
+                return;
+            }
+            
+            loadCloudData(targetLogin, function(data) {
+                if (!data) {
+                    customMsg("Ошибка", "Игрок с таким ником не найден!");
+                    return;
+                }
+                const currentBalance = data.balance || 0;
+                if (currentBalance < amount) {
+                    customMsg("Ошибка", `У игрока ${targetLogin} недостаточно денег ($${currentBalance}) для списания $${amount}!`);
+                    return;
+                }
+                const userRef = db.ref('users/' + safePath(targetLogin) + '/balance');
+                const newBalance = currentBalance - amount;
+                userRef.set(newBalance).then(() => {
+                    customMsg("✅ Деньги списаны!", `У игрока ${targetLogin} списано $${amount}. Новый баланс: $${newBalance}.`);
+                    document.getElementById('adminGiveLogin').value = '';
+                    document.getElementById('adminGiveAmount').value = '';
+                    renderAdminPanel();
+                });
+            });
+        };
+
         // ==========================================
-        // КРИПТОВАЛЮТА (ПОКУПКА ПО НЕСКОЛЬКО ШТУК И ПРОДАЖА)
+        // КРИПТОВАЛЮТА (ФИКС БЕСКОНЕЧНОСТИ)
         // ==========================================
+        // Функция для расчета цены 1 монеты БЕЗ бесконечности (используем безопасный предел)
+        function getCryptoPrice(supply) {
+            // Классическая экспонента: basePrice * 1.05^supply. 
+            // Это никогда не даст Infinity, пока supply < 1000.
+            // Если supply очень большой, то число будет огромным, но конечным.
+            // Мы поставим защиту: если число становится слишком большим, возвращаем максимальное безопасное.
+            let price = 100 * Math.pow(1.05, supply || 0);
+            if (!isFinite(price) || price > 1e15) {
+                price = 1e15; // Потолок цены, чтобы никогда не было Infinity
+            }
+            return price;
+        }
+
+        // Подсчет суммы для лестницы цен (от текущего supply до supply + n)
+        function getBulkPrice(supply, n) {
+            if (n <= 0) return 0;
+            let total = 0;
+            for (let i = 0; i < n; i++) {
+                total += getCryptoPrice(supply + i);
+                if (!isFinite(total)) {
+                    total = 1e18; // Защита от бесконечной суммы
+                    break;
+                }
+            }
+            return total;
+        }
 
         function renderCrypto() {
             const container = document.getElementById('cryptoContainer');
@@ -927,10 +991,16 @@
                 html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
                 for (let key in data) {
                     const c = data[key];
-                    const price = c.basePrice * Math.pow(1.05, c.supply || 0);
-                    const cap = price * (c.supply || 0);
+                    const supply = c.supply || 0;
+                    const price = getCryptoPrice(supply);
+                    const cap = price * supply;
                     const myBalance = gameData.cryptoBalance && gameData.cryptoBalance[key] ? gameData.cryptoBalance[key] : 0;
                     
+                    // Максимальное количество для покупки
+                    const maxAffordable = Math.floor(gameData.balance / price);
+                    // Максимальное количество для продажи
+                    const maxSellable = myBalance;
+
                     html += `
                         <div style="background:#111722; border-radius:12px; padding:15px; border:1px solid #2a3348; display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
                             <div style="width:50px; height:50px; background:#0b0e1a; border-radius:8px; overflow:hidden;">
@@ -944,17 +1014,17 @@
                             <div style="text-align:right; min-width:100px;">
                                 <div style="font-size:18px; color:#64ffda;">$${price.toFixed(2)}</div>
                                 <div style="font-size:11px; color:#8892b0;">Кап: $${cap.toFixed(0)}</div>
-                                <div style="font-size:11px; color:#8892b0;">В обращении: ${c.supply || 0}</div>
+                                <div style="font-size:11px; color:#8892b0;">В обращении: ${supply}</div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
                                 <div style="display:flex; gap:5px; align-items:center;">
-                                    <input type="range" id="cryptoBuySlider_${key}" min="1" max="${Math.floor(gameData.balance / price)}" value="1" style="width:80px; accent-color:#64ffda;">
+                                    <input type="range" id="cryptoBuySlider_${key}" min="1" max="${Math.max(1, maxAffordable)}" value="1" style="width:80px; accent-color:#64ffda;">
                                     <span id="cryptoBuyVal_${key}" style="font-size:12px; color:#fff;">1</span>
                                     <button class="auth-btn" onclick="buyCrypto('${key}')" style="width:auto; padding:4px 12px; font-size:12px;">Купить</button>
                                 </div>
-                                ${myBalance > 0 ? `
+                                ${maxSellable > 0 ? `
                                 <div style="display:flex; gap:5px; align-items:center; margin-top:2px;">
-                                    <input type="range" id="cryptoSellSlider_${key}" min="1" max="${myBalance}" value="1" style="width:80px; accent-color:#ff6b6b;">
+                                    <input type="range" id="cryptoSellSlider_${key}" min="1" max="${maxSellable}" value="1" style="width:80px; accent-color:#ff6b6b;">
                                     <span id="cryptoSellVal_${key}" style="font-size:12px; color:#fff;">1</span>
                                     <button class="auth-btn danger" onclick="sellCrypto('${key}')" style="width:auto; padding:4px 12px; font-size:12px;">Продать</button>
                                 </div>
@@ -965,6 +1035,28 @@
                 }
                 html += `</div>`;
                 container.innerHTML = html;
+                
+                // Активируем слайдеры
+                setTimeout(() => {
+                    document.querySelectorAll('[id^="cryptoBuySlider_"]').forEach(slider => {
+                        const key = slider.id.replace('cryptoBuySlider_', '');
+                        const valSpan = document.getElementById(`cryptoBuyVal_${key}`);
+                        if(valSpan) {
+                            slider.oninput = function() {
+                                valSpan.innerText = this.value;
+                            };
+                        }
+                    });
+                    document.querySelectorAll('[id^="cryptoSellSlider_"]').forEach(slider => {
+                        const key = slider.id.replace('cryptoSellSlider_', '');
+                        const valSpan = document.getElementById(`cryptoSellVal_${key}`);
+                        if(valSpan) {
+                            slider.oninput = function() {
+                                valSpan.innerText = this.value;
+                            };
+                        }
+                    });
+                }, 100);
             });
         }
 
@@ -1002,7 +1094,7 @@
                 description: desc,
                 image: imageBase64 || null,
                 creator: currentUser,
-                basePrice: 10,
+                basePrice: 100,
                 supply: 0,
                 createdAt: Date.now()
             }).then(() => {
@@ -1022,7 +1114,6 @@
         window.buyCrypto = function(cryptoKey) {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             
-            // Получаем количество из слайдера
             const slider = document.getElementById(`cryptoBuySlider_${cryptoKey}`);
             if (!slider) return;
             const amount = parseInt(slider.value);
@@ -1032,8 +1123,9 @@
             cryptoRef.once('value').then((snapshot) => {
                 const c = snapshot.val();
                 if (!c) { customMsg("Ошибка", "Крипта не найдена!"); return; }
-                const price = c.basePrice * Math.pow(1.05, c.supply || 0);
-                const totalCost = price * amount;
+                
+                const currentSupply = c.supply || 0;
+                const totalCost = getBulkPrice(currentSupply, amount);
                 
                 if (gameData.balance < totalCost) { customMsg("Не хватает денег!", `Нужно $${totalCost.toFixed(2)}`); return; }
                 
@@ -1043,7 +1135,7 @@
                 gameData.cryptoBalance[cryptoKey] += amount;
 
                 cryptoRef.update({
-                    supply: (c.supply || 0) + amount
+                    supply: currentSupply + amount
                 }).then(() => {
                     saveLocalGame();
                     saveCloudGame();
@@ -1070,14 +1162,15 @@
                 const myBalance = gameData.cryptoBalance && gameData.cryptoBalance[cryptoKey] ? gameData.cryptoBalance[cryptoKey] : 0;
                 if (myBalance < amount) { customMsg("Ошибка", "У вас нет столько крипты!"); return; }
 
-                const price = c.basePrice * Math.pow(1.05, c.supply || 0);
-                const totalEarn = price * amount;
+                const currentSupply = c.supply || 0;
+                // При продаже цена считается в обратном порядке: от последней купленной к первой.
+                const totalEarn = getBulkPrice(currentSupply - amount, amount);
 
                 gameData.balance += totalEarn;
                 gameData.cryptoBalance[cryptoKey] -= amount;
 
                 cryptoRef.update({
-                    supply: (c.supply || 0) - amount
+                    supply: currentSupply - amount
                 }).then(() => {
                     saveLocalGame();
                     saveCloudGame();
@@ -1089,7 +1182,7 @@
         };
 
         // ==========================================
-        // СМЕНА ПАРОЛЯ
+        // СМЕНА ПАРОЛЯ, НИКА, УДАЛЕНИЕ АККАУНТА
         // ==========================================
         document.getElementById('changePasswordBtn').onclick = function() {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
@@ -1107,10 +1200,63 @@
                             localStorage.removeItem('cachedUser');
                             currentUser = null;
                             document.getElementById('authOverlay').classList.remove('hidden');
-                            document.getElementById('globalAvatarBtn').classList.add('hidden');
+                            customMsg("Выход", "Выйдите и зайдите с новым паролем.");
                         });
                     }
                 }
+            });
+        };
+
+        document.getElementById('changeNickBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя сменить ник админа!"); return; }
+            
+            const newNick = prompt('Введите новый ник (логин):');
+            if (!newNick || newNick.trim().length === 0) { customMsg("Ошибка", "Ник не может быть пустым!"); return; }
+            if (newNick.trim() === currentUser) { customMsg("Ошибка", "Это твой текущий ник!"); return; }
+
+            loadCloudData(newNick.trim(), function(data) {
+                if (data) { customMsg("Ошибка", "Этот ник уже занят!"); return; }
+                
+                // Создаем нового пользователя с текущими данными
+                const newSafeId = safePath(newNick.trim());
+                const newUserRef = db.ref('users/' + newSafeId);
+                newUserRef.set({
+                    password: gameData.password,
+                    balance: gameData.balance,
+                    cards: gameData.cards || {},
+                    equipped: gameData.equipped || [],
+                    inventory: gameData.inventory || [],
+                    avatar: gameData.avatar || '👤',
+                    cryptoBalance: gameData.cryptoBalance || {}
+                }).then(() => {
+                    // Удаляем старого пользователя
+                    const oldUserRef = db.ref('users/' + safePath(currentUser));
+                    return oldUserRef.remove();
+                }).then(() => {
+                    customMsg("✅ Ник изменён!", `Теперь ты ${newNick.trim()}! Войди заново.`);
+                    if (banListener) banListener.off();
+                    localStorage.removeItem('cachedUser');
+                    currentUser = null;
+                    document.getElementById('authOverlay').classList.remove('hidden');
+                });
+            });
+        };
+
+        document.getElementById('deleteAccountBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя удалить админа!"); return; }
+            
+            if (!confirm("ТЫ ТОЧНО ХОЧЕШЬ УДАЛИТЬ АККАУНТ НАВСЕГДА? ЭТО ДЕЙСТВИЕ НЕЛЬЗЯ ОТМЕНИТЬ!")) return;
+            if (!confirm("Последний шанс: Точно удалить?")) return;
+
+            const userRef = db.ref('users/' + safePath(currentUser));
+            userRef.remove().then(() => {
+                customMsg("🗑️ Аккаунт удалён!", "Все твои данные стерты из облака.");
+                if (banListener) banListener.off();
+                localStorage.removeItem('cachedUser');
+                currentUser = null;
+                document.getElementById('authOverlay').classList.remove('hidden');
             });
         };
 
@@ -1129,7 +1275,6 @@
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
-                    document.getElementById('globalAvatarBtn').classList.add('hidden');
                 }
             });
         }
@@ -1159,6 +1304,7 @@
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || pass;
                     gameData.cryptoBalance = data.cryptoBalance || {};
+                    gameData.packPurchases = data.packPurchases || {};
                     currentUser = login;
                     localStorage.setItem('cachedUser', login);
                     saveLocalGame();
@@ -1179,7 +1325,7 @@
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoBalance: {} };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoBalance: {}, packPurchases: {} };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
@@ -1208,14 +1354,10 @@
                 localStorage.removeItem('cachedUser');
                 currentUser = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
-                document.getElementById('globalAvatarBtn').classList.add('hidden');
                 customMsg("Выход", "Ты вышел из аккаунта.");
             }
         };
 
-        // ==========================================
-        // АВТОМАТИЧЕСКИЙ ВХОД И ОБРАБОТКА КЛИКА ПО АВАТАРКЕ
-        // ==========================================
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser, function(data) {
@@ -1227,6 +1369,7 @@
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || '';
                     gameData.cryptoBalance = data.cryptoBalance || {};
+                    gameData.packPurchases = data.packPurchases || {};
                     currentUser = cachedUser;
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
@@ -1346,9 +1489,6 @@
             document.getElementById('authOverlay').classList.remove('hidden');
         };
 
-        // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ И СОБЫТИЯ
-        // ==========================================
         document.getElementById('authLoginBtn').onclick = function() {
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
@@ -1364,7 +1504,7 @@
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoBalance: {} };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoBalance: {}, packPurchases: {} };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
@@ -1415,16 +1555,6 @@
             if (adminBtn) {
                 adminBtn.style.display = 'none';
             }
-
-            // ИСПРАВЛЕНИЕ: КЛИК ПО АВАТАРКЕ В УГЛУ ОТКРЫВАЕТ ПРОФИЛЬ, ЕСЛИ ЗАЛОГИНЕН
-            document.getElementById('globalAvatarBtn').onclick = function() {
-                if (!currentUser) return; // Если не залогинен - ничего не делаем
-                // Переключаем вкладку на Профиль
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                document.querySelector('[data-tab="profile"]').classList.add('active');
-                document.getElementById('profile').classList.add('active');
-            };
         });
 
         const origRenderAdmin = renderAdminPanel;
