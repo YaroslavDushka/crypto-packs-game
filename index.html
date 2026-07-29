@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Крипто-паки (Тёмные сообщения)</title>
+    <title>Крипто-паки</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         html, body { height: 100%; background: #0b0e1a; color: #e0e6f0; overflow: hidden; font-size: 16px; }
@@ -79,21 +79,6 @@
         .equip-slot.filled { border: 2px solid #64ffda; background: #1a2133; color: #fff; cursor: pointer; transition: 0.2s; }
         .equip-slot.filled:hover { background: #ef4444; border-color: #ef4444; transform: scale(1.05); }
         .equip-slot.filled:active { transform: scale(0.9); }
-
-        /* --- ИГРОВОЕ ОКНО СООБЩЕНИЙ (вместо alert) --- */
-        .custom-msg-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; }
-        .custom-msg-overlay.active { display:flex; }
-        .custom-msg-box { background: #1a2133; padding: 25px; border-radius: 20px; border: 2px solid #ffb347; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 180, 71, 0.2); }
-        .custom-msg-box h3 { color: #ffb347; font-size: 20px; margin-bottom: 10px; }
-        .custom-msg-box p { color: #e0e6f0; font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
-        .custom-msg-btn { padding: 10px 20px; border-radius: 12px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 5px; min-width: 80px; }
-        .custom-msg-btn:hover { transform: scale(1.02); }
-        .custom-msg-btn.confirm { background: #ffb347; color: #000; }
-        .custom-msg-btn.confirm:hover { background: #ffcc66; }
-        .custom-msg-btn.cancel { background: #4a1a1a; color: #ff6b6b; }
-        .custom-msg-btn.cancel:hover { background: #ff6b6b; color: #fff; }
-        .custom-msg-btn.ok { background: #2a3348; color: #fff; }
-        .custom-msg-btn.ok:hover { background: #64ffda; color: #000; }
 
         .card-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 999; }
         .card-modal.active { display: flex; }
@@ -309,16 +294,16 @@
         }
 
         // ==========================================
-        // НАСТРОЙКА FIREBASE
+        // НАСТРОЙКА FIREBASE (НОВЫЙ КЛЮЧ)
         // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyCNeATf03rnrmofZAilQeEGUrREt06F3I8",
-            authDomain: "cryptopacks-798d3.firebaseapp.com",
-            projectId: "cryptopacks-798d3",
-            storageBucket: "cryptopacks-798d3.firebasestorage.app",
-            messagingSenderId: "243185920568",
-            appId: "1:243185920568:web:a619151012e40e0e15d4cd",
-            measurementId: "G-EY0K2YKD6T"
+            apiKey: "AIzaSyDKMRdOJCYk0T8r9532sf4Lc_v087bVRpE",
+            authDomain: "crypropakonline.firebaseapp.com",
+            projectId: "crypropakonline",
+            storageBucket: "crypropakonline.firebasestorage.app",
+            messagingSenderId: "231495012300",
+            appId: "1:231495012300:web:9c1d4990d2e77fc98f9769",
+            measurementId: "G-QY2P24GM2Z"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
