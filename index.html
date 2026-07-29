@@ -264,7 +264,6 @@
                 </div>
             </div>
 
-            <!-- ОСНОВНОЕ ИСПРАВЛЕНИЕ: ДОБАВЛЕН ID cryptoBalance -->
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
                     <h2>₿ Криптовалюта <span id="cryptoBalance" style="font-size:14px; color:#f7931a; background:#101826; padding:4px 10px; border-radius:20px;">$0</span></h2>
@@ -276,6 +275,17 @@
                 <div class="content-card">
                     <h2>🗺️ Дорожка</h2>
                     <div style="padding:10px 0; text-align:center; color:#8892b0;">Карточные этапы и дроп карт появятся здесь</div>
+                </div>
+            </div>
+
+            <!-- НОВАЯ ВКЛАДКА ДЛЯ АККАУНТОВ -->
+            <div class="tab-pane" id="accounts">
+                <div class="content-card">
+                    <h2>👥 Аккаунты</h2>
+                    <div style="text-align:center; padding:10px 0;">
+                        <button class="auth-btn" id="addAccountBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">➕ Добавить аккаунт (до 3)</button>
+                        <div id="savedAccountsList" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -314,6 +324,7 @@
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
             <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
             <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
+            <button class="tab-btn" data-tab="accounts"><span class="icon">👥</span><span class="label">Аккаунты</span></button>
         </div>
     </div>
 
@@ -1000,6 +1011,45 @@
             });
         }
 
+        function performLogin(login, pass, silent = false) {
+            return new Promise((resolve, reject) => {
+                loadCloudData(login, function(data) {
+                    if (!data) {
+                        if (!silent) customMsg("Ошибка", "Пользователь не найден!");
+                        reject("not_found");
+                        return;
+                    }
+                    if (data.banned === true) {
+                        if (!silent) customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован.");
+                        reject("banned");
+                        return;
+                    }
+                    if (data.password !== pass) {
+                        if (!silent) customMsg("Ошибка", "Неверный пароль!");
+                        reject("wrong_pass");
+                        return;
+                    }
+                    // Успешный вход
+                    gameData.balance = data.balance || 10;
+                    gameData.cards = data.cards || {};
+                    gameData.equipped = data.equipped || [];
+                    gameData.inventory = data.inventory || [];
+                    gameData.avatar = data.avatar || '👤';
+                    gameData.password = data.password || pass;
+                    currentUser = login;
+                    localStorage.setItem('cachedUser', login);
+                    saveLocalGame();
+                    document.getElementById('authOverlay').classList.add('hidden');
+                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                    if (login === 'Dushka') renderAdminPanel();
+                    renderCrypto();
+                    if (!silent) customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
+                    setupBanListener();
+                    resolve();
+                });
+            });
+        }
+
         document.getElementById('authRegisterBtn').onclick = function() {
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
@@ -1018,6 +1068,7 @@
                 renderCrypto();
                 customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
                 setupBanListener();
+                renderSavedAccounts(); // Обновляем список после регистрации
             });
         };
 
@@ -1025,26 +1076,7 @@
             const login = document.getElementById('authLogin').value.trim();
             const pass = document.getElementById('authPassword').value.trim();
             if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
-            loadCloudData(login, function(data) {
-                if (!data) { customMsg("Ошибка", "Пользователь не найден!"); return; }
-                if (data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); return; }
-                if (data.password !== pass) { customMsg("Ошибка", "Неверный пароль!"); return; }
-                gameData.balance = data.balance || 10;
-                gameData.cards = data.cards || {};
-                gameData.equipped = data.equipped || [];
-                gameData.inventory = data.inventory || [];
-                gameData.avatar = data.avatar || '👤';
-                gameData.password = data.password || pass;
-                currentUser = login;
-                localStorage.setItem('cachedUser', login);
-                saveLocalGame();
-                document.getElementById('authOverlay').classList.add('hidden');
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
-                if (login === 'Dushka') renderAdminPanel();
-                renderCrypto();
-                customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
-                setupBanListener();
-            });
+            performLogin(login, pass);
         };
 
         document.getElementById('logoutBtn').onclick = function() {
@@ -1080,10 +1112,151 @@
                     if (data && data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); }
                     document.getElementById('authOverlay').classList.remove('hidden');
                 }
+                renderSavedAccounts(); // Загружаем список аккаунтов
             });
         } else {
             document.getElementById('authOverlay').classList.remove('hidden');
+            renderSavedAccounts();
         }
+
+        // ==========================================
+        // СИСТЕМА СОХРАНЕННЫХ АККАУНТОВ (до 3 штук)
+        // ==========================================
+        function getSavedAccounts() {
+            try {
+                const data = localStorage.getItem('cachedAccounts');
+                return data ? JSON.parse(data) : [];
+            } catch(e) { return []; }
+        }
+
+        function saveAccountsList(list) {
+            localStorage.setItem('cachedAccounts', JSON.stringify(list));
+        }
+
+        function addAccountToList(login, pass) {
+            let list = getSavedAccounts();
+            // Если аккаунт уже есть в списке, обновляем пароль (или просто пропускаем)
+            const existing = list.find(a => a.login === login);
+            if (existing) {
+                existing.pass = pass;
+            } else {
+                if (list.length >= 3) {
+                    customMsg("Ошибка", "Нельзя сохранить больше 3 аккаунтов!");
+                    return false;
+                }
+                list.push({ login: login, pass: pass });
+            }
+            saveAccountsList(list);
+            renderSavedAccounts();
+            return true;
+        }
+
+        function removeAccountFromList(login) {
+            let list = getSavedAccounts();
+            list = list.filter(a => a.login !== login);
+            saveAccountsList(list);
+            renderSavedAccounts();
+        }
+
+        function renderSavedAccounts() {
+            const container = document.getElementById('savedAccountsList');
+            const list = getSavedAccounts();
+            
+            if (list.length === 0) {
+                container.innerHTML = `<div style="color:#8892b0; font-size:14px;">У вас пока нет сохраненных аккаунтов.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            list.forEach(acc => {
+                const row = document.createElement('div');
+                row.style.cssText = 'background:#111722; border:1px solid #2a3348; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.style.cssText = 'font-weight:bold; color:#64ffda;';
+                nameSpan.innerText = acc.login;
+                
+                const btnGroup = document.createElement('div');
+                btnGroup.style.cssText = 'display:flex; gap:8px;';
+
+                const loginBtn = document.createElement('button');
+                loginBtn.className = 'auth-btn';
+                loginBtn.style.cssText = 'width:auto; padding:4px 12px; font-size:12px;';
+                loginBtn.innerText = 'Войти';
+                loginBtn.onclick = function() {
+                    performLogin(acc.login, acc.pass, true).then(() => {
+                        // После входа переключаем вкладку на профиль
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                        document.querySelector('[data-tab="profile"]').classList.add('active');
+                        document.getElementById('profile').classList.add('active');
+                    });
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'auth-btn danger';
+                deleteBtn.style.cssText = 'width:auto; padding:4px 12px; font-size:12px;';
+                deleteBtn.innerText = '❌';
+                deleteBtn.onclick = function() {
+                    if (currentUser === acc.login) {
+                        customMsg("Внимание!", "Вы не можете удалить аккаунт, пока он активен. Сначала выйдите.");
+                        return;
+                    }
+                    removeAccountFromList(acc.login);
+                };
+
+                btnGroup.appendChild(loginBtn);
+                btnGroup.appendChild(deleteBtn);
+                row.appendChild(nameSpan);
+                row.appendChild(btnGroup);
+                container.appendChild(row);
+            });
+        }
+
+        document.getElementById('addAccountBtn').onclick = function() {
+            const list = getSavedAccounts();
+            if (list.length >= 3) {
+                customMsg("Ошибка", "Максимум 3 сохраненных аккаунта.");
+                return;
+            }
+            // Открываем окно входа, но с другой логикой
+            document.getElementById('authOverlay').classList.remove('hidden');
+        };
+
+        // Патчим стандартные кнопки входа, чтобы они добавляли аккаунт в список
+        const origLoginBtn = document.getElementById('authLoginBtn').onclick;
+        document.getElementById('authLoginBtn').onclick = function() {
+            const login = document.getElementById('authLogin').value.trim();
+            const pass = document.getElementById('authPassword').value.trim();
+            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
+            
+            performLogin(login, pass).then(() => {
+                addAccountToList(login, pass);
+            });
+        };
+
+        const origRegBtn = document.getElementById('authRegisterBtn').onclick;
+        document.getElementById('authRegisterBtn').onclick = function() {
+            const login = document.getElementById('authLogin').value.trim();
+            const pass = document.getElementById('authPassword').value.trim();
+            if (!login || !pass) { customMsg("Ошибка", "Введи логин и пароль!"); return; }
+            loadCloudData(login, function(data) {
+                if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
+                for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+                currentUser = login;
+                localStorage.setItem('cachedUser', login);
+                saveLocalGame();
+                saveCloudGame();
+                document.getElementById('authOverlay').classList.add('hidden');
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                if (login === 'Dushka') renderAdminPanel();
+                renderCrypto();
+                customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
+                setupBanListener();
+                addAccountToList(login, pass);
+            });
+        };
 
         // Загрузка аватарки
         document.getElementById('avatarUploadBtn').onclick = function() {
@@ -1120,14 +1293,11 @@
             // Скрываем админку для всех, кроме Dushka
             const adminBtn = document.querySelector('.hidden-admin');
             if (adminBtn) {
-                // При загрузке страницы скрываем кнопку админа из меню
-                // Она появится только после входа в функцию renderAdminPanel
                 adminBtn.style.display = 'none';
             }
         });
 
         // Дополнительно: при переключении вкладки на админ, перерисовываем
-        // и делаем проверку. Если юзер не Dushka, скрываем кнопку.
         const origRenderAdmin = renderAdminPanel;
         renderAdminPanel = function() {
             const adminBtn = document.querySelector('.hidden-admin');
@@ -1139,7 +1309,6 @@
                 document.getElementById('adminContainer').innerHTML = `<div class="placeholder" style="text-align:center; padding:20px; color:#ff6b6b;">⛔ У вас нет прав администратора!</div>`;
             }
         };
-        // Подменяем функцию, чтобы она вызывалась при старте и при входе
         const origRenderCrypto = renderCrypto;
         renderCrypto = function() {
             origRenderCrypto();
