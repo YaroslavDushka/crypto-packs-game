@@ -101,7 +101,7 @@
 <body>
 
     <!-- ОКНО ВХОДА ПО ID -->
-    <div class="auth-overlay" id="authOverlay">
+    <div class="auth-overlay hidden" id="authOverlay">
         <div class="auth-box">
             <h2>🛒 Крипто-паки</h2>
             <p style="color:#8892b0; font-size:14px; margin-bottom:15px;">Введи свой ID, чтобы загрузить прогресс</p>
@@ -192,7 +192,7 @@
                     <h2>👤 Профиль</h2>
                     <div style="text-align:center; padding:10px 0;">
                         <h3 style="color:#64ffda; margin-bottom:10px;">Ваш ID</h3>
-                        <div id="profileIdDisplay" style="font-size: 32px; font-weight: bold; color: #ffb347; margin-bottom: 20px;">Загрузка...</div>
+                        <div id="profileIdDisplay" style="font-size: 32px; font-weight: bold; color: #ffb347; margin-bottom: 20px;">--</div>
                         <div style="font-size:12px; color:#8892b0; margin-bottom:10px;">Введите этот ID на другом устройстве, чтобы загрузить прогресс!</div>
                         
                         <h3 style="color:#64ffda; margin-bottom:10px;">Ваша аватарка</h3>
@@ -315,11 +315,16 @@
         ];
 
         // ==========================================
-        // ЛОГИКА ИГРЫ
+        // ЛОГИКА ИГРЫ И АВТОМАТИЧЕСКИЙ ID
         // ==========================================
 
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
         let currentUserId = null;
+        let isFirstLaunch = true;
+
+        function generateRandomId() {
+            return Math.floor(1000 + Math.random() * 9000).toString();
+        }
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
@@ -358,16 +363,26 @@
             if (data) {
                 gameData = JSON.parse(data);
                 if (!gameData.store || Object.keys(gameData.store).length === 0) generateStore();
+                isFirstLaunch = false;
             } else {
                 generateStore();
+                // Первый вход: кидаем в магазин и генерим рандомный ID
+                isFirstLaunch = true;
+                const randomId = generateRandomId();
+                currentUserId = randomId;
+                localStorage.setItem('cachedUserId', randomId);
+                for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+                saveLocalGame();
+                // Сразу сохраняем в облако этот рандомный ID
+                // Но если пользователь потом введёт этот ID на другом телефоне, он загрузится
+                saveCloudGame();
+                document.getElementById('authOverlay').classList.add('hidden');
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                return;
             }
             if (gameData.balance === undefined) gameData.balance = 10;
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
             if (!gameData.avatar) gameData.avatar = '👤';
-            
-            if (gameData.balance === 10 && gameData.inventory.length === 0) {
-                for(let i=0; i<3; i++) gameData.inventory.push('pack5');
-            }
         }
         function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
@@ -671,33 +686,44 @@
         };
 
         // ==========================================
-        // ВХОД ПО ID И СЧЁТЧИК
+        // АВТОМАТИЧЕСКИЙ ПЕРВЫЙ ВХОД И ВТОРОЙ ВХОД ПО ID
         // ==========================================
 
-        document.getElementById('authLoginBtn').onclick = function() {
-            let inputId = document.getElementById('loginInput').value.trim();
+        // При загрузке проверяем: заходили ли мы уже?
+        const cachedUserId = localStorage.getItem('cachedUserId');
+        
+        if (cachedUserId) {
+            // Это повторный вход. Показываем окно ввода ID.
+            document.getElementById('authOverlay').classList.remove('hidden');
+            // Если есть сохранённый ID в кэше, подставляем его в поле, чтобы не вводить вручную
+            document.getElementById('loginInput').value = cachedUserId;
             
-            // Если поле пустое — создаём следующего по счёту
+            // При этом грузим локальную игру, чтобы не было пустоты до нажатия кнопки
+            loadLocalGame();
+            renderShop(); renderInventory(); updateUI();
+            
+        } else {
+            // ПЕРВЫЙ ВХОД: НИКАКОГО ОКНА, СРАЗУ ГЕНЕРИМ ID И В МАГАЗИН
+            const randomId = generateRandomId();
+            currentUserId = randomId;
+            localStorage.setItem('cachedUserId', randomId);
+            gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
+            for(let i=0; i<3; i++) gameData.inventory.push('pack5');
+            saveLocalGame();
+            saveCloudGame();
+            document.getElementById('authOverlay').classList.add('hidden');
+            renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+        }
+
+        // Кнопка "Войти по ID" (работает только если есть введённый ID)
+        document.getElementById('authLoginBtn').onclick = function() {
+            const inputId = document.getElementById('loginInput').value.trim();
             if (!inputId) {
-                const counterRef = db.ref('counter/last_id');
-                counterRef.transaction((current) => {
-                    return (current || 0) + 1;
-                }, (error, committed, snapshot) => {
-                    if (error) { alert("Ошибка счётчика!"); return; }
-                    if (committed) {
-                        const newId = snapshot.val();
-                        loginWithId(String(newId));
-                    }
-                }, false);
+                alert("Введи ID, бро!");
                 return;
             }
 
-            // Если введён ID, проверяем и входим
-            loginWithId(inputId);
-        };
-
-        function loginWithId(id) {
-            loadCloudData(id, function(data) {
+            loadCloudData(inputId, function(data) {
                 if (data) {
                     // Вход в существующий аккаунт
                     gameData.balance = data.balance || 10;
@@ -705,41 +731,16 @@
                     gameData.equipped = data.equipped || [];
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
-                } else {
-                    // Создание нового аккаунта
-                    gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤' };
-                    for(let i=0; i<3; i++) gameData.inventory.push('pack5');
-                }
-                currentUserId = id;
-                localStorage.setItem('cachedUserId', id);
-                saveLocalGame();
-                saveCloudGame();
-                document.getElementById('authOverlay').style.display = 'none';
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
-            });
-        }
-
-        // Автоматический вход при загрузке страницы
-        const cachedUserId = localStorage.getItem('cachedUserId');
-        if (cachedUserId) {
-            loadCloudData(cachedUserId, function(data) {
-                if (data) {
-                    gameData.balance = data.balance || 10;
-                    gameData.cards = data.cards || {};
-                    gameData.equipped = data.equipped || [];
-                    gameData.inventory = data.inventory || [];
-                    gameData.avatar = data.avatar || '👤';
-                    currentUserId = cachedUserId;
+                    currentUserId = inputId;
+                    localStorage.setItem('cachedUserId', inputId);
                     saveLocalGame();
-                    document.getElementById('authOverlay').style.display = 'none';
+                    document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
                 } else {
-                    document.getElementById('authOverlay').style.display = 'flex';
+                    alert("Такого ID нет в облаке! Проверь ID или создай новый аккаунт.");
                 }
             });
-        } else {
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
+        };
 
         // Загрузка аватарки
         document.getElementById('avatarUploadBtn').onclick = function() {
