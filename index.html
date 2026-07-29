@@ -245,6 +245,16 @@
                 </div>
             </div>
 
+            <!-- АДМИН-ПАНЕЛЬ (видна только для Dushka) -->
+            <div class="tab-pane" id="admin">
+                <div class="content-card">
+                    <h2>🛠️ Админ-панель</h2>
+                    <div id="adminContainer" style="padding:10px 0;">
+                        <div class="placeholder" style="text-align:center; padding:20px; color:#8892b0;">Загрузка списка пользователей...</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок</h2><div class="placeholder" style="text-align:center; padding:30px;">🛠️ Раздел в разработке</div></div></div>
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
@@ -275,6 +285,7 @@
             <button class="tab-btn" data-tab="inventory"><span class="icon">🎒</span><span class="label">Инвентарь</span></button>
             <button class="tab-btn" data-tab="leaders"><span class="icon">🏆</span><span class="label">Лидеры</span></button>
             <button class="tab-btn" data-tab="profile"><span class="icon">👤</span><span class="label">Профиль</span></button>
+            <button class="tab-btn" data-tab="admin"><span class="icon">🛠️</span><span class="label">Админ</span></button>
             <button class="tab-btn" data-tab="market"><span class="icon">📊</span><span class="label">Рынок</span></button>
             <button class="tab-btn" data-tab="crypto"><span class="icon">₿</span><span class="label">Крипто</span></button>
             <button class="tab-btn" data-tab="roadmap"><span class="icon">🗺️</span><span class="label">Дорожка</span></button>
@@ -310,8 +321,14 @@
             });
         }
         async function customMsg(title, text) {
-            // Показываем только с кнопкой Подтвердить
             await showCustomMsg(title, text, [{ text: 'Подтвердить', class: 'confirm' }]);
+        }
+        async function customConfirm(title, text) {
+            const res = await showCustomMsg(title, text, [
+                { text: 'Да', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]);
+            return res === 0;
         }
 
         // ==========================================
@@ -342,7 +359,6 @@
         ];
 
         const DEADLY_CARDS = [
-            // Шедевр из снега — самый редкий (0.01% / 1000 в секунду)
             { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 200, income: 1000, dropRate: 0.0001 },
             { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
             { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 200, income: 600, dropRate: 0.20 },
@@ -597,7 +613,9 @@
                             if (card) income += card.income;
                         });
                     }
-                    players.push({ name: key, income: income, avatar: p.avatar || '👤' });
+                    // Используем displayName или логин
+                    const displayName = p.displayName || key;
+                    players.push({ name: displayName, income: income, avatar: p.avatar || '👤' });
                 }
                 const sorted = players.sort((a,b) => b.income - a.income).slice(0, 100);
                 const container = document.getElementById('leaderList');
@@ -749,6 +767,122 @@
         };
 
         // ==========================================
+        // АДМИН-ПАНЕЛЬ (видна только Dushka)
+        // ==========================================
+        function renderAdminPanel() {
+            if (currentUser !== 'Dushka') {
+                document.getElementById('adminContainer').innerHTML = `<div class="placeholder" style="text-align:center; padding:20px; color:#ff6b6b;">⛔ У вас нет прав администратора!</div>`;
+                return;
+            }
+            const usersRef = db.ref('users');
+            usersRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    document.getElementById('adminContainer').innerHTML = `<div class="placeholder" style="text-align:center; padding:20px; color:#8892b0;">Нет зарегистрированных пользователей.</div>`;
+                    return;
+                }
+                let html = `<div style="overflow-x:auto; font-size:13px;">`;
+                html += `<table style="width:100%; border-collapse:collapse;">`;
+                html += `<tr style="background:#2a3348;"><th>Логин</th><th>Отобр. имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Статус</th><th>Действия</th></tr>`;
+                for (let key in data) {
+                    const p = data[key];
+                    if (key === 'Dushka') continue; // скрываем админа
+                    const displayName = p.displayName || key;
+                    const cardsCount = p.cards ? Object.keys(p.cards).filter(c => p.cards[c] > 0).length : 0;
+                    const equippedCount = p.equipped ? p.equipped.length : 0;
+                    const isBanned = p.banned === true;
+                    html += `<tr style="border-bottom:1px solid #2a3348;">`;
+                    html += `<td style="padding:8px;">${key}</td>`;
+                    html += `<td style="padding:8px;">${displayName}</td>`;
+                    html += `<td style="padding:8px;">$${p.balance || 0}</td>`;
+                    html += `<td style="padding:8px;">${cardsCount}</td>`;
+                    html += `<td style="padding:8px;">${equippedCount}</td>`;
+                    html += `<td style="padding:8px;">${isBanned ? '<span style="color:#ff6b6b;">Забанен</span>' : '<span style="color:#64ffda;">Активен</span>'}</td>`;
+                    html += `<td style="padding:8px; display:flex; flex-wrap:wrap; gap:4px;">`;
+                    // Кнопки
+                    html += `<button onclick="adminBan('${key}')" style="background:#4a1a1a; color:#ff6b6b; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">${isBanned ? 'Разблокировать' : 'Заблокировать'}</button>`;
+                    html += `<button onclick="adminClearEquip('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Очистить экип.</button>`;
+                    html += `<button onclick="adminChangePassword('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Сменить пароль</button>`;
+                    html += `<button onclick="adminChangeDisplayName('${key}')" style="background:#2a3348; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer;">Сменить имя</button>`;
+                    html += `</td>`;
+                    html += `</tr>`;
+                }
+                html += `</table></div>`;
+                document.getElementById('adminContainer').innerHTML = html;
+            });
+        }
+
+        // Админ функции
+        window.adminBan = function(login) {
+            const ref = db.ref('users/' + safePath(login) + '/banned');
+            ref.once('value').then(snap => {
+                const current = snap.val();
+                const newVal = !current;
+                ref.set(newVal).then(() => {
+                    customMsg('Статус изменён', `Пользователь ${login} теперь ${newVal ? 'забанен' : 'разблокирован'}`);
+                });
+            });
+        };
+
+        window.adminClearEquip = function(login) {
+            customConfirm('Очистить экипировку', `Удалить все надетые карты у ${login}?`).then(ok => {
+                if (ok) {
+                    db.ref('users/' + safePath(login) + '/equipped').set([]).then(() => {
+                        customMsg('Готово', `Экипировка ${login} очищена.`);
+                    });
+                }
+            });
+        };
+
+        window.adminChangePassword = function(login) {
+            // Простое окно с вводом пароля
+            showCustomMsg('Изменение пароля', `Введите новый пароль для ${login}:`, [
+                { text: 'Ввести', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]).then(res => {
+                if (res === 0) {
+                    // Создаем поле ввода в сообщении, упрощенно - используем prompt
+                    const newPass = prompt('Введите новый пароль:');
+                    if (newPass && newPass.length > 0) {
+                        db.ref('users/' + safePath(login) + '/password').set(newPass).then(() => {
+                            customMsg('Готово', `Пароль ${login} изменён.`);
+                        });
+                    }
+                }
+            });
+        };
+
+        window.adminChangeDisplayName = function(login) {
+            const newName = prompt('Введите новое отображаемое имя для ' + login + ':');
+            if (newName && newName.trim().length > 0) {
+                db.ref('users/' + safePath(login) + '/displayName').set(newName.trim()).then(() => {
+                    customMsg('Готово', `Имя ${login} изменено на "${newName.trim()}"`);
+                });
+            }
+        };
+
+        // ==========================================
+        // СЛУШАТЕЛЬ БАНА ДЛЯ ИГРОКА (реальное время)
+        // ==========================================
+        let banListener = null;
+        function setupBanListener() {
+            if (!currentUser) return;
+            const banRef = db.ref('users/' + safePath(currentUser) + '/banned');
+            if (banListener) banListener.off();
+            banListener = banRef.on('value', (snapshot) => {
+                const isBanned = snapshot.val();
+                if (isBanned === true) {
+                    customMsg('🚫 Вас забанили!', 'Администратор заблокировал ваш аккаунт. Попробуйте позже.');
+                    localStorage.removeItem('cachedUser');
+                    currentUser = null;
+                    document.getElementById('authOverlay').classList.remove('hidden');
+                    document.getElementById('globalAvatarBtn').classList.add('hidden');
+                    if (banListener) banListener.off();
+                }
+            });
+        }
+
+        // ==========================================
         // АВТОРИЗАЦИЯ (ЛОГИН + ПАРОЛЬ)
         // ==========================================
 
@@ -760,6 +894,7 @@
 
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят! Придумай другой."); return; }
+                // Создаём нового пользователя
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 300, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
@@ -768,7 +903,9 @@
                 saveCloudGame();
                 document.getElementById('authOverlay').classList.add('hidden');
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                if (login === 'Dushka') renderAdminPanel();
                 customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
+                setupBanListener();
             });
         };
 
@@ -780,6 +917,7 @@
 
             loadCloudData(login, function(data) {
                 if (!data) { customMsg("Ошибка", "Такой пользователь не найден! Сначала создай аккаунт."); return; }
+                if (data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован администратором."); return; }
                 if (data.password !== pass) { customMsg("Ошибка", "Неверный пароль!"); return; }
                 
                 gameData.balance = data.balance || 10;
@@ -793,7 +931,9 @@
                 saveLocalGame();
                 document.getElementById('authOverlay').classList.add('hidden');
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                if (login === 'Dushka') renderAdminPanel();
                 customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
+                setupBanListener();
             });
         };
 
@@ -801,6 +941,7 @@
         document.getElementById('logoutBtn').onclick = function() {
             if (currentUser) {
                 localStorage.removeItem('cachedUser');
+                if (banListener) banListener.off();
                 currentUser = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('globalAvatarBtn').classList.add('hidden');
@@ -812,7 +953,7 @@
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser, function(data) {
-                if (data) {
+                if (data && data.banned !== true) {
                     gameData.balance = data.balance || 10;
                     gameData.cards = data.cards || {};
                     gameData.equipped = data.equipped || [];
@@ -823,7 +964,12 @@
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI();
+                    if (cachedUser === 'Dushka') renderAdminPanel();
+                    setupBanListener();
                 } else {
+                    if (data && data.banned === true) {
+                        customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован администратором.");
+                    }
                     document.getElementById('authOverlay').classList.remove('hidden');
                 }
             });
