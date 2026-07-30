@@ -322,6 +322,31 @@
         #cryptoCreateModal .modal-actions .btn:hover {
             opacity: 0.8 !important;
         }
+        
+        /* --- СТИЛИ УВЕДОМЛЕНИЙ И ПРОФИЛЕЙ (НОВОЕ) --- */
+        .notification-area {
+            position: fixed; top: 80px; right: 20px; width: 300px; max-width: 90%;
+            z-index: 20000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .notification-item {
+            background: #1a2133; border: 2px solid #ffb347; border-radius: 12px; padding: 15px;
+            box-shadow: 0 0 25px rgba(255,180,71,0.2); color: #fff; pointer-events: auto;
+            animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; gap: 5px; font-size: 14px;
+        }
+        .notification-item .notif-title { font-weight: bold; color: #ffb347; font-size: 16px; }
+        .notification-item .notif-text { color: #e0e6f0; }
+        .notification-item .notif-close { align-self: flex-end; cursor: pointer; color: #8892b0; font-size: 12px; padding: 4px 10px; background: #0b0e1a; border-radius: 8px; margin-top: 5px; transition: 0.2s; }
+        .notification-item .notif-close:hover { background: #ef4444; color: #fff; }
+        @keyframes slideInRight { from { transform: translateX(120%) scale(0.8); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+        
+        /* Модальное окно просмотра профиля */
+        #userProfileModal .modal-box { max-width: 400px; text-align: center; }
+        #viewProfileAvatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #0b0e1a; margin: 10px auto; border: 2px solid #ffb347; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        #viewProfileAvatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        #viewProfileName { font-size: 22px; color: #64ffda; margin-top: 5px; }
+        .profile-stat { font-size: 14px; margin: 4px 0; color: #8892b0; }
+        .profile-stat span { font-weight: bold; color: #fff; }
     </style>
 </head>
 <body>
@@ -349,6 +374,43 @@
             <h3 id="customMsgTitle">Сообщение</h3>
             <p id="customMsgText">Текст сообщения</p>
             <div id="customMsgBtns"></div>
+        </div>
+    </div>
+
+    <!-- ОБЛАСТЬ УВЕДОМЛЕНИЙ (НОВОЕ) -->
+    <div class="notification-area" id="notificationArea"></div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ПРОФИЛЯ (НОВОЕ) -->
+    <div class="modal-overlay" id="userProfileModal">
+        <div class="modal-box">
+            <h2>👤 Профиль игрока</h2>
+            <div id="viewProfileContent" style="padding: 10px 0;">
+                <div id="viewProfileAvatar">👤</div>
+                <h3 id="viewProfileName" style="color:#64ffda;">Неизвестно</h3>
+                <div class="profile-stat">💰 Баланс: <span id="viewProfileBalance">$0</span></div>
+                <div class="profile-stat">📈 Доход: <span id="viewProfileIncome">+$0/сек</span></div>
+                <div class="profile-stat">🃏 Карт: <span id="viewProfileCards">0</span></div>
+            </div>
+            <div class="modal-actions" style="margin-top:15px;">
+                <button class="btn btn-buy" onclick="openPrivateMessageModal(document.getElementById('viewProfileName').innerText)">💬 Написать в ЛС</button>
+                <button class="btn btn-sell" onclick="document.getElementById('userProfileModal').classList.remove('active')">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ОТПРАВКИ ЛС (НОВОЕ) -->
+    <div class="modal-overlay" id="privateMessageModal">
+        <div class="modal-box" style="max-width: 400px;">
+            <h2>💬 Отправить сообщение</h2>
+            <div style="text-align:center; margin:15px 0; display:flex; flex-direction:column; gap:10px;">
+                <div style="background:#0b0e1a; border-radius:8px; padding:8px 0; border:1px solid #2a3348; text-align:left; padding-left:12px;" id="pmTargetDisplay">Кому: <span id="pmTargetUserSpan" style="color:#64ffda; font-weight:bold;">Никнейм</span></div>
+                <input type="text" id="pmTargetUser" placeholder="Введите никнейм" style="display:none;">
+                <textarea id="pmMessageText" rows="3" placeholder="Текст сообщения..." style="background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff; padding:10px; width:100%; resize:none; font-family:inherit;"></textarea>
+            </div>
+            <div class="modal-actions" style="margin-top:10px;">
+                <button class="btn btn-buy" onclick="sendMessage()">📤 Отправить</button>
+                <button class="btn btn-sell" onclick="document.getElementById('privateMessageModal').classList.remove('active')">Отмена</button>
+            </div>
         </div>
     </div>
 
@@ -398,7 +460,8 @@
                         .leader-rank.gold { color: #ffd700; }
                         .leader-rank.silver { color: #c0c0c0; }
                         .leader-rank.bronze { color: #cd7f32; }
-                        .leader-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                        .leader-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition:0.2s; }
+                        .leader-name:hover { color:#64ffda; }
                         .leader-income { color: #ffb347; font-weight: 600; text-align: center; }
                         .leader-empty { text-align: center; padding: 30px 0; color: #666; font-size: 15px; }
                         .leader-footer { margin-top: 12px; text-align: center; font-size: 12px; color: #555; border-top: 1px solid #2a2a45; padding-top: 12px; }
@@ -488,14 +551,14 @@
                         </div>
                     </div>
 
-                    <!-- НОВЫЙ БЛОК: СПАВН НА ДОРОЖКЕ -->
+                    <!-- СПАВН НА ДОРОЖКЕ (НОВОЕ) -->
                     <div style="background:#111722; border-radius:12px; padding:15px; margin-top:15px; border:1px solid #2a3348;">
-                        <h3 style="color:#ffb347; font-size:16px; margin-bottom:10px;">🎲 Спавн на Дорожке</h3>
+                        <h3 style="color:#ffb347; font-size:16px; margin-bottom:10px;">🎲 Заспавнить на Дорожку (9 сек, 3-й слот)</h3>
                         <select id="adminCardSelect" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
                             <option value="">Выбери карту</option>
                         </select>
                         <input type="text" id="adminTargetUser" placeholder="Ник игрока (оставь пустым = всем)" style="width:100%; padding:10px; margin:4px 0; background:#0b0e1a; border:1px solid #2a3348; border-radius:8px; color:#fff;">
-                        <button class="auth-btn" id="adminSpawnBtn" style="width:auto; padding:8px 20px;">💥 Заспавнить</button>
+                        <button class="auth-btn" id="adminSpawnBtn" style="width:auto; padding:8px 20px;">💥 Заспавнить на дорожку</button>
                     </div>
 
                     <div id="adminContainer" style="padding:10px 0;">
@@ -851,6 +914,7 @@
         let roadmapInterval = null;
         let roadmapTimerCounter = 0;
         let roadmapSlotsData = [null, null, null];
+        let isRoadmapFrozen = false; // Для заморозки дорожки при спавне
         let offlineEarnings = 0;
         let lastOnlineTime = Date.now();
         let uploadedImageData = null;
@@ -1149,7 +1213,7 @@
                     html += `
                         <div class="leader-row">
                             <div class="leader-rank ${rankClass}">${index+1}</div>
-                            <div class="leader-name">${avatarHtml} ${player.name}</div>
+                            <div class="leader-name" onclick="viewUserProfile('${player.name}')">${avatarHtml} ${player.name}</div>
                             <div class="leader-income">💵 ${player.income}/мин</div>
                         </div>
                     `;
@@ -1173,7 +1237,7 @@
             }
         }, 1000);
 
-        // Доход каждую секунду (новое)
+        // Доход каждую секунду
         setInterval(() => {
             let totalIncome = getCurrentIncome(); // доход в минуту
             if (totalIncome > 0 && currentUser) {
@@ -1202,7 +1266,7 @@
                 updateUI();
                 customMsg("⏰ Офлайн-доход!", `Пока тебя не было, ты заработал $${totalOfflineEarn} (${minutesPassed.toFixed(0)} минут).`);
             }
-            lastOnlineTime = now; // сбрасываем таймер
+            lastOnlineTime = now;
         }
 
         function renderShop() {
@@ -1526,7 +1590,6 @@
         // СИСТЕМА КРИПТОБИРЖИ (Firebase ветка "crypto")
         // ==========================================
 
-        // Функция пополнения кошелька
         function depositToWallet() {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             showCustomMsg("Пополнение кошелька", "Введите сумму для перевода с основного баланса на крипто-кошелёк:", [
@@ -1564,7 +1627,6 @@
             });
         }
 
-        // Функция вывода с кошелька (НОВОЕ)
         function withdrawFromWallet() {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             const walletRef = db.ref('crypto/wallet/' + safePath(currentUser));
@@ -1604,7 +1666,6 @@
             });
         }
 
-        // Получить баланс кошелька
         function getWalletBalance(callback) {
             if (!currentUser) return callback(0);
             const walletRef = db.ref('crypto/wallet/' + safePath(currentUser));
@@ -1613,7 +1674,6 @@
             }).catch(() => callback(0));
         }
 
-        // Получить портфель монет
         function getPortfolio(callback) {
             if (!currentUser) return callback({});
             const portfolioRef = db.ref('crypto/portfolio/' + safePath(currentUser));
@@ -1622,7 +1682,6 @@
             }).catch(() => callback({}));
         }
 
-        // Создать монету
         function createCoin() {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             const name = document.getElementById('coinName').value.trim();
@@ -1687,7 +1746,6 @@
             });
         }
 
-        // Отрисовка рынка
         function renderCryptoMarket() {
             if (!currentUser) return;
             const container = document.getElementById('cryptoMarketList');
@@ -1909,7 +1967,6 @@
             });
         }
 
-        // Автоматическое обновление цен (каждые 5 секунд)
         setInterval(() => {
             const coinsRef = db.ref('crypto/coins');
             coinsRef.once('value').then(snap => {
@@ -1937,7 +1994,6 @@
             });
         }, 60000);
 
-        // Случайные новости
         function triggerRandomNews() {
             const coinsRef = db.ref('crypto/coins');
             coinsRef.once('value').then(snap => {
@@ -1982,7 +2038,6 @@
             });
         }
 
-        // Инициализация популярных монет при первом запуске
         function initPopularCoins() {
             const coinsRef = db.ref('crypto/coins');
             coinsRef.once('value').then(snap => {
@@ -2112,6 +2167,7 @@
                     startRoadmap();
                     renderMarketplace();
                     calculateOfflineIncome();
+                    setupInboxListener(); // Слушатель входящих сообщений
                     resolve();
                 });
             });
@@ -2138,6 +2194,7 @@
                 renderSavedAccounts();
                 startRoadmap();
                 renderMarketplace();
+                setupInboxListener();
             });
         };
 
@@ -2159,38 +2216,138 @@
                 document.getElementById('globalAvatarBtn').classList.add('hidden');
                 customMsg("Выход", "Ты вышел из аккаунта.");
                 stopRoadmap();
+                // Отключаем слушатель входящих сообщений
+                const inboxRef = db.ref('users/' + safePath(currentUser) + '/inbox');
+                inboxRef.off();
             }
         };
 
-        const cachedUser = localStorage.getItem('cachedUser');
-        if (cachedUser) {
-            loadCloudData(cachedUser, function(data) {
-                if (data && data.banned !== true) {
-                    gameData.balance = data.balance || 10;
-                    gameData.cards = data.cards || {};
-                    gameData.equipped = data.equipped || [];
-                    gameData.inventory = data.inventory || [];
-                    gameData.avatar = data.avatar || '👤';
-                    gameData.password = data.password || '';
-                    gameData.favoriteCard = data.favoriteCard || null;
-                    currentUser = cachedUser;
-                    saveLocalGame();
-                    document.getElementById('authOverlay').classList.add('hidden');
-                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
-                    if (cachedUser === 'Dushka') renderAdminPanel();
-                    setupBanListener();
-                    startRoadmap();
-                    renderMarketplace();
-                    calculateOfflineIncome();
+        // ==========================================
+        // СИСТЕМА ЛС И УВЕДОМЛЕНИЙ (НОВОЕ)
+        // ==========================================
+        // Функция добавления красивого уведомления
+        function addNotification(title, text, duration = 8000) {
+            const area = document.getElementById('notificationArea');
+            const notif = document.createElement('div');
+            notif.className = 'notification-item';
+            notif.innerHTML = `
+                <div class="notif-title">${title}</div>
+                <div class="notif-text">${text}</div>
+                <div class="notif-close">× Закрыть</div>
+            `;
+            notif.querySelector('.notif-close').onclick = function() {
+                notif.remove();
+            };
+            area.appendChild(notif);
+            setTimeout(() => {
+                if (notif.parentNode) notif.remove();
+            }, duration);
+        }
+
+        // Просмотр профиля другого игрока
+        window.viewUserProfile = function(username) {
+            loadCloudData(username, function(data) {
+                if (!data) { customMsg("Ошибка", "Профиль не найден!"); return; }
+                
+                const avatar = document.getElementById('viewProfileAvatar');
+                if (data.avatar && data.avatar.startsWith('data:image')) {
+                    avatar.innerHTML = `<img src="${data.avatar}" alt="avatar">`;
                 } else {
-                    if (data && data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); }
-                    document.getElementById('authOverlay').classList.remove('hidden');
+                    avatar.innerHTML = '👤';
                 }
-                renderSavedAccounts();
+                document.getElementById('viewProfileName').innerText = username;
+                
+                let income = 0;
+                if (data.equipped) {
+                    data.equipped.forEach(id => {
+                        let card = ALL_CARDS.find(c => c.id === id);
+                        if (card) income += card.income;
+                    });
+                }
+                document.getElementById('viewProfileBalance').innerText = `$${data.balance || 0}`;
+                document.getElementById('viewProfileIncome').innerText = `+$${(income / 60).toFixed(2)}/сек`;
+                
+                let cardsCount = 0;
+                if (data.cards) {
+                    for (let k in data.cards) if (data.cards[k] > 0) cardsCount += data.cards[k];
+                }
+                document.getElementById('viewProfileCards').innerText = cardsCount;
+                
+                document.getElementById('userProfileModal').classList.add('active');
             });
-        } else {
-            document.getElementById('authOverlay').classList.remove('hidden');
-            renderSavedAccounts();
+        };
+
+        // Открытие окна отправки ЛС
+        window.openPrivateMessageModal = function(targetUser = '') {
+            const modal = document.getElementById('privateMessageModal');
+            const targetInput = document.getElementById('pmTargetUser');
+            const targetSpan = document.getElementById('pmTargetUserSpan');
+            
+            if (targetUser) {
+                targetInput.style.display = 'none';
+                targetSpan.parentElement.style.display = 'block';
+                targetSpan.innerText = targetUser;
+                document.getElementById('pmMessageText').value = '';
+            } else {
+                targetInput.style.display = 'block';
+                targetSpan.parentElement.style.display = 'none';
+                targetInput.value = '';
+                document.getElementById('pmMessageText').value = '';
+            }
+            modal.classList.add('active');
+        };
+
+        // Отправка сообщения
+        window.sendMessage = function() {
+            const targetInput = document.getElementById('pmTargetUser');
+            let targetUser = targetSpan.innerText;
+            
+            if (targetInput.style.display !== 'none') {
+                targetUser = targetInput.value.trim();
+            }
+
+            if (!targetUser) { customMsg("Ошибка", "Введите никнейм получателя!"); return; }
+            if (targetUser === currentUser) { customMsg("Ошибка", "Нельзя отправить сообщение самому себе!"); return; }
+            
+            const messageText = document.getElementById('pmMessageText').value.trim();
+            if (!messageText) { customMsg("Ошибка", "Введите текст сообщения!"); return; }
+
+            // Проверяем, существует ли пользователь
+            loadCloudData(targetUser, function(data) {
+                if (!data) { customMsg("Ошибка", "Пользователь с таким ником не найден!"); return; }
+
+                const msgData = {
+                    from: currentUser,
+                    text: messageText,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    read: false
+                };
+                const inboxRef = db.ref('users/' + safePath(targetUser) + '/inbox').push();
+                inboxRef.set(msgData).then(() => {
+                    customMsg("✅ Отправлено!", `Сообщение для ${targetUser} успешно доставлено!`);
+                    document.getElementById('privateMessageModal').classList.remove('active');
+                }).catch(err => {
+                    customMsg("❌ Ошибка", "Не удалось отправить сообщение.");
+                });
+            });
+        };
+
+        // Слушатель входящих сообщений
+        function setupInboxListener() {
+            if (!currentUser) return;
+            const inboxRef = db.ref('users/' + safePath(currentUser) + '/inbox');
+            
+            // Слушаем только новые сообщения (после входа)
+            inboxRef.off(); // Убираем старые, чтобы не дублировать
+            inboxRef.on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                if (!msg) return;
+                // Проверяем, что сообщение не от самого себя и не старое (относительно времени сессии)
+                // Просто показываем уведомление
+                addNotification(`💬 Новое ЛС от ${msg.from}`, msg.text);
+                // Можно пометить как прочитанное сразу или сохранить, но для этого понадобится отдельная логика, 
+                // а пока просто оставляем в базе.
+            });
         }
 
         // ==========================================
@@ -2557,7 +2714,7 @@
         };
 
         // ==========================================
-        // ДОРОЖКА (РОТАЦИЯ КАРТ)
+        // ДОРОЖКА (РОТАЦИЯ КАРТ) и АДМИН-СПАВН
         // ==========================================
         function generateRoadmapCard() {
             const rand = Math.random() * 100;
@@ -2611,8 +2768,13 @@
                 }
             });
 
-            const secondsLeft = 3 - (roadmapTimerCounter % 3);
-            timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
+            if (!isRoadmapFrozen) {
+                const secondsLeft = 3 - (roadmapTimerCounter % 3);
+                timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
+            } else {
+                // Если дорожка заморожена, показываем 9 секунд
+                timerText.innerText = `⏳ Админский спавн: 9 секунд`;
+            }
         }
 
         function buyRoadmapCard(slotIndex) {
@@ -2625,7 +2787,9 @@
                 customMsg("Ошибка", "В этом слоте нет карты!");
                 return;
             }
-            const price = card.price || 50;
+            // Если слот 2 (3-я карта) и она заспавнена админом, разрешаем купить за 0$ или другую цену
+            const price = (slotIndex === 2 && isRoadmapFrozen) ? 0 : (card.price || 50);
+            
             if (gameData.balance < price) {
                 customMsg("Не хватает денег", `Карта стоит $${price}, у тебя $${Math.floor(gameData.balance)}`);
                 return;
@@ -2639,10 +2803,39 @@
             updateUI();
             renderInventory();
             
-            roadmapSlotsData[slotIndex] = generateRoadmapCard();
-            renderRoadmapSlots();
-            
+            // Если купили спавненную, убираем её
+            if (slotIndex === 2 && isRoadmapFrozen) {
+                // Удаляем с дорожки и размораживаем
+                clearSpawnedCard();
+            } else {
+                roadmapSlotsData[slotIndex] = generateRoadmapCard();
+                renderRoadmapSlots();
+            }
             customMsg("✅ Куплено!", `Ты купил ${card.emoji} ${card.name} за $${price}.`);
+        }
+
+        // Вспомогательная функция для разморозки и удаления спавна
+        function clearSpawnedCard() {
+            isRoadmapFrozen = false;
+            const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+            spawnRef.remove();
+            roadmapSlotsData[2] = generateRoadmapCard(); // Генерим новую обычную карту
+            if (roadmapInterval) {
+                clearInterval(roadmapInterval);
+                roadmapInterval = null;
+            }
+            roadmapTimerCounter = 0;
+            // Перезапускаем обычный цикл
+            roadmapInterval = setInterval(() => {
+                roadmapTimerCounter++;
+                if (roadmapTimerCounter % 3 === 0) {
+                    roadmapSlotsData[2] = roadmapSlotsData[1];
+                    roadmapSlotsData[1] = roadmapSlotsData[0];
+                    roadmapSlotsData[0] = generateRoadmapCard();
+                }
+                renderRoadmapSlots();
+            }, 1000);
+            renderRoadmapSlots();
         }
 
         function startRoadmap() {
@@ -2650,18 +2843,51 @@
             roadmapTimerCounter = 0;
             roadmapSlotsData = [generateRoadmapCard(), generateRoadmapCard(), generateRoadmapCard()];
             renderRoadmapSlots();
+            isRoadmapFrozen = false;
 
+            // Слушаем админский спавн
+            if (currentUser) {
+                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+                spawnRef.off(); // Убираем старые слушатели
+                spawnRef.on('value', (snapshot) => {
+                    const spawnData = snapshot.val();
+                    if (!spawnData || !spawnData.cardId) return;
+                    
+                    // Если уже есть активный спавн, ничего не делаем
+                    if (isRoadmapFrozen) return;
+
+                    const card = ALL_CARDS.find(c => c.id === spawnData.cardId);
+                    if (!card) return;
+
+                    // Замораживаем дорожку и ставим карту
+                    isRoadmapFrozen = true;
+                    if (roadmapInterval) clearInterval(roadmapInterval);
+                    
+                    roadmapSlotsData[2] = card;
+                    renderRoadmapSlots();
+                    
+                    // Показываем уведомление
+                    addNotification("🛠️ Админ заспавнил карту!", `На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`, 9000);
+
+                    // Ждём 9 секунд, затем размораживаем
+                    setTimeout(() => {
+                        if (isRoadmapFrozen && currentUser) {
+                            clearSpawnedCard();
+                        }
+                    }, 9000);
+                });
+            }
+
+            // Основной цикл
             roadmapInterval = setInterval(() => {
+                if (isRoadmapFrozen) return; // Заморожено
                 roadmapTimerCounter++;
-                
                 if (roadmapTimerCounter % 3 === 0) {
                     roadmapSlotsData[2] = roadmapSlotsData[1];
                     roadmapSlotsData[1] = roadmapSlotsData[0];
                     roadmapSlotsData[0] = generateRoadmapCard();
-                    renderRoadmapSlots();
-                } else {
-                    renderRoadmapSlots();
                 }
+                renderRoadmapSlots();
             }, 1000);
         }
 
@@ -2676,10 +2902,15 @@
                 slot.innerHTML = `<span style="color:#555;">Остановлено</span>`;
             });
             document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
+            // Очищаем слушатель спавна
+            if (currentUser) {
+                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+                spawnRef.off();
+            }
         }
 
         // ==========================================
-        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ
+        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ (НОВОЕ)
         // ==========================================
         function fillAdminCardSelect() {
             const select = document.getElementById('adminCardSelect');
@@ -2706,7 +2937,13 @@
             const card = ALL_CARDS.find(c => c.id === cardId);
             if (!card) return;
 
+            const spawnData = {
+                cardId: cardId,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
             if (targetUser === '') {
+                // Спавн всем
                 const usersRef = db.ref('users');
                 usersRef.once('value', (snap) => {
                     const data = snap.val();
@@ -2714,19 +2951,16 @@
                     const updates = {};
                     for (let key in data) {
                         if (key === 'Dushka') continue;
-                        updates['users/' + safePath(key) + '/cards/' + cardId] = firebase.database.ServerValue.increment(1);
+                        updates['users/' + safePath(key) + '/roadmapSpawn'] = spawnData;
                     }
                     db.ref().update(updates).then(() => {
-                        customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} выдана всем игрокам.`);
+                        customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);
+                        // Если админ сам себе спавнит, обновляем его UI
                         if (currentUser && currentUser !== 'Dushka') {
-                            if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
-                            gameData.cards[cardId]++;
-                            saveLocalGame();
-                            renderInventory();
-                            updateUI();
+                            // Слушатель сам сработает
                         }
                         renderAdminPanel();
-                    }).catch(err => customMsg("Ошибка", "Не удалось выдать карты."));
+                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карты."));
                 });
             } else {
                 loadCloudData(targetUser, function(data) {
@@ -2734,18 +2968,14 @@
                         customMsg("Ошибка", "Игрок не найден!");
                         return;
                     }
-                    const userRef = db.ref('users/' + safePath(targetUser) + '/cards/' + cardId);
-                    userRef.set(firebase.database.ServerValue.increment(1)).then(() => {
-                        customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} выдана ${targetUser}.`);
+                    const userRef = db.ref('users/' + safePath(targetUser) + '/roadmapSpawn');
+                    userRef.set(spawnData).then(() => {
+                        customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${targetUser}.`);
                         if (currentUser === targetUser) {
-                            if (!gameData.cards[cardId]) gameData.cards[cardId] = 0;
-                            gameData.cards[cardId]++;
-                            saveLocalGame();
-                            renderInventory();
-                            updateUI();
+                            // Слушатель сам сработает
                         }
                         renderAdminPanel();
-                    }).catch(err => customMsg("Ошибка", "Не удалось выдать карту."));
+                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карту."));
                 });
             }
         };
