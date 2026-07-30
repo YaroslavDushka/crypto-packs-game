@@ -640,20 +640,64 @@
         const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
         
         const PACK_DATA = [
-            // Старые пакеты (пути остались старыми)
+            // Старые пакеты
             { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 1, price: 50000, drops: DEADLY_CARDS.slice(0, 5) },
             { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 2, price: 10000, drops: LEGENDARY_CARDS.slice(0, 5) },
             { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 3, price: 6700, drops: EPIC_CARDS.slice(0, 5) },
             { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS.slice(0, 5) },
             { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS.slice(0, 5) },
 
-            // НОВЫЕ ПАКЕТЫ - ПУТИ ИСПРАВЛЕНЫ НА ПАПКУ "пакеты"
-            { id: 'pack_wb', name: '📱 Wildberries пакет!', img: 'пакеты/pack_wildberries.png', rarity: 'deadly', order: 6, price: 100000, drops: ['xiaomi_17', 'samsung_s25', 'iphone_17pro', 'iphone_17pro_black', 'samsung_s25_colors'] },
-            { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'пакеты/pack_brawl.png', rarity: 'legendary', order: 7, price: 500000, drops: ['dynamike', 'leon', 'kenji', 'colt', 'edgar', 'mortis', 'emz', 'elprimo', 'melody', 'жириус'] },
-            { id: 'pack_fifa', name: '⚽ FIFA 2026 пакет!', img: 'пакеты/pack_fifa.png', rarity: 'legendary', order: 8, price: 700000, drops: ['argentina', 'portugal', 'france', 'ronaldo_goal', 'messi_hands', 'mbappe_army', 'yamal', 'arshavin'] },
-            { id: 'pack_aura', name: '🔵 AURA пакет!', img: 'пакеты/pack_aura.png', rarity: 'deadly', order: 9, price: 1000000, drops: ['minion_office', 'minion_one', 'minion_hula', 'minion_wave', 'minion_horde'] },
-            { id: 'pack_banana', name: '🍌 BANANA пакет!', img: 'пакеты/pack_banana.png', rarity: 'epic', order: 10, price: 300000, drops: ['cheese', 'sausage', 'bread', 'pelmeni', 'groceries'] },
-            { id: 'pack_celofan', name: '🛍️ Селафановый Мега-пакет!', img: 'пакеты/pack_celofan.png', rarity: 'deadly', order: 11, price: 10000000, drops: ['xiaomi_17', 'samsung_s25', 'iphone_17pro', 'iphone_17pro_black', 'samsung_s25_colors', 'minion_office', 'minion_one', 'minion_hula', 'minion_wave', 'minion_horde', 'ronaldo_goal', 'messi_hands'] }
+            // НОВЫЕ ПАКЕТЫ (С НОВЫМИ РЕДКОСТЯМИ И ШАНСАМИ)
+            { id: 'pack_wb', name: '📱 Wildberries пакет!', img: 'пакеты/pack_wildberries.png', rarity: 'вб', order: 6, price: 100000, drops: [
+                { id: 'xiaomi_17', chance: 0.20 },
+                { id: 'samsung_s25', chance: 0.20 },
+                { id: 'iphone_17pro', chance: 0.20 },
+                { id: 'iphone_17pro_black', chance: 0.20 },
+                { id: 'samsung_s25_colors', chance: 0.20 }
+            ]},
+            { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'пакеты/pack_brawl.png', rarity: 'бравл', order: 7, price: 500000, drops: [
+                { id: 'dynamike', chance: 0.12 },
+                { id: 'leon', chance: 0.12 },
+                { id: 'kenji', chance: 0.12 },
+                { id: 'colt', chance: 0.12 },
+                { id: 'edgar', chance: 0.12 },
+                { id: 'mortis', chance: 0.10 },
+                { id: 'emz', chance: 0.10 },
+                { id: 'elprimo', chance: 0.10 },
+                { id: 'melody', chance: 0.05 },
+                { id: 'жириус', chance: 0.05 }
+            ]},
+            { id: 'pack_fifa', name: '⚽ FIFA 2026 пакет!', img: 'пакеты/pack_fifa.png', rarity: 'фут', order: 8, price: 700000, drops: [
+                { id: 'argentina', chance: 0.15 },
+                { id: 'portugal', chance: 0.15 },
+                { id: 'france', chance: 0.15 },
+                { id: 'ronaldo_goal', chance: 0.12 },
+                { id: 'messi_hands', chance: 0.12 },
+                { id: 'mbappe_army', chance: 0.12 },
+                { id: 'yamal', chance: 0.10 },
+                { id: 'arshavin', chance: 0.09 }
+            ]},
+            { id: 'pack_aura', name: '🔵 AURA пакет!', img: 'пакеты/pack_aura.png', rarity: 'аура', order: 9, price: 1000000, drops: [
+                { id: 'minion_office', chance: 0.20 },
+                { id: 'minion_one', chance: 0.20 },
+                { id: 'minion_hula', chance: 0.20 },
+                { id: 'minion_wave', chance: 0.20 },
+                { id: 'minion_horde', chance: 0.20 }
+            ]},
+            { id: 'pack_banana', name: '🍌 BANANA пакет!', img: 'пакеты/pack_banana.png', rarity: 'миньоны', order: 10, price: 300000, drops: [
+                { id: 'cheese', chance: 0.25 },
+                { id: 'sausage', chance: 0.25 },
+                { id: 'bread', chance: 0.25 },
+                { id: 'pelmeni', chance: 0.15 },
+                { id: 'groceries', chance: 0.10 }
+            ]},
+            { id: 'pack_celofan', name: '🛍️ Селафановый Мега-пакет!', img: 'пакеты/pack_celofan.png', rarity: 'база', order: 11, price: 10000000, drops: [
+                { id: 'cheese', chance: 0.20 },
+                { id: 'sausage', chance: 0.20 },
+                { id: 'bread', chance: 0.20 },
+                { id: 'pelmeni', chance: 0.20 },
+                { id: 'groceries', chance: 0.20 }
+            ]}
         ];
 
         // ==========================================
@@ -766,12 +810,26 @@
             gameData.inventory.splice(index, 1);
             let randomCard;
             let rand = Math.random(), cum = 0;
-            let shuffled = [...pack.drops].sort(() => Math.random() - 0.5);
-            for (let c of shuffled) {
-                cum += c.dropRate;
-                if (rand <= cum) { randomCard = c; break; }
+            // Перебираем дроп с учётом шансов
+            let drops = pack.drops;
+            if (Array.isArray(drops) && drops.length > 0 && typeof drops[0] === 'object' && drops[0].chance !== undefined) {
+                // Новый формат: [{id, chance}]
+                let shuffled = [...drops].sort(() => Math.random() - 0.5);
+                for (let item of shuffled) {
+                    cum += item.chance;
+                    if (rand <= cum) { randomCard = ALL_CARDS.find(c => c.id === item.id); break; }
+                }
+                if (!randomCard) randomCard = ALL_CARDS.find(c => c.id === shuffled[shuffled.length-1].id);
+            } else {
+                // Старый формат: просто массив id или карт
+                let shuffled = [...drops].sort(() => Math.random() - 0.5);
+                for (let c of shuffled) {
+                    let card = (typeof c === 'string') ? ALL_CARDS.find(card => card.id === c) : c;
+                    if (card) { randomCard = card; break; }
+                }
+                if (!randomCard) randomCard = ALL_CARDS.find(c => c.id === shuffled[0]);
             }
-            if (!randomCard) randomCard = shuffled[shuffled.length-1];
+            if (!randomCard) { customMsg("Ошибка", "Не удалось найти карту."); return; }
             if (!gameData.cards[randomCard.id]) gameData.cards[randomCard.id] = 0;
             gameData.cards[randomCard.id]++;
             saveLocalGame(); saveCloudGame();
@@ -1039,8 +1097,17 @@
             const pack = PACK_DATA.find(p => p.id === packId);
             if (!pack || pack.drops.length === 0) return;
             let msg = `📊 Шансы выпадения из ${pack.name}:\n\n`;
-            let shuffled = [...pack.drops].sort((a,b) => a.dropRate - b.dropRate);
-            shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(1)}%\n`; });
+            let drops = pack.drops;
+            if (Array.isArray(drops) && drops.length > 0 && typeof drops[0] === 'object' && drops[0].chance !== undefined) {
+                let sorted = [...drops].sort((a,b) => a.chance - b.chance);
+                sorted.forEach(item => {
+                    let card = ALL_CARDS.find(c => c.id === item.id);
+                    if (card) msg += `${card.emoji} ${card.name}: ${(item.chance * 100).toFixed(1)}%\n`;
+                });
+            } else {
+                let shuffled = [...drops].sort((a,b) => a.dropRate - b.dropRate);
+                shuffled.forEach(c => { msg += `${c.emoji} ${c.name}: ${(c.dropRate * 100).toFixed(1)}%\n`; });
+            }
             customMsg(`📊 Шансы ${pack.name}`, msg);
         };
 
