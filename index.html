@@ -640,22 +640,15 @@
         const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
         
         const PACK_DATA = [
-            // Старые пакеты
-            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 1, price: 50000, drops: DEADLY_CARDS.slice(0, 5) },
-            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 2, price: 10000, drops: LEGENDARY_CARDS.slice(0, 5) },
-            { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 3, price: 6700, drops: EPIC_CARDS.slice(0, 5) },
-            { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS.slice(0, 5) },
-            { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS.slice(0, 5) },
-
-            // НОВЫЕ ПАКЕТЫ (С НОВЫМИ РЕДКОСТЯМИ И ШАНСАМИ)
-            { id: 'pack_wb', name: '📱 Wildberries пакет!', img: 'пакеты/pack_wildberries.png', rarity: 'вб', order: 6, price: 100000, drops: [
+            // НОВЫЕ ПАКЕТЫ (ПЕРВЫЕ В МАГАЗИНЕ)
+            { id: 'pack_wb', name: '📱 Wildberries пакет!', img: 'пакеты/pack_wildberries.png', rarity: 'вб', order: 1, price: 100000, drops: [
                 { id: 'xiaomi_17', chance: 0.20 },
                 { id: 'samsung_s25', chance: 0.20 },
                 { id: 'iphone_17pro', chance: 0.20 },
                 { id: 'iphone_17pro_black', chance: 0.20 },
                 { id: 'samsung_s25_colors', chance: 0.20 }
             ]},
-            { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'пакеты/pack_brawl.png', rarity: 'бравл', order: 7, price: 500000, drops: [
+            { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'пакеты/pack_brawl.png', rarity: 'бравл', order: 2, price: 500000, drops: [
                 { id: 'dynamike', chance: 0.12 },
                 { id: 'leon', chance: 0.12 },
                 { id: 'kenji', chance: 0.12 },
@@ -667,7 +660,7 @@
                 { id: 'melody', chance: 0.05 },
                 { id: 'жириус', chance: 0.05 }
             ]},
-            { id: 'pack_fifa', name: '⚽ FIFA 2026 пакет!', img: 'пакеты/pack_fifa.png', rarity: 'фут', order: 8, price: 700000, drops: [
+            { id: 'pack_fifa', name: '⚽ FIFA 2026 пакет!', img: 'пакеты/pack_fifa.png', rarity: 'фут', order: 3, price: 700000, drops: [
                 { id: 'argentina', chance: 0.15 },
                 { id: 'portugal', chance: 0.15 },
                 { id: 'france', chance: 0.15 },
@@ -677,27 +670,33 @@
                 { id: 'yamal', chance: 0.10 },
                 { id: 'arshavin', chance: 0.09 }
             ]},
-            { id: 'pack_aura', name: '🔵 AURA пакет!', img: 'пакеты/pack_aura.png', rarity: 'аура', order: 9, price: 1000000, drops: [
+            { id: 'pack_aura', name: '🔵 AURA пакет!', img: 'пакеты/pack_aura.png', rarity: 'аура', order: 4, price: 1000000, drops: [
                 { id: 'minion_office', chance: 0.20 },
                 { id: 'minion_one', chance: 0.20 },
                 { id: 'minion_hula', chance: 0.20 },
                 { id: 'minion_wave', chance: 0.20 },
                 { id: 'minion_horde', chance: 0.20 }
             ]},
-            { id: 'pack_banana', name: '🍌 BANANA пакет!', img: 'пакеты/pack_banana.png', rarity: 'миньоны', order: 10, price: 300000, drops: [
+            { id: 'pack_banana', name: '🍌 BANANA пакет!', img: 'пакеты/pack_banana.png', rarity: 'миньоны', order: 5, price: 300000, drops: [
                 { id: 'cheese', chance: 0.25 },
                 { id: 'sausage', chance: 0.25 },
                 { id: 'bread', chance: 0.25 },
                 { id: 'pelmeni', chance: 0.15 },
                 { id: 'groceries', chance: 0.10 }
             ]},
-            { id: 'pack_celofan', name: '🛍️ Селафановый Мега-пакет!', img: 'пакеты/pack_celofan.png', rarity: 'база', order: 11, price: 10000000, drops: [
+            { id: 'pack_celofan', name: '🛍️ Селафановый Мега-пакет!', img: 'пакеты/pack_celofan.png', rarity: 'база', order: 6, price: 10000000, drops: [
                 { id: 'cheese', chance: 0.20 },
                 { id: 'sausage', chance: 0.20 },
                 { id: 'bread', chance: 0.20 },
                 { id: 'pelmeni', chance: 0.20 },
                 { id: 'groceries', chance: 0.20 }
-            ]}
+            ]},
+            // СТАРЫЕ ПАКЕТЫ
+            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 7, price: 50000, drops: DEADLY_CARDS.slice(0, 5) },
+            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 8, price: 10000, drops: LEGENDARY_CARDS.slice(0, 5) },
+            { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 9, price: 6700, drops: EPIC_CARDS.slice(0, 5) },
+            { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 10, price: 100, drops: RARE_CARDS.slice(0, 5) },
+            { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 11, price: 10, drops: COMMON_CARDS.slice(0, 5) }
         ];
 
         // ==========================================
@@ -709,6 +708,8 @@
         let roadmapInterval = null;
         let roadmapTimerCounter = 0;
         let roadmapSlotsData = [null, null, null];
+        let offlineEarnings = 0; // Накопленный офлайн-доход
+        let lastOnlineTime = Date.now(); // Время последнего онлайна
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
@@ -810,10 +811,8 @@
             gameData.inventory.splice(index, 1);
             let randomCard;
             let rand = Math.random(), cum = 0;
-            // Перебираем дроп с учётом шансов
             let drops = pack.drops;
             if (Array.isArray(drops) && drops.length > 0 && typeof drops[0] === 'object' && drops[0].chance !== undefined) {
-                // Новый формат: [{id, chance}]
                 let shuffled = [...drops].sort(() => Math.random() - 0.5);
                 for (let item of shuffled) {
                     cum += item.chance;
@@ -821,7 +820,6 @@
                 }
                 if (!randomCard) randomCard = ALL_CARDS.find(c => c.id === shuffled[shuffled.length-1].id);
             } else {
-                // Старый формат: просто массив id или карт
                 let shuffled = [...drops].sort(() => Math.random() - 0.5);
                 for (let c of shuffled) {
                     let card = (typeof c === 'string') ? ALL_CARDS.find(card => card.id === c) : c;
@@ -839,6 +837,7 @@
 
         function equipOne(cardId) {
             if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { customMsg("Ошибка", "У вас нет этой карты!"); return; }
+            if (gameData.equipped.length >= 10) { customMsg("Ошибка", "Максимум 10 карт в экипировке!"); return; }
             gameData.cards[cardId]--;
             gameData.equipped.push(cardId);
             saveLocalGame(); saveCloudGame();
@@ -979,6 +978,9 @@
             renderLeaderboard();
         };
 
+        // ==========================================
+        // ТАЙМЕР МАГАЗИНА
+        // ==========================================
         setInterval(() => {
             if (gameData.storeTimer > 0) {
                 gameData.storeTimer--;
@@ -991,16 +993,48 @@
             }
         }, 1000);
 
+        // ==========================================
+        // ОНЛАЙН-ДОХОД (КАЖДУЮ МИНУТУ)
+        // ==========================================
         setInterval(() => {
             let totalIncome = getCurrentIncome();
-            if (totalIncome > 0) {
+            if (totalIncome > 0 && currentUser) {
                 gameData.balance = (gameData.balance || 0) + totalIncome;
                 saveLocalGame();
                 if (currentUser) saveCloudGame();
                 updateUI();
+                lastOnlineTime = Date.now(); // запоминаем время последнего онлайна
             }
-        }, 60000); // Доход раз в минуту
+        }, 60000);
 
+        // ==========================================
+        // ОФЛАЙН-ДОХОД (ПРИ ЗАХОДЕ)
+        // ==========================================
+        function calculateOfflineIncome() {
+            if (!currentUser) return;
+            const now = Date.now();
+            const diffMs = now - lastOnlineTime;
+            const diffMinutes = diffMs / (1000 * 60);
+            // Максимум 6 часов (360 минут)
+            const maxMinutes = 360;
+            const minutesPassed = Math.min(diffMinutes, maxMinutes);
+            // Офлайн-доход в 10 раз меньше (делим на 10)
+            const totalIncomePerMinute = getCurrentIncome();
+            const offlineIncomePerMinute = totalIncomePerMinute / 10;
+            const totalOfflineEarn = Math.floor(offlineIncomePerMinute * minutesPassed);
+            if (totalOfflineEarn > 0) {
+                gameData.balance += totalOfflineEarn;
+                saveLocalGame();
+                if (currentUser) saveCloudGame();
+                updateUI();
+                customMsg("⏰ Офлайн-доход!", `Пока тебя не было, ты заработал $${totalOfflineEarn} (${minutesPassed.toFixed(0)} минут).`);
+            }
+            lastOnlineTime = now; // сбрасываем таймер
+        }
+
+        // ==========================================
+        // ОТРИСОВКА МАГАЗИНА
+        // ==========================================
         function renderShop() {
             const container = document.getElementById('packsContainer');
             container.innerHTML = '';
@@ -1027,6 +1061,9 @@
             });
         }
 
+        // ==========================================
+        // ОТРИСОВКА ИНВЕНТАРЯ
+        // ==========================================
         function renderInventory() {
             const equipContainer = document.getElementById('equipContainer');
             equipContainer.innerHTML = '';
@@ -1797,6 +1834,7 @@
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
+                    calculateOfflineIncome(); // Начисляем офлайн-доход при входе
                     if (login === 'Dushka') renderAdminPanel();
                     if (!silent) customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
                     setupBanListener();
@@ -1870,6 +1908,7 @@
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
+                    calculateOfflineIncome();
                     if (cachedUser === 'Dushka') renderAdminPanel();
                     setupBanListener();
                     startRoadmap();
@@ -2094,11 +2133,14 @@
                     else rarityColor = '#6b7280';
 
                     slot.className = 'roadmap-slot filled';
+                    // Показываем доход за 10 минут, умноженный на 4 (как ты просил)
+                    const income10min = card.income * 10 * 4;
                     slot.innerHTML = `
                         <div class="card-emoji">${card.emoji}</div>
                         <div class="card-name">${card.name}</div>
                         <div class="card-rarity" style="background:${rarityColor}; color:#fff;">${card.rarity.toUpperCase()}</div>
                         <div class="timer-label">${idx === 0 ? '9с' : idx === 1 ? '6с' : '3с'}</div>
+                        <div style="font-size:10px; color:#64ffda; margin-top:2px;">+${income10min} за 10 мин</div>
                     `;
                     slot.onclick = () => buyRoadmapCard(idx);
                 } else {
