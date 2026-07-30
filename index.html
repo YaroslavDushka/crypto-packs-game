@@ -122,7 +122,7 @@
         .tab-btn.active { color: #64ffda; }
         @media (max-width: 480px) { .tab-btn .icon { font-size: 20px; } }
 
-        /* --- СТИЛИ КРИПТОБИРЖИ (НОВЫЕ, BINANCE СТИЛЬ) --- */
+        /* --- СТИЛИ КРИПТОБИРЖИ (BINANCE) --- */
         .crypto-wallet-container {
             display: flex;
             justify-content: space-between;
@@ -184,6 +184,35 @@
         .trade-inputs input[type="number"] { width: 80px; padding: 6px; background: #0b0e11; border: 1px solid #2a3348; border-radius: 4px; color: #eaecef; text-align: center; }
         .trade-inputs input[type="range"] { flex: 1; min-width: 100px; accent-color: #f0b90b; }
         .trade-buttons { display: flex; gap: 10px; margin-top: 8px; }
+
+        /* --- СТИЛИ ДОРОЖКИ (ГОРИЗОНТАЛЬНАЯ) --- */
+        .roadmap-container { display: flex; flex-direction: column; gap: 20px; padding: 10px 0; }
+        .roadmap-slots { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 15px; padding-bottom: 10px; scrollbar-width: thin; scrollbar-color: #3b4a6b #0b0e11; }
+        .roadmap-slots::-webkit-scrollbar { height: 6px; }
+        .roadmap-slots::-webkit-scrollbar-thumb { background: #3b4a6b; border-radius: 8px; }
+        .roadmap-slot {
+            flex: 0 0 auto;
+            width: 140px;
+            background: #0b0e1a;
+            border: 2px dashed #2a3348;
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            min-height: 180px;
+        }
+        .roadmap-slot.filled { border: 2px solid #64ffda; background: #111722; }
+        .roadmap-slot .card-img { font-size: 40px; display: block; margin-bottom: 4px; }
+        .roadmap-slot .card-image { width: 80px; height: 80px; object-fit: contain; margin-bottom: 4px; border-radius: 8px; background: #0b0e1a; padding: 4px; }
+        .roadmap-slot .card-name { font-size: 12px; text-align: center; margin-top: 5px; font-weight: 600; }
+        .roadmap-slot .card-rarity { font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
+        .roadmap-slot .timer-label { font-size: 11px; color: #848e9c; margin-top: 6px; }
+        .roadmap-timer-container { text-align: center; font-size: 14px; color: #64ffda; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -370,11 +399,11 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА ДОРОЖКА (РОТАЦИЯ) -->
+            <!-- ВКЛАДКА ДОРОЖКА (ГОРИЗОНТАЛЬНАЯ) -->
             <div class="tab-pane" id="roadmap">
                 <div class="content-card">
                     <h2>🗺️ Дорожка</h2>
-                    <div style="font-size:14px; color:#848e9c; margin-bottom:15px;">3 карты сменяют друг друга каждые 3 секунды. Нажми на карту, чтобы купить её!</div>
+                    <div style="font-size:14px; color:#848e9c; margin-bottom:15px;">Карты сменяют друг друга каждые 3 секунды. Нажми на карту, чтобы купить её!</div>
                     <div class="roadmap-container">
                         <div class="roadmap-slots" id="roadmapSlots">
                             <div class="roadmap-slot" id="roadmapSlot0"><span style="color:#555;">Загрузка...</span></div>
@@ -2152,9 +2181,15 @@
                     else rarityColor = '#6b7280';
 
                     slot.className = 'roadmap-slot filled';
+                    
+                    let imgHtml = `<span class="card-img">${card.emoji}</span>`;
+                    if (card.img) {
+                        imgHtml = `<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
+                    }
+
                     const income10min = card.income * 10 * 4;
                     slot.innerHTML = `
-                        <div class="card-emoji">${card.emoji}</div>
+                        ${imgHtml}
                         <div class="card-name">${card.name}</div>
                         <div class="card-rarity" style="background:${rarityColor}; color:#fff;">${card.rarity.toUpperCase()}</div>
                         <div class="timer-label">${idx === 0 ? '9с' : idx === 1 ? '6с' : '3с'}</div>
