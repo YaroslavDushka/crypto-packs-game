@@ -559,7 +559,7 @@
         const db = firebase.database();
 
         // ==========================================
-        // ДАННЫЕ ИГРЫ (КАРТЫ И ПАКЕТЫ) - ОБНОВЛЕННЫЕ (с новыми картами)
+        // ДАННЫЕ ИГРЫ (КАРТЫ И ПАКЕТЫ) - ОБНОВЛЕННЫЕ
         // ==========================================
         const COMMON_CARDS = [
             { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 15, income: 1, dropRate: 0.25 },
@@ -921,7 +921,6 @@
             renderLeaderboard();
         };
 
-        // Таймер магазина (обновление каждые 3 минуты)
         setInterval(() => {
             if (gameData.storeTimer > 0) {
                 gameData.storeTimer--;
@@ -934,7 +933,6 @@
             }
         }, 1000);
 
-        // !!! ВАЖНО: ДОХОД ТЕПЕРЬ НАЧИСЛЯЕТСЯ РАЗ В 60 СЕКУНД (МИНУТА) !!!
         setInterval(() => {
             let totalIncome = getCurrentIncome();
             if (totalIncome > 0) {
@@ -942,9 +940,8 @@
                 saveLocalGame();
                 if (currentUser) saveCloudGame();
                 updateUI();
-                // Можно добавить всплывающее уведомление, если хочешь
             }
-        }, 60000); // 60 000 миллисекунд = 1 минута
+        }, 60000); // Доход раз в минуту
 
         function renderShop() {
             const container = document.getElementById('packsContainer');
@@ -1255,9 +1252,8 @@
         };
 
         // ==========================================
-        // ОБНОВЛЁННАЯ ЛОГИКА КРИПТОБИРЖИ
+        // ЛОГИКА КРИПТОБИРЖИ (ПОЛНОСТЬЮ ИСПРАВЛЕНА)
         // ==========================================
-
         function toggleTrade(id) {
             const box = document.getElementById(`tradeBox_${id}`);
             if (!box) return;
@@ -1363,7 +1359,6 @@
                 priceEl.style.color = '#0ecb81';
                 setTimeout(() => { priceEl.style.color = ''; }, 1000);
             }
-            // Меню НЕ закрывается
         }
 
         function sellCrypto(id) {
@@ -1417,12 +1412,113 @@
                 priceEl.style.color = '#f6465d';
                 setTimeout(() => { priceEl.style.color = ''; }, 1000);
             }
-            // Меню НЕ закрывается
         }
 
-        // ==========================================
-        // ГРАФИК ЦЕНЫ
-        // ==========================================
+        function renderCrypto() {
+            const container = document.getElementById('cryptoList');
+            container.innerHTML = '';
+            
+            if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="big-icon">🪙</span>
+                        <div style="font-size:16px; font-weight:600;">Нет монет</div>
+                        <div style="margin-top:5px;">Создай свою первую криптовалюту!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const coinArray = Object.values(gameData.cryptoState.coins);
+            coinArray.sort((a, b) => {
+                const capA = (a.price || 0) * (a.supply || 0);
+                const capB = (b.price || 0) * (b.supply || 0);
+                return capB - capA;
+            });
+
+            coinArray.forEach(coin => {
+                const id = coin.id;
+                const myBalance = (gameData.cryptoState.portfolio && gameData.cryptoState.portfolio[id]) || 0;
+                const price = coin.price || 500;
+                const supply = coin.supply || 0;
+                const marketCap = price * supply;
+                const volume = (gameData.cryptoState.volume && gameData.cryptoState.volume[id]) || 0;
+
+                const card = document.createElement('div');
+                card.className = 'coin-card';
+                
+                let iconHtml = `<div class="coin-icon">${coin.symbol.charAt(0)}</div>`;
+                if (coin.image && coin.image.startsWith('data:image')) {
+                    iconHtml = `<div class="coin-icon"><img src="${coin.image}" alt="${coin.symbol}"></div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="coin-info" onclick="toggleTrade('${id}');">
+                        ${iconHtml}
+                        <div class="coin-names">
+                            <div class="coin-symbol">${coin.symbol}</div>
+                            <div class="coin-fullname">${coin.name}</div>
+                            <div style="font-size:11px; color:#848e9c; margin-top:2px;">В пуле: ${supply}</div>
+                        </div>
+                    </div>
+                    <div class="coin-stats">
+                        <div class="coin-price" id="price_${id}">$${price.toFixed(2)}</div>
+                        <div class="coin-marketcap">Кап: $${marketCap.toFixed(0)}</div>
+                        <div class="coin-volume">📊 Объем: $${volume.toFixed(0)}</div>
+                        <div style="font-size:11px; color:#848e9c;">У вас: ${myBalance}</div>
+                    </div>
+                    <div class="coin-actions">
+                        <button class="btn btn-buy" onclick="event.stopPropagation(); toggleTrade('${id}')">📈 Торг</button>
+                        <button class="btn btn-news" onclick="event.stopPropagation(); toggleChart('${id}')">📊 График</button>
+                    </div>
+                    <div class="trade-box" id="tradeBox_${id}">
+                        <div class="trade-header">
+                            <span class="trade-balance">Ваш баланс: $${Math.floor(gameData.balance).toLocaleString()}</span>
+                            <span class="trade-balance">У вас ${myBalance} ${coin.symbol}</span>
+                        </div>
+                        <div class="trade-input-row">
+                            <input type="number" id="amountInput_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeNumber('${id}')">
+                            <input type="range" id="slider_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeSlider('${id}')">
+                        </div>
+                        <div class="trade-buttons">
+                            <button class="btn btn-buy" onclick="buyCrypto('${id}')">Купить</button>
+                            ${myBalance > 0 ? `<button class="btn btn-sell" onclick="sellCrypto('${id}')">Продать</button>` : ''}
+                        </div>
+                    </div>
+                    <div class="chart-box" id="chartBox_${id}">
+                        <canvas id="chartCanvas_${id}" width="300" height="100" style="width:100%; height:auto;"></canvas>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            renderHistory();
+            updateUI();
+        }
+
+        function addHistory(icon, text, isGood = true) {
+            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
+            const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const finalIcon = isGood ? icon : '🔴';
+            gameData.cryptoState.history.unshift({ time, icon: finalIcon, text });
+            if (gameData.cryptoState.history.length > 50) gameData.cryptoState.history = gameData.cryptoState.history.slice(-50);
+            saveLocalGame();
+            if (currentUser) saveCloudGame();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyItems');
+            container.innerHTML = '';
+            const history = gameData.cryptoState?.history || [];
+            history.slice(0, 20).forEach(item => {
+                const span = document.createElement('span');
+                span.className = 'h-item';
+                span.innerHTML = `[${item.time}] ${item.icon} ${item.text}`;
+                container.appendChild(span);
+            });
+        }
+
         function drawChart(id) {
             const canvas = document.getElementById(`chartCanvas_${id}`);
             if (!canvas) return;
@@ -1454,9 +1550,6 @@
             ctx.stroke();
         }
 
-        // ==========================================
-        // СИМУЛЯЦИЯ РЕАЛЬНОГО ВРЕМЕНИ ДЛЯ ВСЕХ МОНЕТ
-        // ==========================================
         function updateAllPrices() {
             if (!gameData.cryptoState || !gameData.cryptoState.coins) return;
             for (let id in gameData.cryptoState.coins) {
@@ -1468,13 +1561,11 @@
                 coin.price = newPrice;
                 coin.poolMoney = newPrice * coin.supply;
 
-                // Сохраняем историю
                 if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
                 if (!gameData.cryptoState.priceHistory[id]) gameData.cryptoState.priceHistory[id] = [];
                 gameData.cryptoState.priceHistory[id].push(newPrice);
                 if (gameData.cryptoState.priceHistory[id].length > 30) gameData.cryptoState.priceHistory[id].shift();
             }
-            // Обновляем UI
             if (document.getElementById('cryptoList').style.display !== 'none') {
                 renderCrypto();
             }
@@ -1482,12 +1573,8 @@
             if (currentUser) saveCloudGame();
         }
 
-        // Запускаем обновление цен каждые 5 секунд
         setInterval(updateAllPrices, 5000);
 
-        // ==========================================
-        // СЛУЧАЙНЫЕ НОВОСТИ
-        // ==========================================
         function triggerRandomNews() {
             if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
                 customMsg("Внимание", "Сначала создай хотя бы одну монету!");
@@ -1522,7 +1609,6 @@
             coin.price = newPrice;
             coin.poolMoney = newPoolMoney;
             
-            // Сохраняем историю
             if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
             if (!gameData.cryptoState.priceHistory[randomId]) gameData.cryptoState.priceHistory[randomId] = [];
             gameData.cryptoState.priceHistory[randomId].push(newPrice);
@@ -1545,9 +1631,6 @@
             }
         }
 
-        // ==========================================
-        // ПРЕДУСТАНОВЛЕННЫЕ ПОПУЛЯРНЫЕ КРИПТОВАЛЮТЫ (ВСЕГДА ДОБАВЛЯЮТСЯ)
-        // ==========================================
         function initPopularCoins() {
             if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
             
@@ -1560,7 +1643,6 @@
 
             let changed = false;
             popular.forEach(p => {
-                // Проверяем, есть ли уже монета с таким символом (в том числе и у пользователя)
                 let exists = false;
                 for (let key in gameData.cryptoState.coins) {
                     if (gameData.cryptoState.coins[key].symbol === p.symbol) {
@@ -1594,7 +1676,6 @@
             }
         }
 
-        // Инициализация популярных монет при старте
         initPopularCoins();
 
         // ==========================================
@@ -1643,7 +1724,6 @@
                     gameData.password = data.password || pass;
                     gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
                     gameData.packPurchases = data.packPurchases || {};
-                    // Инициализируем популярные монеты, если их нет
                     initPopularCoins();
                     currentUser = login;
                     localStorage.setItem('cachedUser', login);
@@ -1653,8 +1733,8 @@
                     if (login === 'Dushka') renderAdminPanel();
                     if (!silent) customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
                     setupBanListener();
-                    startRoadmap(); // Запускаем дорожку при входе
-                    renderMarketplace(); // Загружаем рынок
+                    startRoadmap();
+                    renderMarketplace();
                     resolve();
                 });
             });
@@ -1674,7 +1754,6 @@
                 saveLocalGame();
                 saveCloudGame();
                 document.getElementById('authOverlay').classList.add('hidden');
-                // Инициализация популярных монет
                 initPopularCoins();
                 renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
                 if (login === 'Dushka') renderAdminPanel();
@@ -1707,9 +1786,6 @@
             }
         };
 
-        // ==========================================
-        // АВТОМАТИЧЕСКИЙ ВХОД
-        // ==========================================
         const cachedUser = localStorage.getItem('cachedUser');
         if (cachedUser) {
             loadCloudData(cachedUser, function(data) {
@@ -1722,7 +1798,6 @@
                     gameData.password = data.password || '';
                     gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
                     gameData.packPurchases = data.packPurchases || {};
-                    // Инициализация популярных монет
                     initPopularCoins();
                     currentUser = cachedUser;
                     saveLocalGame();
@@ -1875,20 +1950,13 @@
                 if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя купить свой же лот!"); return; }
                 if (gameData.balance < lot.price) { customMsg("Ошибка", "Не хватает денег!"); return; }
 
-                // Транзакция покупки
-                const sellerRef = db.ref('users/' + safePath(lot.seller) + '/balance');
-                const buyerRef = db.ref('users/' + safePath(currentUser) + '/balance');
-                const buyerCardsRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
-
-                // Списываем с покупателя, добавляем продавцу, добавляем карту, удаляем лот
                 const updates = {};
                 updates['users/' + safePath(currentUser) + '/balance'] = gameData.balance - lot.price;
-                updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.price * 0.9); // 10% комиссия
+                updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.price * 0.9);
                 updates['users/' + safePath(currentUser) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
                 updates['marketplace/listings/' + listingId] = null;
 
                 db.ref().update(updates).then(() => {
-                    // Обновляем локальные данные
                     gameData.balance -= lot.price;
                     if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
                     gameData.cards[lot.cardId]++;
@@ -1910,7 +1978,6 @@
             listingRef.once('value', (snap) => {
                 const lot = snap.val();
                 if (lot && lot.seller === currentUser) {
-                    // Возвращаем карту
                     const cardRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
                     cardRef.set(firebase.database.ServerValue.increment(1)).then(() => {
                         listingRef.remove().then(() => {
@@ -1932,7 +1999,6 @@
         // ДОРОЖКА (РОТАЦИЯ КАРТ)
         // ==========================================
         function generateRoadmapCard() {
-            // Шансы: Обычная 51.5%, Редкая 41.5%, Эпическая 5%, Легендарная 1%, Дедли 1%
             const rand = Math.random() * 100;
             let rarityGroup;
             if (rand < 51.5) rarityGroup = 'common';
@@ -2071,7 +2137,6 @@
             if (!card) return;
 
             if (targetUser === '') {
-                // Всем игрокам
                 const usersRef = db.ref('users');
                 usersRef.once('value', (snap) => {
                     const data = snap.val();
@@ -2094,7 +2159,6 @@
                     }).catch(err => customMsg("Ошибка", "Не удалось выдать карты."));
                 });
             } else {
-                // Конкретному игроку
                 loadCloudData(targetUser, function(data) {
                     if (!data) {
                         customMsg("Ошибка", "Игрок не найден!");
