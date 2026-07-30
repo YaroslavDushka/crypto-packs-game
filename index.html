@@ -74,6 +74,8 @@
         .chance-btn { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; background: rgba(255,255,255,0.1); border: 1px solid #8892b0; color: #fff; border-radius: 50%; font-size: 14px; font-weight: bold; line-height: 20px; text-align: center; cursor: pointer; transition: 0.2s; z-index: 10; }
         .chance-btn:hover { background: #fff; color: #000; }
 
+        .rarity-sigma { border-color: #ff00ff !important; background: #1a0020 !important; box-shadow: 0 0 20px rgba(255, 0, 255, 0.5) !important; }
+        .rarity-sigma .pack-rarity { background: #ff00ff; color: #fff; }
         .rarity-legendary { border-color: #ffd700 !important; background: #1a1600 !important; }
         .rarity-legendary .pack-rarity { background: #ffd700; color: #000; }
         .rarity-epic { border-color: #a855f7 !important; background: #1a0b2e !important; }
@@ -441,6 +443,15 @@
                         <button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">📸 Загрузить аватарку</button>
                     </div>
 
+                    <!-- ЛЮБИМАЯ КАРТА -->
+                    <div style="text-align:center; padding:10px 0; margin-top:15px; border-top:1px solid #2a3348;">
+                        <h3 style="color:#ffb347; margin-bottom:10px;">⭐ Любимая карта</h3>
+                        <div id="favoriteCardDisplay" style="font-size: 16px; color: #8892b0; min-height: 40px; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                            <span>Выбери любимую карту в инвентаре!</span>
+                        </div>
+                        <div style="font-size:12px; color:#848e9c; margin-top:6px;">Нажми на карту в инвентаре и нажми «⭐ Сделать любимой»</div>
+                    </div>
+
                     <!-- КНОПКИ УПРАВЛЕНИЯ -->
                     <div style="text-align:center; padding:10px 0; display:flex; flex-direction:column; gap:10px; border-top:1px solid #2a3348; margin-top:15px;">
                         <button class="auth-btn" id="changeNickBtn" style="background:#2a3348; color:#fff; width:auto; padding:10px 20px;">✏️ Сменить ник</button>
@@ -494,9 +505,10 @@
             <!-- ВКЛАДКА РЫНОК (P2P) -->
             <div class="tab-pane" id="market">
                 <div class="content-card">
-                    <h2>📊 Рынок</h2>
+                    <h2>📊 Рынок и Аукцион</h2>
                     <div style="margin-bottom: 12px; font-size: 14px; color: #848e9c;">
-                        Здесь ты можешь выставить свои карты на продажу за доллары.
+                        💰 Обычный рынок: продажа за фиксированную цену.<br>
+                        🔨 Аукцион: 24 часа, кто больше заплатит — тот и получит карту.
                     </div>
                     <div id="marketplaceContainer" style="padding: 10px 0;">
                         <div class="empty-state">📭 Лотов пока нет. Выставь свою первую карту!</div>
@@ -558,7 +570,9 @@
                 <button class="modal-btn" id="modalEquipBtn">Одеть</button>
                 <button class="modal-btn" id="modalUnequipBtn">Снять</button>
                 <button class="modal-btn sell-btn" id="modalSellBtn">Продать за $0</button>
-                <button class="modal-btn" id="modalMarketBtn" style="background:#f0b90b; color:#000;">📊 Выставить на рынок</button>
+                <button class="modal-btn" id="modalMarketBtn" style="background:#f0b90b; color:#000;">📊 Выставить на рынок (до 100B)</button>
+                <button class="modal-btn" id="modalAuctionBtn" style="background:#64ffda; color:#000;">🔨 Выставить на аукцион (24ч)</button>
+                <button class="modal-btn" id="modalFavoriteBtn" style="background:#ffb347; color:#000;">⭐ Сделать любимой</button>
                 <button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button>
             </div>
         </div>
@@ -677,6 +691,14 @@
         // ==========================================
         // ДАННЫЕ ИГРЫ (КАРТЫ И ПАКЕТЫ) - ОБНОВЛЕННЫЕ
         // ==========================================
+        const SIGMA_CARDS = [
+            { id: 'sigma_cheese', name: 'Сырная Сигма', img: 'food/cheese.png', emoji: '🧀', rarity: 'sigma', price: 6000000, income: 6000000, dropRate: 0.20 },
+            { id: 'sigma_sausage', name: 'Колбасная Сигма', img: 'food/sausage.png', emoji: '🌭', rarity: 'sigma', price: 8000000, income: 8000000, dropRate: 0.20 },
+            { id: 'sigma_bread', name: 'Хлебная Сигма', img: 'food/bread.png', emoji: '🍞', rarity: 'sigma', price: 10000000, income: 10000000, dropRate: 0.20 },
+            { id: 'sigma_groceries', name: 'Корзинная Сигма', img: 'food/groceries.png', emoji: '🛒', rarity: 'sigma', price: 12000000, income: 12000000, dropRate: 0.20 },
+            { id: 'sigma_pelmeni', name: 'Пельменная Сигма', img: 'food/pelmeni.png', emoji: '🥟', rarity: 'sigma', price: 15000000, income: 15000000, dropRate: 0.20 }
+        ];
+
         const COMMON_CARDS = [
             { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'pepe/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 15, income: 1, dropRate: 0.25 },
             { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'pepe/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 20, income: 3, dropRate: 0.20 },
@@ -753,7 +775,7 @@
             { id: 'samsung_s25_colors', name: 'Samsung S25 (цвета)', img: 'wildberries/samsung_s25_colors.png', emoji: '🎨', rarity: 'deadly', price: 280000, income: 85000, dropRate: 0.02 }
         ];
 
-        const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
+        const ALL_CARDS = [...SIGMA_CARDS, ...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
         
         const PACK_DATA = [
             // НОВЫЕ ПАКЕТЫ (ПЕРВЫЕ В МАГАЗИНЕ)
@@ -765,18 +787,18 @@
                 { id: 'samsung_s25_colors', chance: 0.20 }
             ]},
             { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'packs/pack_brawl.png', rarity: 'Brawl Stars', order: 2, price: 500000, drops: [
-                { id: 'dynamike', chance: 0.12 },
-                { id: 'leon', chance: 0.12 },
-                { id: 'kenji', chance: 0.12 },
-                { id: 'colt', chance: 0.12 },
-                { id: 'edgar', chance: 0.12 },
-                { id: 'mortis', chance: 0.10 },
-                { id: 'emz', chance: 0.10 },
-                { id: 'elprimo', chance: 0.10 },
-                { id: 'melody', chance: 0.05 },
-                { id: 'жириус', chance: 0.05 },
-                { id: 'rico', chance: 0.05 },
-                { id: 'kit', chance: 0.05 }
+                { id: 'dynamike', chance: 0.08 },
+                { id: 'leon', chance: 0.08 },
+                { id: 'kenji', chance: 0.08 },
+                { id: 'colt', chance: 0.08 },
+                { id: 'edgar', chance: 0.08 },
+                { id: 'mortis', chance: 0.06 },
+                { id: 'emz', chance: 0.06 },
+                { id: 'elprimo', chance: 0.06 },
+                { id: 'melody', chance: 0.02 },
+                { id: 'жириус', chance: 0.02 },
+                { id: 'rico', chance: 0.19 },
+                { id: 'kit', chance: 0.19 }
             ]},
             { id: 'pack_fifa', name: '⚽ Футбол 2026 пакет!', img: 'packs/pack_fifa.png', rarity: 'Футбол', order: 3, price: 700000, drops: [
                 { id: 'argentina', chance: 0.15 },
@@ -802,12 +824,12 @@
                 { id: 'pelmeni', chance: 0.15 },
                 { id: 'groceries', chance: 0.10 }
             ]},
-            { id: 'pack_celofan', name: '🛍️ Мега-пакет!', img: 'packs/pack_celofan.png', rarity: 'Мега', order: 6, price: 10000000, drops: [
-                { id: 'cheese', chance: 0.20 },
-                { id: 'sausage', chance: 0.20 },
-                { id: 'bread', chance: 0.20 },
-                { id: 'pelmeni', chance: 0.20 },
-                { id: 'groceries', chance: 0.20 }
+            { id: 'pack_celofan', name: '🛍️ Мега-пакет (Сигма)!', img: 'packs/pack_celofan.png', rarity: 'Сигма', order: 6, price: 100000000, drops: [
+                { id: 'sigma_cheese', chance: 0.20 },
+                { id: 'sigma_sausage', chance: 0.20 },
+                { id: 'sigma_bread', chance: 0.20 },
+                { id: 'sigma_groceries', chance: 0.20 },
+                { id: 'sigma_pelmeni', chance: 0.20 }
             ]},
             // СТАРЫЕ ПАКЕТЫ
             { id: 'pack3', name: 'Смертельный пакет!', img: 'skull/pack_deadly.png', rarity: 'Смертельный', order: 7, price: 50000, drops: DEADLY_CARDS.slice(0, 5) },
@@ -820,7 +842,7 @@
         // ==========================================
         // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ==========================================
-        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '' };
+        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '', favoriteCard: null };
         let currentUser = null;
         let banListener = null;
         let roadmapInterval = null;
@@ -859,7 +881,8 @@
                 cards: gameData.cards || {},
                 equipped: gameData.equipped || [],
                 inventory: gameData.inventory || [],
-                avatar: gameData.avatar || '👤'
+                avatar: gameData.avatar || '👤',
+                favoriteCard: gameData.favoriteCard || null
             }).catch((err) => console.error(err));
         }
 
@@ -874,6 +897,7 @@
             if (gameData.balance === undefined) gameData.balance = 10;
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
             if (!gameData.avatar) gameData.avatar = '👤';
+            if (!gameData.favoriteCard) gameData.favoriteCard = null;
         }
         function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
@@ -994,13 +1018,28 @@
             document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
             document.getElementById('modalSellBtn').innerText = `Продать за $${Math.floor(card.price/2)}`;
             document.getElementById('modalSellBtn').onclick = () => sellOne(cardId);
-            
             document.getElementById('modalMarketBtn').onclick = () => openSellModal(cardId);
+            document.getElementById('modalAuctionBtn').onclick = () => openAuctionModal(cardId);
+            document.getElementById('modalFavoriteBtn').onclick = () => setFavoriteCard(cardId);
             
             document.getElementById('modalCloseBtn').onclick = closeModal;
             modal.classList.add('active');
         };
         function closeModal() { document.getElementById('cardModal').classList.remove('active'); }
+
+        function setFavoriteCard(cardId) {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+            if (!gameData.cards[cardId] || gameData.cards[cardId] <= 0) { customMsg("Ошибка", "У тебя нет этой карты!"); return; }
+            
+            gameData.favoriteCard = cardId;
+            saveLocalGame();
+            saveCloudGame();
+            updateProfileUI();
+            customMsg("⭐ Любимая карта выбрана!", `${card.emoji} ${card.name} теперь твоя любимая карта!`);
+            closeModal();
+        }
 
         function getCurrentIncome() {
             let total = 0;
@@ -1024,6 +1063,28 @@
             } else {
                 preview.innerHTML = `👤`;
             }
+            
+            // Отображаем любимую карту
+            const favContainer = document.getElementById('favoriteCardDisplay');
+            if (gameData.favoriteCard) {
+                const card = ALL_CARDS.find(c => c.id === gameData.favoriteCard);
+                if (card) {
+                    favContainer.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:10px; background:#111722; padding:8px 16px; border-radius:12px; border:1px solid #ffb347;">
+                            <span style="font-size:32px;">${card.emoji}</span>
+                            <div style="text-align:left;">
+                                <div style="font-weight:bold; font-size:16px; color:#fff;">${card.name}</div>
+                                <div style="font-size:12px; color:#64ffda;">+$${card.income}/мин</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    favContainer.innerHTML = `<span style="color:#8892b0;">Карта не найдена</span>`;
+                }
+            } else {
+                favContainer.innerHTML = `<span style="color:#8892b0;">Выбери любимую карту в инвентаре!</span>`;
+            }
+
             if (currentUser) {
                 document.getElementById('profileLoginDisplay').innerText = `Ваш логин: ${currentUser}`;
                 document.getElementById('globalAvatarBtn').classList.remove('hidden');
@@ -1558,7 +1619,6 @@
                 updates['crypto/coins/' + coinId] = coinData;
                 updates['crypto/portfolio/' + safePath(currentUser) + '/' + coinId] = creatorCoins;
                 
-                // Фикс: вместо массива используем push().key
                 const initHistRef = db.ref('crypto/priceHistory/' + coinId);
                 const initHistKey = initHistRef.push().key;
                 updates['crypto/priceHistory/' + coinId + '/' + initHistKey] = cost / poolCoins;
@@ -1599,7 +1659,6 @@
 
                         let html = '';
                         const coinIds = Object.keys(data);
-                        // Сортируем по рыночной капе
                         const sorted = coinIds.sort((a, b) => {
                             const capA = (data[a].price || 0) * (data[a].supply || 0);
                             const capB = (data[b].price || 0) * (data[b].supply || 0);
@@ -1612,7 +1671,7 @@
                             const price = coin.price || 0.01;
                             const supply = coin.supply || 0;
                             const marketCap = price * supply;
-                            const volume = 0; // Пока не используем объем из базы для простоты
+                            const volume = 0;
 
                             let iconHtml = `<div class="coin-icon">${coin.symbol.charAt(0)}</div>`;
                             if (coin.image && coin.image.startsWith('data:image')) {
@@ -1659,7 +1718,6 @@
             });
         }
 
-        // Открыть панель торговли
         function toggleTradePanel(id) {
             const panel = document.getElementById('tradePanel_' + id);
             if (panel) {
@@ -1681,7 +1739,6 @@
             }
         }
 
-        // Обновить лимиты слайдера
         function updateTradeLimits(id) {
             const coinRef = db.ref('crypto/coins/' + id);
             coinRef.once('value').then(snap => {
@@ -1698,7 +1755,6 @@
                             const maxVal = Math.max(1, maxBuy);
                             input.max = maxVal;
                             slider.max = maxVal;
-                            // Не сбрасываем значение, если оно больше макс
                             let curVal = parseInt(input.value);
                             if (isNaN(curVal) || curVal < 1) curVal = 1;
                             if (curVal > maxVal) curVal = maxVal;
@@ -1726,7 +1782,6 @@
             }
         }
 
-        // Выполнить сделку
         function executeTrade(id, type) {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             const amountInput = document.getElementById('tradeAmount_' + id);
@@ -1759,7 +1814,6 @@
                         updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
                         updates['crypto/coins/' + id + '/price'] = newPrice;
                         
-                        // Фикс: вместо ServerValue.push используем push().key
                         const histRef = db.ref('crypto/priceHistory/' + id);
                         const histKey = histRef.push().key;
                         updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
@@ -1779,7 +1833,6 @@
 
                         const totalEarn = price * amount;
                         const newSupply = supply + amount;
-                        // Уменьшаем цену при продаже, чтобы не было инфляции
                         let dropMultiplier = 1 - (0.01 * amount);
                         if (dropMultiplier < 0.5) dropMultiplier = 0.5;
                         let newPrice = price * dropMultiplier;
@@ -1793,7 +1846,6 @@
                         updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
                         updates['crypto/coins/' + id + '/price'] = newPrice;
                         
-                        // Фикс: вместо ServerValue.push используем push().key
                         const histRef = db.ref('crypto/priceHistory/' + id);
                         const histKey = histRef.push().key;
                         updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
@@ -1824,13 +1876,11 @@
                     updates['crypto/coins/' + id + '/price'] = newPrice;
                     updates['crypto/coins/' + id + '/poolMoney'] = newPrice * coin.supply;
                     
-                    // Фикс: вместо ServerValue.push используем push().key
                     const histRef = db.ref('crypto/priceHistory/' + id);
                     const histKey = histRef.push().key;
                     updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
                 }
                 db.ref().update(updates).then(() => {
-                    // Обновляем UI только если вкладка открыта
                     const cryptoPane = document.getElementById('crypto');
                     if (cryptoPane && cryptoPane.classList.contains('active')) {
                         renderCryptoMarket();
@@ -1872,7 +1922,6 @@
                 updates['crypto/coins/' + id + '/price'] = finalPrice;
                 updates['crypto/coins/' + id + '/poolMoney'] = finalPrice * coin.supply;
                 
-                // Фикс: вместо ServerValue.push используем push().key
                 const histRef = db.ref('crypto/priceHistory/' + id);
                 const histKey = histRef.push().key;
                 updates['crypto/priceHistory/' + id + '/' + histKey] = finalPrice;
@@ -1915,7 +1964,6 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
                     
-                    // Инициализация истории цен
                     const initHistRef = db.ref('crypto/priceHistory/' + id);
                     const initHistKey = initHistRef.push().key;
                     updates['crypto/priceHistory/' + id + '/' + initHistKey] = p.price;
@@ -1929,18 +1977,11 @@
             });
         }
 
-        // Вызов инициализации
         initPopularCoins();
 
-        // ==========================================
-        // ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА СОЗДАНИЯ КРИПТЫ
-        // ==========================================
         function openCreateModal() {
             const modal = document.getElementById('cryptoCreateModal');
-            if (!modal) {
-                customMsg("Ошибка", "Окно создания монеты не найдено. Попробуйте обновить страницу (Ctrl+F5).");
-                return;
-            }
+            if (!modal) { customMsg("Ошибка", "Окно создания монеты не найдено."); return; }
             modal.classList.add('active');
             document.getElementById('coinName').value = '';
             document.getElementById('coinSymbol').value = '';
@@ -2011,6 +2052,7 @@
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || pass;
+                    gameData.favoriteCard = data.favoriteCard || null;
                     currentUser = login;
                     localStorage.setItem('cachedUser', login);
                     saveLocalGame();
@@ -2034,7 +2076,7 @@
             if (login.toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован для регистрации!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, favoriteCard: null };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
@@ -2082,6 +2124,7 @@
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || '';
+                    gameData.favoriteCard = data.favoriteCard || null;
                     currentUser = cachedUser;
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
@@ -2103,33 +2146,24 @@
         }
 
         // ==========================================
-        // РЫНОК (P2P ТОРГОВЛЯ)
+        // РЫНОК (P2P ТОРГОВЛЯ) И АУКЦИОН
         // ==========================================
         function openSellModal(cardId) {
             const card = ALL_CARDS.find(c => c.id === cardId);
             if (!card) return;
             const count = gameData.cards[cardId] || 0;
-            if (count <= 0) {
-                customMsg("Ошибка", "У тебя нет этой карты для продажи!");
-                return;
-            }
-            if (gameData.equipped.includes(cardId)) {
-                customMsg("Ошибка", "Сначала сними карту с экипировки!");
-                return;
-            }
+            if (count <= 0) { customMsg("Ошибка", "У тебя нет этой карты для продажи!"); return; }
+            if (gameData.equipped.includes(cardId)) { customMsg("Ошибка", "Сначала сними карту с экипировки!"); return; }
 
             showCustomMsg(`💰 Продажа: ${card.emoji} ${card.name}`, 
-                `У тебя: ${count} шт. Введи цену (от 1 до 500000 $):`, 
-                [
-                    { text: 'Ввести', class: 'confirm' },
-                    { text: 'Отмена', class: 'cancel' }
-                ]
+                `У тебя: ${count} шт. Введи цену (от 1 до 100 000 000 000 $):`, 
+                [{ text: 'Ввести', class: 'confirm' }, { text: 'Отмена', class: 'cancel' }]
             ).then(res => {
                 if (res === 0) {
                     const price = prompt('Цена в $ (целое число):');
                     const numPrice = parseInt(price);
-                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 500000) {
-                        customMsg("Ошибка", "Цена должна быть от 1 до 500 000 $");
+                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 100000000000) {
+                        customMsg("Ошибка", "Цена должна быть от 1 до 100 000 000 000 $");
                         return;
                     }
                     createListing(cardId, numPrice);
@@ -2145,8 +2179,7 @@
                 return;
             }
             gameData.cards[cardId]--;
-            saveLocalGame();
-            saveCloudGame();
+            saveLocalGame(); saveCloudGame();
             
             const listingRef = db.ref('marketplace/listings').push();
             const listingData = {
@@ -2156,78 +2189,271 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                 cardName: card.name,
                 cardEmoji: card.emoji,
-                cardRarity: card.rarity
+                cardRarity: card.rarity,
+                isAuction: false
             };
             listingRef.set(listingData).then(() => {
                 customMsg("✅ Выставлено!", `${card.emoji} ${card.name} выставлен за $${price}.`);
-                renderInventory();
-                updateUI();
-                renderMarketplace();
+                renderInventory(); updateUI(); renderMarketplace();
             }).catch(err => {
                 customMsg("❌ Ошибка", "Не удалось выставить лот. Попробуй позже.");
                 console.error(err);
                 gameData.cards[cardId] = (gameData.cards[cardId] || 0) + 1;
-                saveLocalGame();
-                renderInventory();
+                saveLocalGame(); renderInventory();
+            });
+        }
+
+        function openAuctionModal(cardId) {
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+            const count = gameData.cards[cardId] || 0;
+            if (count <= 0) { customMsg("Ошибка", "У тебя нет этой карты для продажи!"); return; }
+            if (gameData.equipped.includes(cardId)) { customMsg("Ошибка", "Сначала сними карту с экипировки!"); return; }
+
+            showCustomMsg(`🔨 Аукцион: ${card.emoji} ${card.name}`, 
+                `У тебя: ${count} шт. Введи стартовую цену (от 1 до 100 000 000 000 $):`, 
+                [{ text: 'Ввести', class: 'confirm' }, { text: 'Отмена', class: 'cancel' }]
+            ).then(res => {
+                if (res === 0) {
+                    const price = prompt('Стартовая цена в $:');
+                    const numPrice = parseInt(price);
+                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 100000000000) {
+                        customMsg("Ошибка", "Цена должна быть от 1 до 100 000 000 000 $");
+                        return;
+                    }
+                    createAuctionListing(cardId, numPrice);
+                }
+            });
+        }
+
+        function createAuctionListing(cardId, price) {
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+            if (!gameData.cards[cardId] || gameData.cards[cardId] < 1) {
+                customMsg("Ошибка", "Карта уже продана или исчезла.");
+                return;
+            }
+            gameData.cards[cardId]--;
+            saveLocalGame(); saveCloudGame();
+
+            const listingRef = db.ref('marketplace/auctions').push();
+            const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // 24 часа
+            const listingData = {
+                seller: currentUser,
+                cardId: cardId,
+                startingPrice: price,
+                currentBid: price,
+                highestBidder: null,
+                previousBidder: null,
+                previousBidAmount: null,
+                expiryTime: expiryTime,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                cardName: card.name,
+                cardEmoji: card.emoji,
+                cardRarity: card.rarity,
+                isAuction: true
+            };
+            listingRef.set(listingData).then(() => {
+                customMsg("✅ Выставлено на аукцион!", `${card.emoji} ${card.name} выставлен на аукцион за стартовые $${price}. Торги идут 24 часа!`);
+                renderInventory(); updateUI(); renderMarketplace();
+            }).catch(err => {
+                customMsg("❌ Ошибка", "Не удалось выставить лот. Попробуй позже.");
+                console.error(err);
+                gameData.cards[cardId] = (gameData.cards[cardId] || 0) + 1;
+                saveLocalGame(); renderInventory();
             });
         }
 
         function renderMarketplace() {
             const container = document.getElementById('marketplaceContainer');
             container.innerHTML = `<div class="empty-state" style="color:#848e9c;">Загрузка лотов...</div>`;
-            
+
             const listingsRef = db.ref('marketplace/listings').limitToLast(100);
-            
-            listingsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    container.innerHTML = `<div class="empty-state">📭 Лотов пока нет. Выставь свою первую карту!</div>`;
+            const auctionsRef = db.ref('marketplace/auctions').limitToLast(100);
+
+            Promise.all([
+                listingsRef.once('value'),
+                auctionsRef.once('value')
+            ]).then(([listingsSnap, auctionsSnap]) => {
+                let listingsData = listingsSnap.val() || {};
+                let auctionsData = auctionsSnap.val() || {};
+                let currentTime = Date.now();
+                let updates = {};
+
+                // Проверяем истекшие аукционы (если прошло 24 часа)
+                for (let id in auctionsData) {
+                    let lot = auctionsData[id];
+                    if (!lot) continue;
+                    if (lot.expiryTime < currentTime) {
+                        if (lot.highestBidder) {
+                            updates['users/' + safePath(lot.highestBidder) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
+                            updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.currentBid);
+                        } else {
+                            updates['users/' + safePath(lot.seller) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
+                        }
+                        updates['marketplace/auctions/' + id] = null;
+                    }
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    db.ref().update(updates).then(() => {
+                        renderMarketplace();
+                    });
                     return;
                 }
-                
-                const ids = Object.keys(data);
-                const sortedIds = ids.sort((a, b) => {
-                    return (data[b].timestamp || 0) - (data[a].timestamp || 0);
-                });
 
                 let html = '';
-                sortedIds.forEach(id => {
-                    const lot = data[id];
-                    if (!lot) return;
-                    
-                    const isMyListing = lot.seller === currentUser;
-                    const canBuy = !isMyListing && gameData.balance >= lot.price;
-                    
-                    let rarityColor = '';
-                    if (lot.cardRarity === 'deadly') rarityColor = '#ef4444';
-                    else if (lot.cardRarity === 'legendary') rarityColor = '#ffd700';
-                    else if (lot.cardRarity === 'epic') rarityColor = '#a855f7';
-                    else if (lot.cardRarity === 'rare') rarityColor = '#3b82f6';
-                    else rarityColor = '#6b7280';
-                    
-                    html += `
-                        <div class="listing-card" id="listing_${id}">
-                            <div class="listing-info">
-                                <div class="listing-emoji">${lot.cardEmoji || '🃏'}</div>
-                                <div class="listing-details">
-                                    <div class="listing-name">${lot.cardName || 'Неизвестно'}</div>
-                                    <div class="listing-rarity" style="background:${rarityColor}; color:#fff;">${(lot.cardRarity || 'common').toUpperCase()}</div>
-                                    <div class="listing-seller">Продавец: ${lot.seller}</div>
-                                </div>
-                            </div>
-                            <div class="listing-actions">
-                                <div class="listing-price">$${lot.price}</div>
-                                ${isMyListing ? `<button class="btn btn-sell" onclick="cancelListing('${id}')">Отменить</button>` : 
-                                `<button class="btn-buy-listing" ${canBuy ? `onclick="buyListing('${id}')"` : 'disabled'}>
-                                    ${canBuy ? 'Купить' : 'Не хватает денег'}
-                                </button>`}
-                            </div>
-                        </div>
-                    `;
-                });
+                for (let id in listingsData) {
+                    let lot = listingsData[id];
+                    if (!lot) continue;
+                    html += generateListingHtml(id, lot, false);
+                }
+                for (let id in auctionsData) {
+                    let lot = auctionsData[id];
+                    if (!lot) continue;
+                    if (lot.expiryTime < currentTime) continue;
+                    html += generateListingHtml(id, lot, true);
+                }
                 container.innerHTML = html || `<div class="empty-state">📭 Нет доступных лотов.</div>`;
+            }).catch(err => {
+                console.error(err);
+                container.innerHTML = `<div class="empty-state" style="color:#ff6b6b;">❌ Ошибка загрузки рынка</div>`;
             });
         }
+
+        function generateListingHtml(id, lot, isAuction) {
+            const isMyListing = lot.seller === currentUser;
+            let canBuy = !isMyListing && gameData.balance >= lot.price;
+            let canBid = !isMyListing && gameData.balance > (lot.currentBid || 0);
+            
+            let rarityColor = '';
+            if (lot.cardRarity === 'deadly') rarityColor = '#ef4444';
+            else if (lot.cardRarity === 'legendary') rarityColor = '#ffd700';
+            else if (lot.cardRarity === 'epic') rarityColor = '#a855f7';
+            else if (lot.cardRarity === 'rare') rarityColor = '#3b82f6';
+            else if (lot.cardRarity === 'sigma') rarityColor = '#ff00ff';
+            else rarityColor = '#6b7280';
+
+            let html = `<div class="listing-card" id="listing_${id}" style="border:1px solid ${isAuction ? '#64ffda' : '#f0b90b'}; margin-bottom:12px; padding:12px; border-radius:10px; background:#111722; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">`;
+            
+            html += `<div style="display:flex; align-items:center; gap:12px; flex:1;">`;
+            html += `<div class="listing-emoji" style="font-size:32px;">${lot.cardEmoji || '🃏'}</div>`;
+            html += `<div class="listing-details">`;
+            html += `<div class="listing-name" style="font-weight:bold; font-size:15px;">${lot.cardName || 'Неизвестно'}</div>`;
+            html += `<div class="listing-rarity" style="background:${rarityColor}; color:#fff; padding:2px 10px; border-radius:12px; display:inline-block; font-size:11px; margin-top:4px;">${(lot.cardRarity || 'common').toUpperCase()}</div>`;
+            html += `<div class="listing-seller" style="font-size:11px; color:#848e9c; margin-top:4px;">Продавец: ${lot.seller}</div>`;
+            html += `</div></div>`;
+            
+            html += `<div class="listing-actions" style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:120px;">`;
+            
+            if (isAuction) {
+                let timeLeftMs = lot.expiryTime - Date.now();
+                let hoursLeft = Math.floor(timeLeftMs / (1000 * 60 * 60));
+                let minutesLeft = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                let timeDisplay = hoursLeft > 0 ? `${hoursLeft}ч ${minutesLeft}м` : `${minutesLeft}м`;
+                
+                html += `<div style="font-size:11px; color:#64ffda; font-weight:bold;">⚡ Аукцион</div>`;
+                html += `<div style="font-size:12px; color:#848e9c;">Старт: $${lot.startingPrice}</div>`;
+                html += `<div style="font-size:14px; color:#f7931a;">Текущая: $${lot.currentBid || lot.startingPrice}`;
+                if (lot.highestBidder) html += ` <span style="font-size:11px; color:#848e9c;">(${lot.highestBidder})</span>`;
+                html += `</div>`;
+                html += `<div style="font-size:11px; color:#555;">⏳ ${timeDisplay}</div>`;
+                if (isMyListing) {
+                    html += `<button class="btn btn-sell" onclick="cancelAuction('${id}')" style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:#4a1a1a; color:#ff6b6b; cursor:pointer;">Отменить</button>`;
+                } else {
+                    html += `<button class="btn-buy-listing" ${canBid ? `onclick="placeBid('${id}', ${lot.currentBid})"` : 'disabled'} style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:${canBid ? '#64ffda' : '#2a3348'}; color:${canBid ? '#000' : '#848e9c'}; cursor:${canBid ? 'pointer' : 'not-allowed'};">
+                        ${canBid ? '💸 Сделать ставку' : 'Не хватает денег'}
+                    </button>`;
+                }
+            } else {
+                html += `<div style="font-size:16px; color:#f7931a; font-weight:bold;">$${lot.price}</div>`;
+                if (isMyListing) {
+                    html += `<button class="btn btn-sell" onclick="cancelListing('${id}')" style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:#4a1a1a; color:#ff6b6b; cursor:pointer;">Отменить</button>`;
+                } else {
+                    html += `<button class="btn-buy-listing" ${canBuy ? `onclick="buyListing('${id}')"` : 'disabled'} style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:${canBuy ? '#f0b90b' : '#2a3348'}; color:${canBuy ? '#000' : '#848e9c'}; cursor:${canBuy ? 'pointer' : 'not-allowed'};">
+                        ${canBuy ? 'Купить' : 'Не хватает денег'}
+                    </button>`;
+                }
+            }
+            html += `</div></div>`;
+            return html;
+        }
+
+        window.placeBid = function(listingId, currentBidAmount) {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            
+            showCustomMsg("🔨 Сделать ставку", `Текущая ставка: $${currentBidAmount}. Введи сумму твоей ставки:`, [
+                { text: 'Ввести', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]).then(res => {
+                if (res !== 0) return;
+                
+                const bidAmount = parseInt(prompt('Сумма ставки в $:'));
+                if (isNaN(bidAmount) || bidAmount <= currentBidAmount) {
+                    customMsg("Ошибка", `Ставка должна быть больше $${currentBidAmount}!`);
+                    return;
+                }
+                if (gameData.balance < bidAmount) {
+                    customMsg("Ошибка", `У тебя недостаточно денег ($${gameData.balance})!`);
+                    return;
+                }
+
+                const listingRef = db.ref('marketplace/auctions/' + listingId);
+                listingRef.once('value').then((snap) => {
+                    const lot = snap.val();
+                    if (!lot) { customMsg("Ошибка", "Этот лот уже удален."); return; }
+                    if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя делать ставку на свой лот!"); return; }
+                    if (bidAmount <= (lot.currentBid || lot.startingPrice)) {
+                        customMsg("Ошибка", `Кто-то уже успел перебить твою ставку! Текущая: $${lot.currentBid}`);
+                        return;
+                    }
+
+                    const updates = {};
+                    updates['users/' + safePath(currentUser) + '/balance'] = gameData.balance - bidAmount;
+                    if (lot.highestBidder) {
+                        updates['users/' + safePath(lot.highestBidder) + '/balance'] = firebase.database.ServerValue.increment(lot.currentBid);
+                    }
+                    updates['marketplace/auctions/' + listingId + '/currentBid'] = bidAmount;
+                    updates['marketplace/auctions/' + listingId + '/highestBidder'] = currentUser;
+                    updates['marketplace/auctions/' + listingId + '/previousBidder'] = lot.highestBidder;
+                    updates['marketplace/auctions/' + listingId + '/previousBidAmount'] = lot.currentBid;
+
+                    db.ref().update(updates).then(() => {
+                        gameData.balance -= bidAmount;
+                        saveLocalGame();
+                        updateUI();
+                        renderMarketplace();
+                        customMsg("✅ Ставка принята!", `Твоя ставка $${bidAmount} на ${lot.cardName} принята!`);
+                    }).catch(err => {
+                        customMsg("❌ Ошибка", "Не удалось сделать ставку. Попробуй позже.");
+                        console.error(err);
+                    });
+                });
+            });
+        };
+
+        window.cancelAuction = function(listingId) {
+            const listingRef = db.ref('marketplace/auctions/' + listingId);
+            listingRef.once('value', (snap) => {
+                const lot = snap.val();
+                if (lot && lot.seller === currentUser) {
+                    if (!confirm("Точно снять карту с аукциона?")) return;
+                    const cardRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
+                    cardRef.set(firebase.database.ServerValue.increment(1)).then(() => {
+                        listingRef.remove().then(() => {
+                            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+                            gameData.cards[lot.cardId]++;
+                            saveLocalGame();
+                            customMsg("✅ Аукцион отменен", "Карта возвращена в инвентарь.");
+                            renderInventory();
+                            renderMarketplace();
+                        });
+                    });
+                } else {
+                    customMsg("Ошибка", "Вы не являетесь продавцом этого лота или лот уже удален.");
+                }
+            });
+        };
 
         window.buyListing = function(listingId) {
             const listingRef = db.ref('marketplace/listings/' + listingId);
@@ -2311,6 +2537,7 @@
                     else if (card.rarity === 'legendary') rarityColor = '#ffd700';
                     else if (card.rarity === 'epic') rarityColor = '#a855f7';
                     else if (card.rarity === 'rare') rarityColor = '#3b82f6';
+                    else if (card.rarity === 'sigma') rarityColor = '#ff00ff';
                     else rarityColor = '#6b7280';
 
                     slot.className = 'roadmap-slot filled';
@@ -2540,7 +2767,8 @@
                     cards: gameData.cards || {},
                     equipped: gameData.equipped || [],
                     inventory: gameData.inventory || [],
-                    avatar: gameData.avatar || '👤'
+                    avatar: gameData.avatar || '👤',
+                    favoriteCard: gameData.favoriteCard || null
                 }).then(() => {
                     const oldUserRef = db.ref('users/' + safePath(currentUser));
                     return oldUserRef.remove();
