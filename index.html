@@ -140,6 +140,8 @@
         .wallet-balance { font-weight: 700; font-size: 18px; color: #0ecb81; }
         .btn-deposit { background: #f0b90b; color: #000; font-weight: 700; padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; transition: 0.2s; }
         .btn-deposit:hover { background: #f8d44a; }
+        .btn-withdraw { background: #f6465d; color: #fff; font-weight: 700; padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-withdraw:hover { background: #ff5a6f; }
 
         .coin-row {
             background: #1a2133;
@@ -368,7 +370,7 @@
             <div class="tab-pane" id="inventory">
                 <div class="content-card">
                     <h2>🎒 Инвентарь</h2>
-                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/мин</span></h3>
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
                     <div class="equip-slots" id="equipContainer"></div>
                     
                     <h3 style="font-size: 14px; margin: 15px 0 10px; color: #f7931a;">📦 Закрытые пакеты</h3>
@@ -545,6 +547,7 @@
                         </div>
                         <div style="display:flex; gap:8px;">
                             <button class="btn-deposit" onclick="depositToWallet()">📥 Пополнить</button>
+                            <button class="btn-withdraw" onclick="withdrawFromWallet()">📤 Вывести</button>
                             <button class="btn btn-create" style="width:auto; padding:6px 16px; font-size:13px;" onclick="openCreateModal()">+ Создать</button>
                         </div>
                     </div>
@@ -972,7 +975,7 @@
             gameData.cards[randomCard.id]++;
             saveLocalGame(); saveCloudGame();
             renderInventory(); updateUI();
-            customMsg("🎉 Открытие!", `Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/мин`);
+            customMsg("🎉 Открытие!", `Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
         }
 
         function equipOne(cardId) {
@@ -1012,7 +1015,7 @@
             if (!card) return;
             const modal = document.getElementById('cardModal');
             document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
-            document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/мин | 📦 ${gameData.cards[card.id] || 0} шт.`;
+            document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/сек | 📦 ${gameData.cards[card.id] || 0} шт.`;
             
             document.getElementById('modalEquipBtn').onclick = () => equipOne(cardId);
             document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
@@ -1053,7 +1056,7 @@
         function updateUI() {
             document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
             let totalIncome = getCurrentIncome();
-            document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/мин`;
+            document.getElementById('incomeDisplay').innerText = `+$${(totalIncome / 60).toFixed(2)}/сек`;
         }
 
         function updateProfileUI() {
@@ -1064,17 +1067,21 @@
                 preview.innerHTML = `👤`;
             }
             
-            // Отображаем любимую карту
+            // Отображаем любимую карту (теперь с картинкой)
             const favContainer = document.getElementById('favoriteCardDisplay');
             if (gameData.favoriteCard) {
                 const card = ALL_CARDS.find(c => c.id === gameData.favoriteCard);
                 if (card) {
+                    let imgHtml = `<span style="font-size:32px;">${card.emoji}</span>`;
+                    if (card.img) {
+                        imgHtml = `<img src="${card.img}" style="width:50px; height:50px; object-fit:contain; border-radius:6px; background:#0b0e1a; padding:4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="font-size:32px; display:none;">${card.emoji}</span>`;
+                    }
                     favContainer.innerHTML = `
                         <div style="display:flex; align-items:center; gap:10px; background:#111722; padding:8px 16px; border-radius:12px; border:1px solid #ffb347;">
-                            <span style="font-size:32px;">${card.emoji}</span>
+                            ${imgHtml}
                             <div style="text-align:left;">
                                 <div style="font-weight:bold; font-size:16px; color:#fff;">${card.name}</div>
-                                <div style="font-size:12px; color:#64ffda;">+$${card.income}/мин</div>
+                                <div style="font-size:12px; color:#64ffda;">+$${(card.income / 60).toFixed(2)}/сек</div>
                             </div>
                         </div>
                     `;
@@ -1166,16 +1173,17 @@
             }
         }, 1000);
 
+        // Доход каждую секунду (новое)
         setInterval(() => {
-            let totalIncome = getCurrentIncome();
+            let totalIncome = getCurrentIncome(); // доход в минуту
             if (totalIncome > 0 && currentUser) {
-                gameData.balance = (gameData.balance || 0) + totalIncome;
+                let incomePerSec = totalIncome / 60;
+                gameData.balance = (gameData.balance || 0) + incomePerSec;
                 saveLocalGame();
                 if (currentUser) saveCloudGame();
                 updateUI();
-                lastOnlineTime = Date.now(); // запоминаем время последнего онлайна
             }
-        }, 60000);
+        }, 1000);
 
         function calculateOfflineIncome() {
             if (!currentUser) return;
@@ -1278,7 +1286,7 @@
                     item.innerHTML = `
                         ${imgHtml}
                         <div style="font-size:12px">${card.name}</div>
-                        <div class="card-income">+$${card.income}/мин</div>
+                        <div class="card-income">+$${(card.income / 60).toFixed(2)}/сек</div>
                         <div class="card-price">💰 $${card.price}</div>
                         <div class="card-count">${gameData.cards[card.id]} шт.</div>
                     `;
@@ -1553,6 +1561,46 @@
                         customMsg("❌ Ошибка", "Не удалось пополнить кошелёк.");
                     });
                 }
+            });
+        }
+
+        // Функция вывода с кошелька (НОВОЕ)
+        function withdrawFromWallet() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            const walletRef = db.ref('crypto/wallet/' + safePath(currentUser));
+            walletRef.once('value').then(snap => {
+                const walletBal = snap.val() || 0;
+                if (walletBal <= 0) { customMsg("Ошибка", "На крипто-кошельке нет денег для вывода!"); return; }
+                
+                showCustomMsg("Вывод с кошелька", `На кошельке: $${Math.floor(walletBal)}. Введите сумму для вывода на основной баланс:`, [
+                    { text: 'Ввести', class: 'confirm' },
+                    { text: 'Отмена', class: 'cancel' }
+                ]).then(res => {
+                    if (res === 0) {
+                        const amount = parseInt(prompt('Сумма для вывода в $:'));
+                        if (isNaN(amount) || amount <= 0 || amount > walletBal) {
+                            customMsg("Ошибка", "Введите корректную сумму!");
+                            return;
+                        }
+                        
+                        gameData.balance += amount;
+                        saveLocalGame();
+                        saveCloudGame();
+
+                        walletRef.transaction((current) => {
+                            return (current || 0) - amount;
+                        }).then(() => {
+                            updateUI();
+                            renderCryptoMarket();
+                            customMsg("✅ Выведено!", `$${amount} переведено на основной баланс.`);
+                        }).catch(err => {
+                            gameData.balance -= amount;
+                            saveLocalGame();
+                            saveCloudGame();
+                            customMsg("❌ Ошибка", "Не удалось вывести деньги.");
+                        });
+                    }
+                });
             });
         }
 
