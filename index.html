@@ -2413,8 +2413,8 @@
                 const opt = document.createElement('option');
                 opt.value = card.id;
                 opt.innerText = `${card.emoji} ${card.name} (${card.rarity})`;
-                select.appendChild(opt);                });
-            }
+                select.appendChild(opt);
+            });
         }
 
         document.getElementById('adminSpawnBtn').onclick = function() {
