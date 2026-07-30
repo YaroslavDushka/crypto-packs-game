@@ -214,6 +214,110 @@
         .roadmap-slot .card-rarity { font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
         .roadmap-slot .timer-label { font-size: 11px; color: #848e9c; margin-top: 6px; }
         .roadmap-timer-container { text-align: center; font-size: 14px; color: #64ffda; margin-top: 10px; }
+
+        /* --- СТИЛИ МОДАЛЬНОГО ОКНА СОЗДАНИЯ КРИПТЫ (НОВОЕ) --- */
+        #cryptoCreateModal {
+            position: fixed !important;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85) !important;
+            display: none !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 9999 !important;
+        }
+        #cryptoCreateModal.active {
+            display: flex !important;
+        }
+        #cryptoCreateModal .modal-box {
+            max-width: 450px !important;
+            width: 90% !important;
+            background: #1a2133 !important;
+            border: 2px solid #ffb347 !important;
+            border-radius: 20px !important;
+            padding: 24px !important;
+            box-shadow: 0 0 30px rgba(255, 180, 71, 0.2) !important;
+            overflow-y: auto !important;
+            max-height: 90vh !important;
+        }
+        #cryptoCreateModal .modal-box h2 {
+            color: #ffb347 !important;
+            font-size: 20px !important;
+            margin-bottom: 20px !important;
+            border-bottom: 1px solid #2a3348 !important;
+            padding-bottom: 10px !important;
+        }
+        #cryptoCreateModal .input-group label {
+            display: block !important;
+            font-size: 12px !important;
+            color: #848e9c !important;
+            margin-bottom: 5px !important;
+        }
+        #cryptoCreateModal .input-group input,
+        #cryptoCreateModal .input-group textarea {
+            background: #0b0e1a !important;
+            border: 1px solid #2a3348 !important;
+            color: #eaecef !important;
+            border-radius: 8px !important;
+            padding: 10px !important;
+            width: 100% !important;
+            font-family: inherit !important;
+        }
+        #cryptoCreateModal .input-group input:focus,
+        #cryptoCreateModal .input-group textarea:focus {
+            outline: 2px solid #64ffda !important;
+            border-color: transparent !important;
+        }
+        #cryptoCreateModal .upload-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 15px !important;
+            margin-bottom: 15px !important;
+        }
+        #cryptoCreateModal .upload-preview {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            background: #0b0e1a !important;
+            border: 2px solid #2a3348 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 24px !important;
+            overflow: hidden !important;
+            color: #848e9c !important;
+        }
+        #cryptoCreateModal .upload-preview img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+        #cryptoCreateModal .modal-actions {
+            display: flex !important;
+            justify-content: space-between !important;
+            gap: 10px !important;
+            margin-top: 20px !important;
+        }
+        #cryptoCreateModal .modal-actions .btn {
+            flex: 1 !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            border: none !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+        }
+        #cryptoCreateModal .modal-actions .btn-buy {
+            background: #0ecb81 !important;
+            color: #fff !important;
+        }
+        #cryptoCreateModal .modal-actions .btn-sell {
+            background: #2a3348 !important;
+            color: #fff !important;
+        }
+        #cryptoCreateModal .modal-actions .btn:hover {
+            opacity: 0.8 !important;
+        }
     </style>
 </head>
 <body>
@@ -459,7 +563,7 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ (НОВОЕ) -->
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ (ВЫЛЕТАЕТ ПО КЛИКУ) -->
         <div class="modal-overlay" id="cryptoCreateModal">
             <div class="modal-box">
                 <h2>🪙 Создать новую монету</h2>
@@ -2309,8 +2413,8 @@
                 const opt = document.createElement('option');
                 opt.value = card.id;
                 opt.innerText = `${card.emoji} ${card.name} (${card.rarity})`;
-                select.appendChild(opt);
-            });
+                select.appendChild(opt);                });
+            }
         }
 
         document.getElementById('adminSpawnBtn').onclick = function() {
