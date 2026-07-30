@@ -2471,39 +2471,5 @@
         }
     };
 </script> 
-// ==========================================
-// ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА СОЗДАНИЯ КРИПТЫ
-// ==========================================
-function openCreateModal() {
-    const modal = document.getElementById('cryptoCreateModal');
-    if (!modal) {
-        customMsg("Ошибка", "Окно создания монеты не найдено. Попробуйте обновить страницу (Ctrl+F5).");
-        return;
-    }
-    modal.classList.add('active');
-    document.getElementById('coinName').value = '';
-    document.getElementById('coinSymbol').value = '';
-    document.getElementById('coinDesc').value = '';
-    document.getElementById('coinCreateCost').value = 10000;
-    document.getElementById('imgPreview').innerHTML = '📁';
-    uploadedImageData = null;
-}
-
-function closeCreateModal() {
-    const modal = document.getElementById('cryptoCreateModal');
-    if (modal) modal.classList.remove('active');
-}
-
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            uploadedImageData = e.target.result;
-            document.getElementById('imgPreview').innerHTML = `<img src="${uploadedImageData}" alt="Preview">`;
-        };
-        reader.readAsDataURL(file);
-    }
-}
 </body>
 </html>
