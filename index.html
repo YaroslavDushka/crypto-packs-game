@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>₿</text></svg>">
     <title>Крипто-паки</title>
     <style>
         /* --- СТИЛИ ИГРЫ --- */
@@ -1452,7 +1453,12 @@
                 const updates = {};
                 updates['crypto/coins/' + coinId] = coinData;
                 updates['crypto/portfolio/' + safePath(currentUser) + '/' + coinId] = creatorCoins;
-                updates['crypto/priceHistory/' + coinId] = [cost / poolCoins];
+                
+                // Фикс: вместо массива используем push().key
+                const initHistRef = db.ref('crypto/priceHistory/' + coinId);
+                const initHistKey = initHistRef.push().key;
+                updates['crypto/priceHistory/' + coinId + '/' + initHistKey] = cost / poolCoins;
+                
                 updates['crypto/volume/' + coinId] = 0;
 
                 db.ref().update(updates).then(() => {
@@ -1648,7 +1654,12 @@
                         updates['crypto/coins/' + id + '/supply'] = newSupply;
                         updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
                         updates['crypto/coins/' + id + '/price'] = newPrice;
-                        updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
+                        
+                        // Фикс: вместо ServerValue.push используем push().key
+                        const histRef = db.ref('crypto/priceHistory/' + id);
+                        const histKey = histRef.push().key;
+                        updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
+                        
                         updates['crypto/volume/' + id] = firebase.database.ServerValue.increment(totalCost);
 
                         db.ref().update(updates).then(() => {
@@ -1677,7 +1688,12 @@
                         updates['crypto/coins/' + id + '/supply'] = newSupply;
                         updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
                         updates['crypto/coins/' + id + '/price'] = newPrice;
-                        updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
+                        
+                        // Фикс: вместо ServerValue.push используем push().key
+                        const histRef = db.ref('crypto/priceHistory/' + id);
+                        const histKey = histRef.push().key;
+                        updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
+                        
                         updates['crypto/volume/' + id] = firebase.database.ServerValue.increment(totalEarn);
 
                         db.ref().update(updates).then(() => {
@@ -1703,7 +1719,11 @@
                     newPrice = Math.max(0.01, newPrice);
                     updates['crypto/coins/' + id + '/price'] = newPrice;
                     updates['crypto/coins/' + id + '/poolMoney'] = newPrice * coin.supply;
-                    updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
+                    
+                    // Фикс: вместо ServerValue.push используем push().key
+                    const histRef = db.ref('crypto/priceHistory/' + id);
+                    const histKey = histRef.push().key;
+                    updates['crypto/priceHistory/' + id + '/' + histKey] = newPrice;
                 }
                 db.ref().update(updates).then(() => {
                     // Обновляем UI только если вкладка открыта
@@ -1747,7 +1767,11 @@
                 const updates = {};
                 updates['crypto/coins/' + id + '/price'] = finalPrice;
                 updates['crypto/coins/' + id + '/poolMoney'] = finalPrice * coin.supply;
-                updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(finalPrice);
+                
+                // Фикс: вместо ServerValue.push используем push().key
+                const histRef = db.ref('crypto/priceHistory/' + id);
+                const histKey = histRef.push().key;
+                updates['crypto/priceHistory/' + id + '/' + histKey] = finalPrice;
 
                 db.ref().update(updates).then(() => {
                     const icon = news.multiplier > 1 ? '🟢' : '🔴';
@@ -1786,7 +1810,12 @@
                         image: null,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
-                    updates['crypto/priceHistory/' + id] = [p.price];
+                    
+                    // Инициализация истории цен
+                    const initHistRef = db.ref('crypto/priceHistory/' + id);
+                    const initHistKey = initHistRef.push().key;
+                    updates['crypto/priceHistory/' + id + '/' + initHistKey] = p.price;
+                    
                     updates['crypto/volume/' + id] = 0;
                 });
                 db.ref().update(updates).then(() => {
