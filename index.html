@@ -265,7 +265,7 @@
             <div class="tab-pane" id="inventory">
                 <div class="content-card">
                     <h2>🎒 Инвентарь</h2>
-                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/сек</span></h3>
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px; background:#101826; padding:4px 12px; border-radius:12px;">+$0/мин</span></h3>
                     <div class="equip-slots" id="equipContainer"></div>
                     
                     <h3 style="font-size: 14px; margin: 15px 0 10px; color: #f7931a;">📦 Закрытые пакеты</h3>
@@ -559,56 +559,101 @@
         const db = firebase.database();
 
         // ==========================================
-        // ДАННЫЕ ИГРЫ (КАРТЫ И ПАКЕТЫ)
+        // ДАННЫЕ ИГРЫ (КАРТЫ И ПАКЕТЫ) - ОБНОВЛЕННЫЕ (с новыми картами)
         // ==========================================
         const COMMON_CARDS = [
-            { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 15, income: 1, dropRate: 0.50 },
-            { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'пепе/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 20, income: 3, dropRate: 0.30 },
+            { id: 'pepe_dumb', name: 'Тупой Пепе', img: 'пепе/pepe_dumb.png', emoji: '😛', rarity: 'common', price: 15, income: 1, dropRate: 0.25 },
+            { id: 'pepe_kawaii', name: 'Милый Пепе', img: 'пепе/pepe_kawaii.png', emoji: '🥹', rarity: 'common', price: 20, income: 3, dropRate: 0.20 },
             { id: 'pepe_sun', name: 'Солнечный Пепе', img: 'пепе/pepe_sun.png', emoji: '🌞', rarity: 'common', price: 25, income: 5, dropRate: 0.15 },
-            { id: 'pepe_muscle', name: 'Качок Пепе', img: 'пепе/pepe_muscle.png', emoji: '💪', rarity: 'common', price: 30, income: 8, dropRate: 0.04 },
-            { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 50, income: 15, dropRate: 0.01 }
+            { id: 'pepe_muscle', name: 'Качок Пепе', img: 'пепе/pepe_muscle.png', emoji: '💪', rarity: 'common', price: 30, income: 8, dropRate: 0.15 },
+            { id: 'pepe_jesus', name: 'Святой Пепе', img: 'пепе/pepe_jesus.png', emoji: '✨', rarity: 'common', price: 50, income: 15, dropRate: 0.05 },
+            { id: 'cheese', name: 'Сырная голова', img: 'продукты/cheese.png', emoji: '🧀', rarity: 'common', price: 30, income: 8, dropRate: 0.05 },
+            { id: 'sausage', name: 'Колбаса', img: 'продукты/sausage.png', emoji: '🌭', rarity: 'common', price: 35, income: 10, dropRate: 0.05 },
+            { id: 'bread', name: 'Хлеб', img: 'продукты/bread.png', emoji: '🍞', rarity: 'common', price: 40, income: 12, dropRate: 0.05 },
+            { id: 'groceries', name: 'Продуктовая корзина', img: 'продукты/groceries.png', emoji: '🛒', rarity: 'common', price: 50, income: 15, dropRate: 0.05 }
         ];
 
         const RARE_CARDS = [
-            { id: 'tea_despair', name: 'Отчаяние', img: 'чай/tea_despair.png', emoji: '🍵', rarity: 'rare', price: 80, income: 35, dropRate: 0.35 },
-            { id: 'tea_cat', name: 'Кот и Чай', img: 'чай/tea_cat.png', emoji: '🐈', rarity: 'rare', price: 100, income: 50, dropRate: 0.25 },
-            { id: 'tea_black_cat', name: 'Пойдем пить чай', img: 'чай/tea_black_cat.png', emoji: '🐈‍⬛', rarity: 'rare', price: 120, income: 75, dropRate: 0.20 },
-            { id: 'tea_poseidon', name: 'Посейдон', img: 'чай/tea_poseidon.png', emoji: '🌊', rarity: 'rare', price: 160, income: 110, dropRate: 0.15 },
-            { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'rare', price: 200, income: 150, dropRate: 0.05 }
+            { id: 'tea_despair', name: 'Отчаяние', img: 'чай/tea_despair.png', emoji: '🍵', rarity: 'rare', price: 80, income: 35, dropRate: 0.20 },
+            { id: 'tea_cat', name: 'Кот и Чай', img: 'чай/tea_cat.png', emoji: '🐈', rarity: 'rare', price: 100, income: 50, dropRate: 0.15 },
+            { id: 'tea_black_cat', name: 'Пойдем пить чай', img: 'чай/tea_black_cat.png', emoji: '🐈‍⬛', rarity: 'rare', price: 120, income: 75, dropRate: 0.15 },
+            { id: 'tea_poseidon', name: 'Посейдон', img: 'чай/tea_poseidon.png', emoji: '🌊', rarity: 'rare', price: 160, income: 110, dropRate: 0.10 },
+            { id: 'tea_indian', name: 'Индийский чай', img: 'чай/tea_indian.png', emoji: '☕', rarity: 'rare', price: 200, income: 150, dropRate: 0.05 },
+            { id: 'pelmeni', name: 'Пельмени', img: 'продукты/pelmeni.png', emoji: '🥟', rarity: 'rare', price: 140, income: 90, dropRate: 0.10 },
+            { id: 'arshavin', name: 'Аршавин (лапки)', img: 'футбол/arshavin.png', emoji: '🤷‍♂️', rarity: 'rare', price: 180, income: 120, dropRate: 0.10 },
+            { id: 'yamal', name: 'Ямаль', img: 'футбол/yamal.png', emoji: '🔵🔴', rarity: 'rare', price: 220, income: 150, dropRate: 0.08 },
+            { id: 'mbappe_army', name: 'Мбаппе (военный)', img: 'футбол/mbappe_army.png', emoji: '🪖', rarity: 'rare', price: 250, income: 180, dropRate: 0.07 }
         ];
 
         const EPIC_CARDS = [
-            { id: 'bmw_x5', name: 'BMW X5', img: 'бмв/bmw_x5.png', emoji: '🏎️', rarity: 'epic', price: 500, income: 240, dropRate: 0.45 },
-            { id: 'bmw_m5', name: 'BMW M5', img: 'бмв/bmw_m5.png', emoji: '💨', rarity: 'epic', price: 750, income: 350, dropRate: 0.25 },
+            { id: 'bmw_x5', name: 'BMW X5', img: 'бмв/bmw_x5.png', emoji: '🏎️', rarity: 'epic', price: 500, income: 240, dropRate: 0.20 },
+            { id: 'bmw_m5', name: 'BMW M5', img: 'бмв/bmw_m5.png', emoji: '💨', rarity: 'epic', price: 750, income: 350, dropRate: 0.15 },
             { id: 'bmw_i8', name: 'BMW i8', img: 'бмв/bmw_i8.png', emoji: '⚡', rarity: 'epic', price: 1000, income: 500, dropRate: 0.15 },
             { id: 'bmw_5_series', name: 'THE 5 Series', img: 'бмв/bmw_5_series.png', emoji: '🌃', rarity: 'epic', price: 1500, income: 750, dropRate: 0.10 },
-            { id: 'bmw_m5_2026', name: '2026 BMW M5', img: 'бмв/bmw_m5_2026.png', emoji: '🏁', rarity: 'epic', price: 2500, income: 1000, dropRate: 0.05 }
+            { id: 'bmw_m5_2026', name: '2026 BMW M5', img: 'бмв/bmw_m5_2026.png', emoji: '🏁', rarity: 'epic', price: 2500, income: 1000, dropRate: 0.05 },
+            { id: 'dynamike', name: 'Динамай', img: 'бравл/dynamike.png', emoji: '⛏️', rarity: 'epic', price: 1000, income: 450, dropRate: 0.10 },
+            { id: 'leon', name: 'Леон', img: 'бравл/leon.png', emoji: '🦎', rarity: 'epic', price: 1200, income: 550, dropRate: 0.08 },
+            { id: 'kenji', name: 'Кендзи', img: 'бравл/kenji.png', emoji: '🗡️', rarity: 'epic', price: 1500, income: 700, dropRate: 0.05 },
+            { id: 'colt', name: 'Кольт', img: 'бравл/colt.png', emoji: '🔫', rarity: 'epic', price: 2000, income: 900, dropRate: 0.05 },
+            { id: 'edgar', name: 'Эдгар', img: 'бравл/edgar.png', emoji: '🧣', rarity: 'epic', price: 2500, income: 1000, dropRate: 0.05 }
         ];
 
         const LEGENDARY_CARDS = [
-            { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'legendary', price: 5000, income: 1500, dropRate: 0.40 },
-            { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'legendary', price: 7000, income: 2100, dropRate: 0.25 },
-            { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'legendary', price: 10000, income: 3000, dropRate: 0.15 },
-            { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 15000, income: 4500, dropRate: 0.10 },
-            { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 25000, income: 7500, dropRate: 0.10 }
+            { id: 'skull_internet', name: 'Интернет помнит всё', img: 'черепок/skull_internet.png', emoji: '♠️', rarity: 'legendary', price: 5000, income: 1500, dropRate: 0.10 },
+            { id: 'skull_moon', name: 'Помни о смерти', img: 'черепок/skull_moon.png', emoji: '🌙', rarity: 'legendary', price: 7000, income: 2100, dropRate: 0.08 },
+            { id: 'skull_fh', name: 'Фулл хаус', img: 'черепок/skull_fh.png', emoji: '🃏', rarity: 'legendary', price: 10000, income: 3000, dropRate: 0.05 },
+            { id: 'skull_next', name: 'Кто следующий?', img: 'черепок/skull_next.png', emoji: '👻', rarity: 'legendary', price: 15000, income: 4500, dropRate: 0.04 },
+            { id: 'skull_finger', name: 'Крутые скелеты', img: 'черепок/skull_finger.png', emoji: '🖕', rarity: 'legendary', price: 25000, income: 7500, dropRate: 0.03 },
+            { id: 'kenji', name: 'Кендзи', img: 'бравл/kenji.png', emoji: '🗡️', rarity: 'legendary', price: 9000, income: 2800, dropRate: 0.10 },
+            { id: 'colt', name: 'Кольт', img: 'бравл/colt.png', emoji: '🔫', rarity: 'legendary', price: 10000, income: 3000, dropRate: 0.08 },
+            { id: 'edgar', name: 'Эдгар', img: 'бравл/edgar.png', emoji: '🧣', rarity: 'legendary', price: 12000, income: 3500, dropRate: 0.08 },
+            { id: 'mortis', name: 'Мортис', img: 'бравл/mortis.png', emoji: '🦇', rarity: 'legendary', price: 15000, income: 4500, dropRate: 0.05 },
+            { id: 'emz', name: 'Эмз', img: 'бравл/emz.png', emoji: '🧟', rarity: 'legendary', price: 18000, income: 5500, dropRate: 0.05 },
+            { id: 'elprimo', name: 'Эль Примо', img: 'бравл/elprimo.png', emoji: '🤼', rarity: 'legendary', price: 20000, income: 6000, dropRate: 0.05 },
+            { id: 'melody', name: 'Мелоди', img: 'бравл/melody.png', emoji: '🎵', rarity: 'legendary', price: 22000, income: 6800, dropRate: 0.04 },
+            { id: 'жириус', name: 'Жириус', img: 'бравл/жириус.png', emoji: '👻', rarity: 'legendary', price: 24000, income: 7500, dropRate: 0.04 },
+            { id: 'argentina', name: 'Сборная Аргентины', img: 'футбол/argentina.png', emoji: '🇦🇷', rarity: 'legendary', price: 25000, income: 8000, dropRate: 0.03 },
+            { id: 'portugal', name: 'Сборная Португалии', img: 'футбол/portugal.png', emoji: '🇵🇹', rarity: 'legendary', price: 27000, income: 8500, dropRate: 0.03 },
+            { id: 'france', name: 'Сборная Франции', img: 'футбол/france.png', emoji: '🇫🇷', rarity: 'legendary', price: 30000, income: 9500, dropRate: 0.02 },
+            { id: 'ronaldo_goal', name: 'Роналду (гол)', img: 'футбол/ronaldo_goal.png', emoji: '👑', rarity: 'legendary', price: 32000, income: 10000, dropRate: 0.02 },
+            { id: 'messi_hands', name: 'Месси (руки у ушей)', img: 'футбол/messi_hands.png', emoji: '🐐', rarity: 'legendary', price: 35000, income: 11000, dropRate: 0.01 }
         ];
 
         const DEADLY_CARDS = [
-            { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 40000, income: 10000, dropRate: 0.40 },
-            { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 50000, income: 15000, dropRate: 0.25 },
-            { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 75000, income: 22000, dropRate: 0.15 },
-            { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'deadly', price: 120000, income: 35000, dropRate: 0.10 },
-            { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'deadly', price: 200000, income: 60000, dropRate: 0.10 }
+            { id: 'snow_man', name: 'Шедевр из снега', img: 'Мемы_для_пакетов_цум/snow_man.png', emoji: '⛄', rarity: 'deadly', price: 40000, income: 10000, dropRate: 0.10 },
+            { id: 'drake_math', name: 'Д/з по математике', img: 'Мемы_для_пакетов_цум/drake_math.png', emoji: '🤓', rarity: 'deadly', price: 50000, income: 15000, dropRate: 0.08 },
+            { id: 'chair_fall', name: 'Точка невозврата', img: 'Мемы_для_пакетов_цум/chair_fall.png', emoji: '🪑', rarity: 'deadly', price: 75000, income: 22000, dropRate: 0.05 },
+            { id: 'list_rogue', name: 'Список негодников', img: 'Мемы_для_пакетов_цум/list_rogue.png', emoji: '📜', rarity: 'deadly', price: 120000, income: 35000, dropRate: 0.05 },
+            { id: 'cash_register', name: 'Улыбка на кассе', img: 'Мемы_для_пакетов_цум/cash_register.png', emoji: '😭', rarity: 'deadly', price: 200000, income: 60000, dropRate: 0.03 },
+            { id: 'minion_office', name: 'Миньон (офисный)', img: 'банана/minion_office.png', emoji: '🏢', rarity: 'deadly', price: 60000, income: 18000, dropRate: 0.10 },
+            { id: 'minion_one', name: 'Миньон (один)', img: 'банана/minion_one.png', emoji: '👍', rarity: 'deadly', price: 75000, income: 22000, dropRate: 0.08 },
+            { id: 'minion_hula', name: 'Миньон (в цветах)', img: 'банана/minion_hula.png', emoji: '🌺', rarity: 'deadly', price: 90000, income: 28000, dropRate: 0.08 },
+            { id: 'xiaomi_17', name: 'Xiaomi 17', img: 'вайлдберис/xiaomi_17.png', emoji: '📱', rarity: 'deadly', price: 110000, income: 35000, dropRate: 0.08 },
+            { id: 'samsung_s25', name: 'Samsung S25 Ultra', img: 'вайлдберис/samsung_s25.png', emoji: '✍️', rarity: 'deadly', price: 140000, income: 45000, dropRate: 0.06 },
+            { id: 'iphone_17pro', name: 'iPhone 17 Pro Max', img: 'вайлдберис/iphone_17pro.png', emoji: '🍎', rarity: 'deadly', price: 180000, income: 55000, dropRate: 0.05 },
+            { id: 'minion_horde', name: 'Толпа миньонов', img: 'банана/minion_horde.png', emoji: '👥', rarity: 'deadly', price: 200000, income: 65000, dropRate: 0.05 },
+            { id: 'minion_wave', name: 'Миньон (рука вверх)', img: 'банана/minion_wave.png', emoji: '👋', rarity: 'deadly', price: 230000, income: 70000, dropRate: 0.04 },
+            { id: 'iphone_17pro_black', name: 'iPhone 17 Pro (чёрный)', img: 'вайлдберис/iphone_17pro_black.png', emoji: '⬛', rarity: 'deadly', price: 250000, income: 75000, dropRate: 0.03 },
+            { id: 'samsung_s25_colors', name: 'Samsung S25 (цвета)', img: 'вайлдберис/samsung_s25_colors.png', emoji: '🎨', rarity: 'deadly', price: 280000, income: 85000, dropRate: 0.02 }
         ];
 
         const ALL_CARDS = [...DEADLY_CARDS, ...LEGENDARY_CARDS, ...EPIC_CARDS, ...RARE_CARDS, ...COMMON_CARDS];
         
         const PACK_DATA = [
-            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 1, price: 50000, drops: DEADLY_CARDS },
-            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 2, price: 10000, drops: LEGENDARY_CARDS },
-            { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 3, price: 6700, drops: EPIC_CARDS },
-            { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS },
-            { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS }
+            // Старые пакеты
+            { id: 'pack3', name: 'Смертельный пакет!', img: 'черепок/pack_deadly.png', rarity: 'deadly', order: 1, price: 50000, drops: DEADLY_CARDS.slice(0, 5) },
+            { id: 'pack1', name: 'Легендарный пакет!', img: 'Мемы_для_пакетов_цум/pack_legendary.png', rarity: 'legendary', order: 2, price: 10000, drops: LEGENDARY_CARDS.slice(0, 5) },
+            { id: 'pack2', name: 'Эпический пакет!', img: 'бмв/pack_epic.png', rarity: 'epic', order: 3, price: 6700, drops: EPIC_CARDS.slice(0, 5) },
+            { id: 'pack4', name: 'Редкий пакет!', img: 'чай/pack_rare.png', rarity: 'rare', order: 4, price: 100, drops: RARE_CARDS.slice(0, 5) },
+            { id: 'pack5', name: 'Обычный пакет!', img: 'пепе/pack_common.png', rarity: 'common', order: 5, price: 10, drops: COMMON_CARDS.slice(0, 5) },
+
+            // НОВЫЕ ПАКЕТЫ
+            { id: 'pack_wb', name: '📱 Wildberries пакет!', img: 'pack_wildberries.png', rarity: 'deadly', order: 6, price: 100000, drops: ['xiaomi_17', 'samsung_s25', 'iphone_17pro', 'iphone_17pro_black', 'samsung_s25_colors'] },
+            { id: 'pack_bs', name: '🤍 Brawl Stars пакет!', img: 'pack_brawl.png', rarity: 'legendary', order: 7, price: 500000, drops: ['dynamike', 'leon', 'kenji', 'colt', 'edgar', 'mortis', 'emz', 'elprimo', 'melody', 'жириус'] },
+            { id: 'pack_fifa', name: '⚽ FIFA 2026 пакет!', img: 'pack_fifa.png', rarity: 'legendary', order: 8, price: 700000, drops: ['argentina', 'portugal', 'france', 'ronaldo_goal', 'messi_hands', 'mbappe_army', 'yamal', 'arshavin'] },
+            { id: 'pack_aura', name: '🔵 AURA пакет!', img: 'pack_aura.png', rarity: 'deadly', order: 9, price: 1000000, drops: ['minion_office', 'minion_one', 'minion_hula', 'minion_wave', 'minion_horde'] },
+            { id: 'pack_banana', name: '🍌 BANANA пакет!', img: 'pack_banana.png', rarity: 'epic', order: 10, price: 300000, drops: ['cheese', 'sausage', 'bread', 'pelmeni', 'groceries'] },
+            { id: 'pack_celofan', name: '🛍️ Селафановый Мега-пакет!', img: 'pack_celofan.png', rarity: 'deadly', order: 11, price: 10000000, drops: ['xiaomi_17', 'samsung_s25', 'iphone_17pro', 'iphone_17pro_black', 'samsung_s25_colors', 'minion_office', 'minion_one', 'minion_hula', 'minion_wave', 'minion_horde', 'ronaldo_goal', 'messi_hands'] }
         ];
 
         // ==========================================
@@ -617,6 +662,9 @@
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '', cryptoState: { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} } };
         let currentUser = null;
         let banListener = null;
+        let roadmapInterval = null;
+        let roadmapTimerCounter = 0;
+        let roadmapSlotsData = [null, null, null];
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
@@ -728,7 +776,7 @@
             gameData.cards[randomCard.id]++;
             saveLocalGame(); saveCloudGame();
             renderInventory(); updateUI();
-            customMsg("🎉 Открытие!", `Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/сек`);
+            customMsg("🎉 Открытие!", `Вам выпала: ${randomCard.emoji} ${randomCard.name}! +$${randomCard.income}/мин`);
         }
 
         function equipOne(cardId) {
@@ -767,7 +815,7 @@
             if (!card) return;
             const modal = document.getElementById('cardModal');
             document.getElementById('modalCardTitle').innerText = `${card.emoji} ${card.name}`;
-            document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/сек | 📦 ${gameData.cards[card.id] || 0} шт.`;
+            document.getElementById('modalCardDesc').innerHTML = `💰 $${card.price} | 📈 +$${card.income}/мин | 📦 ${gameData.cards[card.id] || 0} шт.`;
             
             document.getElementById('modalEquipBtn').onclick = () => equipOne(cardId);
             document.getElementById('modalUnequipBtn').onclick = () => unequipOne(cardId);
@@ -794,7 +842,7 @@
             document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
             document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
             let totalIncome = getCurrentIncome();
-            document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/сек`;
+            document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/мин`;
         }
 
         function updateProfileUI() {
@@ -831,6 +879,7 @@
                 for (let key in data) {
                     let p = data[key];
                     if (key === 'Dushka') continue; 
+                    if (p.banned === true) continue; // забаненные не показываются
                     let income = 0;
                     if (p.equipped) {
                         p.equipped.forEach(id => {
@@ -861,7 +910,7 @@
                         <div class="leader-row">
                             <div class="leader-rank ${rankClass}">${index+1}</div>
                             <div class="leader-name">${avatarHtml} ${player.name}</div>
-                            <div class="leader-income">💵 ${player.income}/сек</div>
+                            <div class="leader-income">💵 ${player.income}/мин</div>
                         </div>
                     `;
                 });
@@ -872,6 +921,7 @@
             renderLeaderboard();
         };
 
+        // Таймер магазина (обновление каждые 3 минуты)
         setInterval(() => {
             if (gameData.storeTimer > 0) {
                 gameData.storeTimer--;
@@ -884,6 +934,7 @@
             }
         }, 1000);
 
+        // !!! ВАЖНО: ДОХОД ТЕПЕРЬ НАЧИСЛЯЕТСЯ РАЗ В 60 СЕКУНД (МИНУТА) !!!
         setInterval(() => {
             let totalIncome = getCurrentIncome();
             if (totalIncome > 0) {
@@ -891,8 +942,9 @@
                 saveLocalGame();
                 if (currentUser) saveCloudGame();
                 updateUI();
+                // Можно добавить всплывающее уведомление, если хочешь
             }
-        }, 1000);
+        }, 60000); // 60 000 миллисекунд = 1 минута
 
         function renderShop() {
             const container = document.getElementById('packsContainer');
@@ -975,7 +1027,7 @@
                     item.innerHTML = `
                         ${imgHtml}
                         <div style="font-size:12px">${card.name}</div>
-                        <div class="card-income">+$${card.income}/сек</div>
+                        <div class="card-income">+$${card.income}/мин</div>
                         <div class="card-price">💰 $${card.price}</div>
                         <div class="card-count">${gameData.cards[card.id]} шт.</div>
                     `;
@@ -1203,200 +1255,9 @@
         };
 
         // ==========================================
-        // КРИПТОБИРЖА
+        // ОБНОВЛЁННАЯ ЛОГИКА КРИПТОБИРЖИ
         // ==========================================
-        let uploadedImageData = null; 
 
-        function addHistory(icon, text, isGood = true) {
-            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            const finalIcon = isGood ? icon : '🔴';
-            gameData.cryptoState.history.unshift({ time, icon: finalIcon, text });
-            if (gameData.cryptoState.history.length > 50) gameData.cryptoState.history = gameData.cryptoState.history.slice(-50);
-            saveLocalGame();
-            if (currentUser) saveCloudGame();
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('historyItems');
-            container.innerHTML = '';
-            const history = gameData.cryptoState?.history || [];
-            history.slice(0, 20).forEach(item => {
-                const span = document.createElement('span');
-                span.className = 'h-item';
-                span.innerHTML = `[${item.time}] ${item.icon} ${item.text}`;
-                container.appendChild(span);
-            });
-        }
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImageData = e.target.result;
-                    document.getElementById('imgPreview').innerHTML = `<img src="${uploadedImageData}" alt="Preview">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function openCreateModal() {
-            const modal = document.getElementById('cryptoCreateModal');
-            if (!modal) {
-                customMsg("Ошибка", "Окно создания монеты не найдено. Попробуйте обновить страницу (Ctrl+F5).");
-                return;
-            }
-            modal.classList.add('active');
-            document.getElementById('coinName').value = '';
-            document.getElementById('coinSymbol').value = '';
-            document.getElementById('coinDesc').value = '';
-            document.getElementById('coinCreateCost').value = 10000;
-            document.getElementById('imgPreview').innerHTML = '📁';
-            uploadedImageData = null;
-        }
-
-        function closeCreateModal() {
-            const modal = document.getElementById('cryptoCreateModal');
-            if (modal) modal.classList.remove('active');
-        }
-
-        function createCoin() {
-            const name = document.getElementById('coinName').value.trim();
-            const symbol = document.getElementById('coinSymbol').value.trim().toUpperCase();
-            const desc = document.getElementById('coinDesc').value.trim();
-            const cost = parseInt(document.getElementById('coinCreateCost').value);
-
-            if (!name || !symbol) { customMsg("Ошибка", "Введи название и тикер!"); return; }
-            if (isNaN(cost) || cost < 100 || cost > 1000000) { customMsg("Ошибка", "Стоимость создания должна быть от 100 до 1 000 000 $"); return; }
-            if (gameData.balance < cost) { customMsg("Ошибка", `Не хватает денег! Нужно $${cost}`); return; }
-            
-            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            for (let key in gameData.cryptoState.coins) {
-                if (gameData.cryptoState.coins[key].symbol === symbol) {
-                    customMsg("Ошибка", "Монета с таким тикером уже существует!");
-                    return;
-                }
-            }
-
-            const id = symbol.toLowerCase() + '_' + Date.now();
-            const poolCoins = 20;
-            const creatorCoins = 80;
-            const poolMoney = cost; // стоимость создания определяет начальный пул
-
-            gameData.balance -= cost;
-            gameData.cryptoState.coins[id] = {
-                id: id,
-                name: name,
-                symbol: symbol,
-                desc: desc || 'Новая криптовалюта',
-                supply: poolCoins, 
-                price: poolMoney / poolCoins, 
-                image: uploadedImageData,
-                poolMoney: poolMoney
-            };
-            if (!gameData.cryptoState.portfolio) gameData.cryptoState.portfolio = {};
-            if (!gameData.cryptoState.portfolio[id]) gameData.cryptoState.portfolio[id] = 0;
-            gameData.cryptoState.portfolio[id] += creatorCoins; 
-            if (!gameData.cryptoState.volume) gameData.cryptoState.volume = {};
-            gameData.cryptoState.volume[id] = 0;
-            // Инициализируем историю цен
-            if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-            gameData.cryptoState.priceHistory[id] = [poolMoney / poolCoins];
-
-            saveLocalGame(); saveCloudGame();
-            closeCreateModal();
-            updateUI();
-            renderCrypto();
-            addHistory('🪙', `Создана монета ${symbol} (${name}) за $${cost}. Цена: $${(poolMoney / poolCoins).toFixed(2)}`);
-        }
-
-        function renderCrypto() {
-            const container = document.getElementById('cryptoList');
-            container.innerHTML = '';
-            
-            if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="big-icon">🪙</span>
-                        <div style="font-size:16px; font-weight:600;">Нет монет</div>
-                        <div style="margin-top:5px;">Создай свою первую криптовалюту!</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const coinArray = Object.values(gameData.cryptoState.coins);
-            coinArray.sort((a, b) => {
-                const capA = (a.price || 0) * (a.supply || 0);
-                const capB = (b.price || 0) * (b.supply || 0);
-                return capB - capA;
-            });
-
-            coinArray.forEach(coin => {
-                const id = coin.id;
-                const myBalance = (gameData.cryptoState.portfolio && gameData.cryptoState.portfolio[id]) || 0;
-                const price = coin.price || 500;
-                const supply = coin.supply || 0;
-                const marketCap = price * supply;
-                const volume = (gameData.cryptoState.volume && gameData.cryptoState.volume[id]) || 0;
-
-                const card = document.createElement('div');
-                card.className = 'coin-card';
-                
-                let iconHtml = `<div class="coin-icon">${coin.symbol.charAt(0)}</div>`;
-                if (coin.image && coin.image.startsWith('data:image')) {
-                    iconHtml = `<div class="coin-icon"><img src="${coin.image}" alt="${coin.symbol}"></div>`;
-                }
-
-                card.innerHTML = `
-                    <div class="coin-info" onclick="toggleTrade('${id}');">
-                        ${iconHtml}
-                        <div class="coin-names">
-                            <div class="coin-symbol">${coin.symbol}</div>
-                            <div class="coin-fullname">${coin.name}</div>
-                            <div style="font-size:11px; color:#848e9c; margin-top:2px;">В пуле: ${supply}</div>
-                        </div>
-                    </div>
-                    <div class="coin-stats">
-                        <div class="coin-price" id="price_${id}">$${price.toFixed(2)}</div>
-                        <div class="coin-marketcap">Кап: $${marketCap.toFixed(0)}</div>
-                        <div class="coin-volume">📊 Объем: $${volume.toFixed(0)}</div>
-                        <div style="font-size:11px; color:#848e9c;">У вас: ${myBalance}</div>
-                    </div>
-                    <div class="coin-actions">
-                        <button class="btn btn-buy" onclick="event.stopPropagation(); toggleTrade('${id}')">📈 Торг</button>
-                        <button class="btn btn-news" onclick="event.stopPropagation(); toggleChart('${id}')">📊 График</button>
-                    </div>
-                    <div class="trade-box" id="tradeBox_${id}">
-                        <div class="trade-header">
-                            <span class="trade-balance">Ваш баланс: $${Math.floor(gameData.balance).toLocaleString()}</span>
-                            <span class="trade-balance">У вас ${myBalance} ${coin.symbol}</span>
-                        </div>
-                        <div class="trade-input-row">
-                            <input type="number" id="amountInput_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeNumber('${id}')">
-                            <input type="range" id="slider_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeSlider('${id}')">
-                        </div>
-                        <div class="trade-buttons">
-                            <button class="btn btn-buy" onclick="buyCrypto('${id}')">Купить</button>
-                            ${myBalance > 0 ? `<button class="btn btn-sell" onclick="sellCrypto('${id}')">Продать</button>` : ''}
-                        </div>
-                    </div>
-                    <div class="chart-box" id="chartBox_${id}">
-                        <canvas id="chartCanvas_${id}" width="300" height="100" style="width:100%; height:auto;"></canvas>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            
-            renderHistory();
-            updateUI();
-        }
-
-        // ==========================================
-        // ЛОГИКА ТОРГОВЛИ КРИПТОЙ
-        // ==========================================
         function toggleTrade(id) {
             const box = document.getElementById(`tradeBox_${id}`);
             if (!box) return;
@@ -1467,6 +1328,13 @@
                 return;
             }
 
+            // Проверка лимита 1 000 000 000 монет
+            const currentBalance = gameData.cryptoState.portfolio[id] || 0;
+            if (currentBalance + amount > 1000000000) {
+                customMsg("Ошибка", `Лимит 1 000 000 000 монет. У тебя уже ${currentBalance.toLocaleString()}, можешь купить максимум ${(1000000000 - currentBalance).toLocaleString()}.`);
+                return;
+            }
+
             gameData.balance -= totalCost;
             if (!gameData.cryptoState.portfolio[id]) gameData.cryptoState.portfolio[id] = 0;
             gameData.cryptoState.portfolio[id] += amount;
@@ -1495,8 +1363,7 @@
                 priceEl.style.color = '#0ecb81';
                 setTimeout(() => { priceEl.style.color = ''; }, 1000);
             }
-            const box = document.getElementById(`tradeBox_${id}`);
-            if (box) box.style.display = 'none';
+            // Меню НЕ закрывается
         }
 
         function sellCrypto(id) {
@@ -1509,6 +1376,12 @@
             const amount = parseInt(input.value);
             if (isNaN(amount) || amount < 1 || amount > myBalance) {
                 customMsg("Ошибка", `У вас только ${myBalance} монет!`);
+                return;
+            }
+
+            // Защита от отрицательного пула
+            if (coin.supply <= amount) {
+                customMsg("Ошибка", "Нельзя продать так много, чтобы пул стал нулевым или отрицательным!");
                 return;
             }
 
@@ -1544,8 +1417,7 @@
                 priceEl.style.color = '#f6465d';
                 setTimeout(() => { priceEl.style.color = ''; }, 1000);
             }
-            const box = document.getElementById(`tradeBox_${id}`);
-            if (box) box.style.display = 'none';
+            // Меню НЕ закрывается
         }
 
         // ==========================================
@@ -1674,12 +1546,11 @@
         }
 
         // ==========================================
-        // ПРЕДУСТАНОВЛЕННЫЕ ПОПУЛЯРНЫЕ КРИПТОВАЛЮТЫ
+        // ПРЕДУСТАНОВЛЕННЫЕ ПОПУЛЯРНЫЕ КРИПТОВАЛЮТЫ (ВСЕГДА ДОБАВЛЯЮТСЯ)
         // ==========================================
         function initPopularCoins() {
             if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            if (Object.keys(gameData.cryptoState.coins).length > 0) return; // уже есть
-
+            
             const popular = [
                 { id: 'btc', name: 'Bitcoin', symbol: 'BTC', price: 60000, supply: 21000000, desc: 'Самая популярная криптовалюта' },
                 { id: 'ton', name: 'Toncoin', symbol: 'TON', price: 5.5, supply: 5000000000, desc: 'Криптовалюта от Telegram' },
@@ -1687,27 +1558,40 @@
                 { id: 'sol', name: 'Solana', symbol: 'SOL', price: 150, supply: 500000000, desc: 'Быстрая блокчейн-платформа' }
             ];
 
+            let changed = false;
             popular.forEach(p => {
-                const id = p.id + '_' + Date.now(); // уникальный ID
-                gameData.cryptoState.coins[id] = {
-                    id: id,
-                    name: p.name,
-                    symbol: p.symbol,
-                    desc: p.desc,
-                    supply: p.supply,
-                    price: p.price,
-                    poolMoney: p.price * p.supply,
-                    image: null
-                };
-                gameData.cryptoState.portfolio[id] = 0;
-                gameData.cryptoState.volume[id] = 0;
-                if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-                gameData.cryptoState.priceHistory[id] = [p.price];
+                // Проверяем, есть ли уже монета с таким символом (в том числе и у пользователя)
+                let exists = false;
+                for (let key in gameData.cryptoState.coins) {
+                    if (gameData.cryptoState.coins[key].symbol === p.symbol) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const id = p.id + '_' + Date.now();
+                    gameData.cryptoState.coins[id] = {
+                        id: id,
+                        name: p.name,
+                        symbol: p.symbol,
+                        desc: p.desc,
+                        supply: p.supply,
+                        price: p.price,
+                        poolMoney: p.price * p.supply,
+                        image: null
+                    };
+                    gameData.cryptoState.portfolio[id] = 0;
+                    gameData.cryptoState.volume[id] = 0;
+                    if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
+                    gameData.cryptoState.priceHistory[id] = [p.price];
+                    changed = true;
+                }
             });
-
-            saveLocalGame();
-            if (currentUser) saveCloudGame();
-            renderCrypto();
+            if (changed) {
+                saveLocalGame();
+                if (currentUser) saveCloudGame();
+                renderCrypto();
+            }
         }
 
         // Инициализация популярных монет при старте
@@ -1760,9 +1644,7 @@
                     gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
                     gameData.packPurchases = data.packPurchases || {};
                     // Инициализируем популярные монеты, если их нет
-                    if (Object.keys(gameData.cryptoState.coins).length === 0) {
-                        initPopularCoins();
-                    }
+                    initPopularCoins();
                     currentUser = login;
                     localStorage.setItem('cachedUser', login);
                     saveLocalGame();
@@ -1841,9 +1723,7 @@
                     gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
                     gameData.packPurchases = data.packPurchases || {};
                     // Инициализация популярных монет
-                    if (Object.keys(gameData.cryptoState.coins).length === 0) {
-                        initPopularCoins();
-                    }
+                    initPopularCoins();
                     currentUser = cachedUser;
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
@@ -1862,102 +1742,6 @@
             document.getElementById('authOverlay').classList.remove('hidden');
             renderSavedAccounts();
         }
-
-        // ==========================================
-        // ЗАГРУЗКА АВАТАРКИ И ПРОЧЕЕ
-        // ==========================================
-        document.getElementById('avatarUploadBtn').onclick = function() {
-            document.getElementById('avatarUploadInput').click();
-        };
-        document.getElementById('avatarUploadInput').onchange = function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    gameData.avatar = event.target.result;
-                    saveLocalGame();
-                    saveCloudGame();
-                    updateProfileUI();
-                    renderLeaderboard();
-                    customMsg("✅ Успешно!", "Аватарка обновлена!");
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-
-        // ==========================================
-        // СМЕНА ПАРОЛЯ / НИКА / УДАЛЕНИЕ
-        // ==========================================
-        document.getElementById('changePasswordBtn').onclick = function() {
-            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
-            showCustomMsg("Смена пароля", `Введите новый пароль для ${currentUser}:`, [
-                { text: 'Ввести', class: 'confirm' },
-                { text: 'Отмена', class: 'cancel' }
-            ]).then(res => {
-                if (res === 0) {
-                    const newPass = prompt('Введите новый пароль:');
-                    if (newPass && newPass.length > 0) {
-                        const userRef = db.ref('users/' + safePath(currentUser) + '/password');
-                        userRef.set(newPass).then(() => {
-                            customMsg("✅ Пароль изменён!", "Теперь войдите с новым паролем.");
-                            if (banListener) banListener.off();
-                            localStorage.removeItem('cachedUser');
-                            currentUser = null;
-                            document.getElementById('authOverlay').classList.remove('hidden');
-                            customMsg("Выход", "Выйдите и зайдите с новым паролем.");
-                        });
-                    }
-                }
-            });
-        };
-
-        document.getElementById('changeNickBtn').onclick = function() {
-            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
-            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя сменить ник админа!"); return; }
-            const newNick = prompt('Введите новый ник (логин):');
-            if (!newNick || newNick.trim().length === 0) { customMsg("Ошибка", "Ник не может быть пустым!"); return; }
-            if (newNick.trim() === currentUser) { customMsg("Ошибка", "Это твой текущий ник!"); return; }
-            if (newNick.trim().toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован!"); return; }
-            loadCloudData(newNick.trim(), function(data) {
-                if (data) { customMsg("Ошибка", "Этот ник уже занят!"); return; }
-                const newSafeId = safePath(newNick.trim());
-                const newUserRef = db.ref('users/' + newSafeId);
-                newUserRef.set({
-                    password: gameData.password,
-                    balance: gameData.balance,
-                    cards: gameData.cards || {},
-                    equipped: gameData.equipped || [],
-                    inventory: gameData.inventory || [],
-                    avatar: gameData.avatar || '👤',
-                    cryptoState: gameData.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} },
-                    packPurchases: gameData.packPurchases || {}
-                }).then(() => {
-                    const oldUserRef = db.ref('users/' + safePath(currentUser));
-                    return oldUserRef.remove();
-                }).then(() => {
-                    customMsg("✅ Ник изменён!", `Теперь ты ${newNick.trim()}! Войди заново.`);
-                    if (banListener) banListener.off();
-                    localStorage.removeItem('cachedUser');
-                    currentUser = null;
-                    document.getElementById('authOverlay').classList.remove('hidden');
-                });
-            });
-        };
-
-        document.getElementById('deleteAccountBtn').onclick = function() {
-            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
-            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя удалить админа!"); return; }
-            if (!confirm("ТЫ ТОЧНО ХОЧЕШЬ УДАЛИТЬ АККАУНТ НАВСЕГДА? ЭТО ДЕЙСТВИЕ НЕЛЬЗЯ ОТМЕНИТЬ!")) return;
-            if (!confirm("Последний шанс: Точно удалить?")) return;
-            const userRef = db.ref('users/' + safePath(currentUser));
-            userRef.remove().then(() => {
-                customMsg("🗑️ Аккаунт удалён!", "Все твои данные стерты из облака.");
-                if (banListener) banListener.off();
-                localStorage.removeItem('cachedUser');
-                currentUser = null;
-                document.getElementById('authOverlay').classList.remove('hidden');
-            });
-        };
 
         // ==========================================
         // РЫНОК (P2P ТОРГОВЛЯ)
@@ -2147,10 +1931,6 @@
         // ==========================================
         // ДОРОЖКА (РОТАЦИЯ КАРТ)
         // ==========================================
-        let roadmapInterval = null;
-        let roadmapTimerCounter = 0;
-        let roadmapSlotsData = [null, null, null];
-
         function generateRoadmapCard() {
             // Шансы: Обычная 51.5%, Редкая 41.5%, Эпическая 5%, Легендарная 1%, Дедли 1%
             const rand = Math.random() * 100;
@@ -2334,6 +2114,102 @@
                     }).catch(err => customMsg("Ошибка", "Не удалось выдать карту."));
                 });
             }
+        };
+
+        // ==========================================
+        // ЗАГРУЗКА АВАТАРКИ И ПРОЧЕЕ
+        // ==========================================
+        document.getElementById('avatarUploadBtn').onclick = function() {
+            document.getElementById('avatarUploadInput').click();
+        };
+        document.getElementById('avatarUploadInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    gameData.avatar = event.target.result;
+                    saveLocalGame();
+                    saveCloudGame();
+                    updateProfileUI();
+                    renderLeaderboard();
+                    customMsg("✅ Успешно!", "Аватарка обновлена!");
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // ==========================================
+        // СМЕНА ПАРОЛЯ / НИКА / УДАЛЕНИЕ
+        // ==========================================
+        document.getElementById('changePasswordBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            showCustomMsg("Смена пароля", `Введите новый пароль для ${currentUser}:`, [
+                { text: 'Ввести', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]).then(res => {
+                if (res === 0) {
+                    const newPass = prompt('Введите новый пароль:');
+                    if (newPass && newPass.length > 0) {
+                        const userRef = db.ref('users/' + safePath(currentUser) + '/password');
+                        userRef.set(newPass).then(() => {
+                            customMsg("✅ Пароль изменён!", "Теперь войдите с новым паролем.");
+                            if (banListener) banListener.off();
+                            localStorage.removeItem('cachedUser');
+                            currentUser = null;
+                            document.getElementById('authOverlay').classList.remove('hidden');
+                            customMsg("Выход", "Выйдите и зайдите с новым паролем.");
+                        });
+                    }
+                }
+            });
+        };
+
+        document.getElementById('changeNickBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя сменить ник админа!"); return; }
+            const newNick = prompt('Введите новый ник (логин):');
+            if (!newNick || newNick.trim().length === 0) { customMsg("Ошибка", "Ник не может быть пустым!"); return; }
+            if (newNick.trim() === currentUser) { customMsg("Ошибка", "Это твой текущий ник!"); return; }
+            if (newNick.trim().toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован!"); return; }
+            loadCloudData(newNick.trim(), function(data) {
+                if (data) { customMsg("Ошибка", "Этот ник уже занят!"); return; }
+                const newSafeId = safePath(newNick.trim());
+                const newUserRef = db.ref('users/' + newSafeId);
+                newUserRef.set({
+                    password: gameData.password,
+                    balance: gameData.balance,
+                    cards: gameData.cards || {},
+                    equipped: gameData.equipped || [],
+                    inventory: gameData.inventory || [],
+                    avatar: gameData.avatar || '👤',
+                    cryptoState: gameData.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} },
+                    packPurchases: gameData.packPurchases || {}
+                }).then(() => {
+                    const oldUserRef = db.ref('users/' + safePath(currentUser));
+                    return oldUserRef.remove();
+                }).then(() => {
+                    customMsg("✅ Ник изменён!", `Теперь ты ${newNick.trim()}! Войди заново.`);
+                    if (banListener) banListener.off();
+                    localStorage.removeItem('cachedUser');
+                    currentUser = null;
+                    document.getElementById('authOverlay').classList.remove('hidden');
+                });
+            });
+        };
+
+        document.getElementById('deleteAccountBtn').onclick = function() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            if (currentUser === 'Dushka') { customMsg("Ошибка", "Нельзя удалить админа!"); return; }
+            if (!confirm("ТЫ ТОЧНО ХОЧЕШЬ УДАЛИТЬ АККАУНТ НАВСЕГДА? ЭТО ДЕЙСТВИЕ НЕЛЬЗЯ ОТМЕНИТЬ!")) return;
+            if (!confirm("Последний шанс: Точно удалить?")) return;
+            const userRef = db.ref('users/' + safePath(currentUser));
+            userRef.remove().then(() => {
+                customMsg("🗑️ Аккаунт удалён!", "Все твои данные стерты из облака.");
+                if (banListener) banListener.off();
+                localStorage.removeItem('cachedUser');
+                currentUser = null;
+                document.getElementById('authOverlay').classList.remove('hidden');
+            });
         };
 
         // ==========================================
