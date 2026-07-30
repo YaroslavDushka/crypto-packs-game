@@ -122,102 +122,68 @@
         .tab-btn.active { color: #64ffda; }
         @media (max-width: 480px) { .tab-btn .icon { font-size: 20px; } }
 
-        /* --- СТИЛИ КРИПТОБИРЖИ --- */
-        .coin-card { background: #1a2133; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a3348; transition: 0.2s; flex-wrap: wrap; }
-        .coin-card:hover { border-color: #f0b90b; }
-        .coin-info { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; min-width: 120px; }
-        .coin-icon { width: 32px; height: 32px; background: #2b3139; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; overflow: hidden; }
+        /* --- СТИЛИ КРИПТОБИРЖИ (НОВЫЕ, BINANCE СТИЛЬ) --- */
+        .crypto-wallet-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0b0e11;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #2a3348;
+            margin-bottom: 20px;
+        }
+        .wallet-label { color: #848e9c; font-size: 12px; }
+        .wallet-balance { font-weight: 700; font-size: 18px; color: #0ecb81; }
+        .btn-deposit { background: #f0b90b; color: #000; font-weight: 700; padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-deposit:hover { background: #f8d44a; }
+
+        .coin-row {
+            background: #1a2133;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid #2a3348;
+            transition: 0.2s;
+        }
+        .coin-row:hover { border-color: #f0b90b; }
+        .coin-header { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 120px; cursor: pointer; }
+        .coin-icon { width: 36px; height: 36px; background: #2b3139; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; overflow: hidden; }
         .coin-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .coin-names { display: flex; flex-direction: column; }
+        .coin-name-group { display: flex; flex-direction: column; }
         .coin-symbol { font-weight: 700; font-size: 16px; }
         .coin-fullname { font-size: 12px; color: #848e9c; }
-        .coin-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 120px; }
-        .coin-price { font-weight: 600; font-size: 16px; color: #0ecb81; transition: color 0.2s; }
-        .coin-price.down { color: #f6465d; }
+        .coin-stats { display: flex; flex-direction: column; align-items: flex-end; min-width: 100px; gap: 2px; }
+        .coin-price-val { font-weight: 600; font-size: 16px; color: #0ecb81; transition: color 0.2s; }
+        .coin-price-val.down { color: #f6465d; }
         .coin-marketcap { font-size: 12px; color: #848e9c; }
-        .coin-volume { font-size: 11px; color: #848e9c; }
-        .coin-actions { display: flex; gap: 8px; margin-left: 10px; }
-        .btn { padding: 6px 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .coin-actions { display: flex; gap: 8px; }
+        .btn-trade { padding: 4px 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .btn-buy { background: #0ecb81; color: #fff; }
         .btn-buy:hover { background: #1bd691; }
         .btn-sell { background: #f6465d; color: #fff; }
         .btn-sell:hover { background: #f75a6f; }
-        .btn-create { background: #f0b90b; color: #000; width: 100%; padding: 12px; font-size: 16px; border-radius: 6px; font-weight: 700; }
-        .btn-create:hover { background: #f8d44a; }
-        .btn-news { background: #8b5cf6; color: #fff; width: auto; padding: 6px 12px; font-size: 12px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-news:hover { background: #a78bfa; }
-        .trade-box { display: none; margin-top: 15px; padding: 15px; background: #0b0e11; border-radius: 6px; border: 1px solid #2a3348; }
-        .trade-box.active { display: block; }
-        .trade-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .trade-balance { font-size: 12px; color: #848e9c; }
-        .trade-input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .trade-input-row input[type="number"] { width: 70px; padding: 6px; background: #0b0e11; border: 1px solid #2a3348; border-radius: 4px; color: #eaecef; font-size: 14px; text-align: center; }
-        .trade-input-row input[type="number"]:focus { outline: none; border-color: #f0b90b; }
-        .trade-input-row input[type="range"] { flex: 1; accent-color: #f0b90b; height: 4px; background: #2b3139; }
-        .trade-buttons { display: flex; gap: 10px; }
-        .trade-buttons .btn { flex: 1; padding: 8px; }
 
-        /* Лента истории внизу */
-        .history-bar { position: fixed; bottom: 60px; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: #111722; border-top: 1px solid #2a3348; padding: 6px 15px; display: flex; align-items: center; gap: 15px; overflow-x: auto; height: 40px; z-index: 90; white-space: nowrap; }
-        .history-bar span.h-item { font-size: 12px; color: #848e9c; }
-        .history-bar span.h-item strong { color: #eaecef; }
-        
-        .upload-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-        .upload-preview { width: 48px; height: 48px; border-radius: 50%; background: #0b0e11; border: 1px solid #2a3348; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
-        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-        .empty-state { text-align: center; padding: 40px 20px; color: #848e9c; }
-        .empty-state .big-icon { font-size: 60px; display: block; margin-bottom: 15px; }
-        .modal-overlay-simple { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-overlay-simple.active { display: flex; }
-
-        /* --- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ --- */
-        #cryptoCreateModal { position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85) !important; display: none; align-items: center !important; justify-content: center !important; z-index: 9999 !important; }
-        #cryptoCreateModal.active { display: flex !important; }
-        #cryptoCreateModal .modal-box { max-width: 450px !important; width: 90% !important; background: #1a2133 !important; border: 2px solid #ffb347 !important; border-radius: 20px !important; padding: 24px !important; box-shadow: 0 0 30px rgba(255, 180, 71, 0.2) !important; overflow-y: auto !important; max-height: 90vh !important; }
-        #cryptoCreateModal .modal-box h2 { color: #ffb347 !important; font-size: 20px !important; margin-bottom: 20px !important; border-bottom: 1px solid #2a3348 !important; padding-bottom: 10px !important; }
-        #cryptoCreateModal .input-group label { display: block !important; font-size: 12px !important; color: #848e9c !important; margin-bottom: 5px !important; }
-        #cryptoCreateModal .input-group input, #cryptoCreateModal .input-group textarea, #cryptoCreateModal .input-group select { background: #0b0e1a !important; border: 1px solid #2a3348 !important; color: #eaecef !important; border-radius: 8px !important; padding: 10px !important; width: 100% !important; font-family: inherit !important; }
-        #cryptoCreateModal .input-group input:focus, #cryptoCreateModal .input-group textarea:focus, #cryptoCreateModal .input-group select:focus { outline: 2px solid #64ffda !important; border-color: transparent !important; }
-        #cryptoCreateModal .upload-container { display: flex !important; align-items: center !important; gap: 15px !important; margin-bottom: 15px !important; }
-        #cryptoCreateModal .upload-preview { width: 60px !important; height: 60px !important; border-radius: 50% !important; background: #0b0e1a !important; border: 2px solid #2a3348 !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 24px !important; overflow: hidden !important; color: #848e9c !important; }
-        #cryptoCreateModal .upload-preview img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-        #cryptoCreateModal .modal-actions { display: flex !important; justify-content: space-between !important; gap: 10px !important; margin-top: 20px !important; }
-        #cryptoCreateModal .modal-actions .btn { flex: 1 !important; padding: 10px !important; border-radius: 8px !important; font-weight: bold !important; border: none !important; cursor: pointer !important; font-size: 14px !important; }
-        #cryptoCreateModal .modal-actions .btn-buy { background: #0ecb81 !important; color: #fff !important; }
-        #cryptoCreateModal .modal-actions .btn-sell { background: #2a3348 !important; color: #fff !important; }
-        #cryptoCreateModal .modal-actions .btn:hover { opacity: 0.8 !important; }
-
-        /* --- СТИЛИ ДЛЯ РЫНКА (P2P) --- */
-        .listing-card { background: #111722; border: 1px solid #2a3348; border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; transition: 0.2s; }
-        .listing-card:hover { border-color: #f0b90b; }
-        .listing-info { display: flex; align-items: center; gap: 12px; }
-        .listing-emoji { font-size: 28px; width: 40px; text-align: center; }
-        .listing-details { display: flex; flex-direction: column; }
-        .listing-name { font-weight: 600; font-size: 15px; }
-        .listing-rarity { font-size: 11px; font-weight: bold; padding: 2px 10px; border-radius: 10px; display: inline-block; margin-top: 2px; }
-        .listing-seller { font-size: 12px; color: #8892b0; }
-        .listing-price { font-weight: 700; color: #f7931a; font-size: 16px; }
-        .listing-actions { display: flex; gap: 8px; }
-        .btn-buy-listing { background: #0ecb81; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-buy-listing:hover { background: #1bd691; }
-        .btn-buy-listing:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* --- СТИЛИ ДЛЯ ДОРОЖКИ (РОТАЦИЯ) --- */
-        .roadmap-container { display: flex; flex-direction: column; gap: 20px; padding: 10px 0; }
-        .roadmap-slots { display: flex; justify-content: space-around; gap: 10px; }
-        .roadmap-slot { background: #0b0e1a; border: 2px dashed #2a3348; border-radius: 16px; width: 30%; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; transition: 0.3s; position: relative; cursor: pointer; }
-        .roadmap-slot.filled { border: 2px solid #64ffda; background: #111722; }
-        .roadmap-slot .card-emoji { font-size: 40px; }
-        .roadmap-slot .card-name { font-size: 12px; text-align: center; margin-top: 5px; font-weight: 600; }
-        .roadmap-slot .card-rarity { font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
-        .roadmap-slot .timer-label { font-size: 11px; color: #848e9c; margin-top: 6px; }
-        .roadmap-timer-container { text-align: center; font-size: 14px; color: #64ffda; margin-top: 10px; }
-
-        /* --- СТИЛИ ГРАФИКА --- */
-        .chart-box { display: none; margin-top: 10px; background: #0b0e11; border-radius: 8px; padding: 10px; border: 1px solid #2a3348; }
-        .chart-box canvas { width: 100%; height: auto; }
+        .trade-panel {
+            display: none;
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            background: #0b0e11;
+            border-radius: 8px;
+            border: 1px solid #2a3348;
+        }
+        .trade-panel.open { display: block; }
+        .trade-panel h4 { font-size: 14px; color: #e0e6f0; margin-bottom: 8px; }
+        .trade-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .trade-inputs input[type="number"] { width: 80px; padding: 6px; background: #0b0e11; border: 1px solid #2a3348; border-radius: 4px; color: #eaecef; text-align: center; }
+        .trade-inputs input[type="range"] { flex: 1; min-width: 100px; accent-color: #f0b90b; }
+        .trade-buttons { display: flex; gap: 10px; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -420,17 +386,31 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА КРИПТОВАЛЮТЫ (БИРЖА) -->
+            <!-- НОВАЯ ВКЛАДКА КРИПТОБИРЖА (BINANCE) -->
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
-                    <h2>₿ Крипто-биржа <span id="cryptoBalance" style="font-size:14px; color:#f7931a; background:#101826; padding:4px 10px; border-radius:20px;">$0</span></h2>
+                    <h2 style="margin-bottom: 12px; font-size: 20px;">₿ Крипто-биржа</h2>
                     
-                    <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <button class="btn btn-news" onclick="triggerRandomNews()">📢 Случайные новости</button>
-                        <button class="btn btn-create" style="width:auto; padding:8px 16px; font-size:14px;" onclick="openCreateModal()">+ Создать монету</button>
+                    <!-- Кошелек -->
+                    <div class="crypto-wallet-container">
+                        <div>
+                            <div class="wallet-label">Крипто-кошелёк</div>
+                            <div class="wallet-balance" id="walletBalanceDisplay">$0</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-deposit" onclick="depositToWallet()">📥 Пополнить</button>
+                            <button class="btn btn-create" style="width:auto; padding:6px 16px; font-size:13px;" onclick="openCreateModal()">+ Создать</button>
+                        </div>
                     </div>
                     
-                    <div id="cryptoList"></div>
+                    <!-- Список монет -->
+                    <div id="cryptoMarketList"></div>
+                    
+                    <!-- Футер с новостями -->
+                    <div style="margin-top:16px; font-size:12px; color:#848e9c; text-align:center; border-top:1px solid #2a3348; padding-top:12px;">
+                        <button class="btn btn-news" style="width:auto; padding:4px 12px; font-size:11px;" onclick="triggerRandomNews()">📢 Случайные новости</button>
+                        <span id="lastNews" style="display:block; margin-top:6px;"></span>
+                    </div>
                 </div>
             </div>
 
@@ -449,17 +429,20 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ -->
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ (НОВОЕ) -->
         <div class="modal-overlay" id="cryptoCreateModal">
             <div class="modal-box">
                 <h2>🪙 Создать новую монету</h2>
+                <div style="font-size:13px; color:#848e9c; margin-bottom:15px;">Вложите от 1 000$ до 1 000 000 000$<br>Вы получите 100 монет, 20 уйдут в пул ликвидности.</div>
+                
                 <div class="upload-container">
                     <div class="upload-preview" id="imgPreview">📁</div>
                     <div class="file-input-wrapper">
-                        <button class="btn btn-buy" style="font-size:12px; padding:6px 12px; pointer-events:none;">📁 Загрузить иконку</button>
+                        <button class="btn btn-buy" style="font-size:11px; padding:4px 10px; pointer-events:none;">📁 Иконка</button>
                         <input type="file" accept="image/*" onchange="previewImage(event)">
                     </div>
                 </div>
+                
                 <div class="input-group">
                     <label>Название монеты</label>
                     <input type="text" id="coinName" placeholder="Например: Bitcoin">
@@ -473,14 +456,12 @@
                     <textarea id="coinDesc" rows="2" placeholder="Краткое описание"></textarea>
                 </div>
                 <div class="input-group">
-                    <label>Стоимость создания ($)</label>
-                    <input type="number" id="coinCreateCost" min="100" max="1000000" value="10000" step="100">
+                    <label>Вклад ($)</label>
+                    <input type="number" id="coinCreateCost" min="1000" max="1000000000" value="10000" step="100">
                 </div>
-                <div style="font-size:12px; color:#0ecb81; margin-bottom:15px; text-align:center;">
-                    💡 Вы получите: <strong>100 монет</strong><br>В пул уходит: 20 монет + стоимость создания
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-buy" onclick="createCoin()">💸 Создать</button>
+                
+                <div class="modal-actions" style="margin-top:20px;">
+                    <button class="btn btn-buy" onclick="createCoin()">💸 Создать (списать с игры)</button>
                     <button class="btn btn-sell" onclick="closeCreateModal()">Отмена</button>
                 </div>
             </div>
@@ -705,15 +686,15 @@
         // ==========================================
         // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ==========================================
-        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '', cryptoState: { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} } };
+        let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '' };
         let currentUser = null;
         let banListener = null;
         let roadmapInterval = null;
         let roadmapTimerCounter = 0;
         let roadmapSlotsData = [null, null, null];
-        let offlineEarnings = 0; // Накопленный офлайн-доход
-        let lastOnlineTime = Date.now(); // Время последнего онлайна
-        let uploadedImageData = null; // Для загрузки иконки крипты
+        let offlineEarnings = 0;
+        let lastOnlineTime = Date.now();
+        let uploadedImageData = null;
 
         function safePath(str) {
             return String(str).replace(/[.#$\/\[\]]/g, '_');
@@ -744,8 +725,7 @@
                 cards: gameData.cards || {},
                 equipped: gameData.equipped || [],
                 inventory: gameData.inventory || [],
-                avatar: gameData.avatar || '👤',
-                cryptoState: gameData.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} }
+                avatar: gameData.avatar || '👤'
             }).catch((err) => console.error(err));
         }
 
@@ -760,8 +740,6 @@
             if (gameData.balance === undefined) gameData.balance = 10;
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
             if (!gameData.avatar) gameData.avatar = '👤';
-            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
         }
         function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
@@ -901,7 +879,6 @@
 
         function updateUI() {
             document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
-            document.getElementById('cryptoBalance').innerText = `$${Math.floor(gameData.balance)}`;
             let totalIncome = getCurrentIncome();
             document.getElementById('incomeDisplay').innerText = `+$${totalIncome}/мин`;
         }
@@ -982,9 +959,6 @@
             renderLeaderboard();
         };
 
-        // ==========================================
-        // ТАЙМЕР МАГАЗИНА
-        // ==========================================
         setInterval(() => {
             if (gameData.storeTimer > 0) {
                 gameData.storeTimer--;
@@ -997,9 +971,6 @@
             }
         }, 1000);
 
-        // ==========================================
-        // ОНЛАЙН-ДОХОД (КАЖДУЮ МИНУТУ)
-        // ==========================================
         setInterval(() => {
             let totalIncome = getCurrentIncome();
             if (totalIncome > 0 && currentUser) {
@@ -1011,18 +982,13 @@
             }
         }, 60000);
 
-        // ==========================================
-        // ОФЛАЙН-ДОХОД (ПРИ ЗАХОДЕ)
-        // ==========================================
         function calculateOfflineIncome() {
             if (!currentUser) return;
             const now = Date.now();
             const diffMs = now - lastOnlineTime;
             const diffMinutes = diffMs / (1000 * 60);
-            // Максимум 6 часов (360 минут)
             const maxMinutes = 360;
             const minutesPassed = Math.min(diffMinutes, maxMinutes);
-            // Офлайн-доход в 10 раз меньше (делим на 10)
             const totalIncomePerMinute = getCurrentIncome();
             const offlineIncomePerMinute = totalIncomePerMinute / 10;
             const totalOfflineEarn = Math.floor(offlineIncomePerMinute * minutesPassed);
@@ -1036,9 +1002,6 @@
             lastOnlineTime = now; // сбрасываем таймер
         }
 
-        // ==========================================
-        // ОТРИСОВКА МАГАЗИНА
-        // ==========================================
         function renderShop() {
             const container = document.getElementById('packsContainer');
             container.innerHTML = '';
@@ -1065,9 +1028,6 @@
             });
         }
 
-        // ==========================================
-        // ОТРИСОВКА ИНВЕНТАРЯ
-        // ==========================================
         function renderInventory() {
             const equipContainer = document.getElementById('equipContainer');
             equipContainer.innerHTML = '';
@@ -1360,407 +1320,432 @@
         };
 
         // ==========================================
-        // ЛОГИКА КРИПТОБИРЖИ (ПОЛНОСТЬЮ ИСПРАВЛЕНА)
+        // СИСТЕМА КРИПТОБИРЖИ (Firebase ветка "crypto")
         // ==========================================
-        function toggleTrade(id) {
-            const box = document.getElementById(`tradeBox_${id}`);
-            if (!box) return;
-            const isVisible = box.style.display !== 'none';
-            box.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) updateTradeLimits(id);
+
+        // Функция пополнения кошелька
+        function depositToWallet() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            showCustomMsg("Пополнение кошелька", "Введите сумму для перевода с основного баланса на крипто-кошелёк:", [
+                { text: 'Ввести', class: 'confirm' },
+                { text: 'Отмена', class: 'cancel' }
+            ]).then(res => {
+                if (res === 0) {
+                    const amount = parseInt(prompt('Сумма в $:'));
+                    if (isNaN(amount) || amount <= 0) {
+                        customMsg("Ошибка", "Введите корректную сумму!");
+                        return;
+                    }
+                    if (gameData.balance < amount) {
+                        customMsg("Ошибка", `Не хватает денег! У тебя $${gameData.balance}.`);
+                        return;
+                    }
+                    gameData.balance -= amount;
+                    saveLocalGame();
+                    saveCloudGame();
+
+                    const walletRef = db.ref('crypto/wallet/' + safePath(currentUser));
+                    walletRef.transaction((current) => {
+                        return (current || 0) + amount;
+                    }).then(() => {
+                        updateUI();
+                        renderCryptoMarket();
+                        customMsg("✅ Пополнено!", `На кошелёк зачислено $${amount}.`);
+                    }).catch(err => {
+                        gameData.balance += amount;
+                        saveLocalGame();
+                        saveCloudGame();
+                        customMsg("❌ Ошибка", "Не удалось пополнить кошелёк.");
+                    });
+                }
+            });
         }
 
-        function toggleChart(id) {
-            const box = document.getElementById(`chartBox_${id}`);
-            if (!box) return;
-            const isVisible = box.style.display !== 'none';
-            box.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) drawChart(id);
+        // Получить баланс кошелька
+        function getWalletBalance(callback) {
+            if (!currentUser) return callback(0);
+            const walletRef = db.ref('crypto/wallet/' + safePath(currentUser));
+            walletRef.once('value').then(snap => {
+                callback(snap.val() || 0);
+            }).catch(() => callback(0));
         }
 
+        // Получить портфель монет
+        function getPortfolio(callback) {
+            if (!currentUser) return callback({});
+            const portfolioRef = db.ref('crypto/portfolio/' + safePath(currentUser));
+            portfolioRef.once('value').then(snap => {
+                callback(snap.val() || {});
+            }).catch(() => callback({}));
+        }
+
+        // Создать монету
+        function createCoin() {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            const name = document.getElementById('coinName').value.trim();
+            const symbol = document.getElementById('coinSymbol').value.trim().toUpperCase();
+            const desc = document.getElementById('coinDesc').value.trim();
+            const cost = parseInt(document.getElementById('coinCreateCost').value);
+
+            if (!name || !symbol) { customMsg("Ошибка", "Введи название и тикер!"); return; }
+            if (isNaN(cost) || cost < 1000 || cost > 1000000000) { customMsg("Ошибка", "Вклад должен быть от 1000 до 1 000 000 000 $"); return; }
+            if (gameData.balance < cost) { customMsg("Ошибка", `Не хватает денег на вклад! Нужно $${cost}`); return; }
+
+            const coinsRef = db.ref('crypto/coins');
+            coinsRef.orderByChild('symbol').equalTo(symbol).once('value').then(snap => {
+                if (snap.exists()) {
+                    customMsg("Ошибка", "Монета с таким тикером уже существует!");
+                    return;
+                }
+
+                gameData.balance -= cost;
+                saveLocalGame();
+                saveCloudGame();
+
+                const newCoinRef = coinsRef.push();
+                const coinId = newCoinRef.key;
+                const poolCoins = 20;
+                const creatorCoins = 100;
+
+                const coinData = {
+                    id: coinId,
+                    name: name,
+                    symbol: symbol,
+                    desc: desc || 'Создана игроком',
+                    supply: poolCoins,
+                    price: cost / poolCoins,
+                    poolMoney: cost,
+                    creator: currentUser,
+                    image: uploadedImageData || null,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                const updates = {};
+                updates['crypto/coins/' + coinId] = coinData;
+                updates['crypto/portfolio/' + safePath(currentUser) + '/' + coinId] = creatorCoins;
+                updates['crypto/priceHistory/' + coinId] = [cost / poolCoins];
+                updates['crypto/volume/' + coinId] = 0;
+
+                db.ref().update(updates).then(() => {
+                    closeCreateModal();
+                    renderCryptoMarket();
+                    updateUI();
+                    customMsg("✅ Монета создана!", `${symbol} создана за $${cost}. Вы получили ${creatorCoins} монет.`);
+                }).catch(err => {
+                    gameData.balance += cost;
+                    saveLocalGame();
+                    saveCloudGame();
+                    customMsg("❌ Ошибка", "Не удалось создать монету.");
+                });
+            });
+        }
+
+        // Отрисовка рынка
+        function renderCryptoMarket() {
+            if (!currentUser) return;
+            const container = document.getElementById('cryptoMarketList');
+            container.innerHTML = `<div style="text-align:center; padding:20px; color:#848e9c;">Загрузка рынка...</div>`;
+
+            getWalletBalance((walletBal) => {
+                getPortfolio((portfolio) => {
+                    document.getElementById('walletBalanceDisplay').innerText = `$${Math.floor(walletBal)}`;
+
+                    const coinsRef = db.ref('crypto/coins');
+                    coinsRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (!data) {
+                            container.innerHTML = `<div class="empty-state"><span class="big-icon">🪙</span><div style="font-size:16px;">Нет монет</div><div style="margin-top:5px;">Создай свою первую криптовалюту!</div></div>`;
+                            return;
+                        }
+
+                        let html = '';
+                        const coinIds = Object.keys(data);
+                        // Сортируем по рыночной капе
+                        const sorted = coinIds.sort((a, b) => {
+                            const capA = (data[a].price || 0) * (data[a].supply || 0);
+                            const capB = (data[b].price || 0) * (data[b].supply || 0);
+                            return capB - capA;
+                        });
+
+                        sorted.forEach(id => {
+                            const coin = data[id];
+                            const myBal = portfolio[id] || 0;
+                            const price = coin.price || 0.01;
+                            const supply = coin.supply || 0;
+                            const marketCap = price * supply;
+                            const volume = 0; // Пока не используем объем из базы для простоты
+
+                            let iconHtml = `<div class="coin-icon">${coin.symbol.charAt(0)}</div>`;
+                            if (coin.image && coin.image.startsWith('data:image')) {
+                                iconHtml = `<div class="coin-icon"><img src="${coin.image}" alt="${coin.symbol}"></div>`;
+                            }
+
+                            html += `
+                                <div class="coin-row" id="coinRow_${id}">
+                                    <div class="coin-header" onclick="toggleTradePanel('${id}')">
+                                        ${iconHtml}
+                                        <div class="coin-name-group">
+                                            <div class="coin-symbol">${coin.symbol}</div>
+                                            <div class="coin-fullname">${coin.name}</div>
+                                            <div style="font-size:10px; color:#848e9c;">Пул: ${supply}</div>
+                                        </div>
+                                    </div>
+                                    <div class="coin-stats">
+                                        <div class="coin-price-val" id="priceVal_${id}">$${price.toFixed(2)}</div>
+                                        <div class="coin-marketcap">Cap: $${(marketCap).toFixed(0)}</div>
+                                        <div style="font-size:11px; color:#848e9c;">У вас: ${myBal}</div>
+                                    </div>
+                                    <div class="coin-actions">
+                                        <button class="btn-trade btn-buy" onclick="event.stopPropagation(); openTrade('${id}', 'buy')">Купить</button>
+                                        <button class="btn-trade btn-sell" onclick="event.stopPropagation(); openTrade('${id}', 'sell')">Продать</button>
+                                    </div>
+                                    <div class="trade-panel" id="tradePanel_${id}">
+                                        <h4>Торговля ${coin.symbol}</h4>
+                                        <div class="trade-inputs">
+                                            <input type="number" id="tradeAmount_${id}" min="1" value="1" oninput="updateTradeSlider('${id}')">
+                                            <input type="range" id="tradeSlider_${id}" min="1" max="100" value="1" oninput="updateTradeInput('${id}')">
+                                            <span style="font-size:12px; color:#848e9c;">x1</span>
+                                        </div>
+                                        <div class="trade-buttons">
+                                            <button class="btn-trade btn-buy" onclick="executeTrade('${id}', 'buy')">📈 Купить</button>
+                                            <button class="btn-trade btn-sell" onclick="executeTrade('${id}', 'sell')">📉 Продать</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    });
+                });
+            });
+        }
+
+        // Открыть панель торговли
+        function toggleTradePanel(id) {
+            const panel = document.getElementById('tradePanel_' + id);
+            if (panel) {
+                const isOpen = panel.classList.contains('open');
+                document.querySelectorAll('.trade-panel').forEach(p => p.classList.remove('open'));
+                if (!isOpen) {
+                    panel.classList.add('open');
+                    updateTradeLimits(id);
+                }
+            }
+        }
+
+        function openTrade(id, type) {
+            const panel = document.getElementById('tradePanel_' + id);
+            document.querySelectorAll('.trade-panel').forEach(p => p.classList.remove('open'));
+            if (panel) {
+                panel.classList.add('open');
+                updateTradeLimits(id);
+            }
+        }
+
+        // Обновить лимиты слайдера
         function updateTradeLimits(id) {
-            const coin = gameData.cryptoState.coins[id];
-            if (!coin) return;
-            const price = coin.price || 500;
-            const input = document.getElementById(`amountInput_${id}`);
-            const slider = document.getElementById(`slider_${id}`);
-            if (input && slider) {
-                const maxVal = Math.max(1, Math.floor(gameData.balance / price));
-                input.max = maxVal;
-                slider.max = maxVal;
-                let curVal = parseInt(input.value);
-                if (isNaN(curVal) || curVal < 1) curVal = 1;
-                if (curVal > maxVal) curVal = maxVal;
-                input.value = curVal;
-                slider.value = curVal;
-            }
-        }
-
-        function updateTradeNumber(id) {
-            const input = document.getElementById(`amountInput_${id}`);
-            const slider = document.getElementById(`slider_${id}`);
-            if (input && slider) {
-                let val = parseInt(input.value);
-                const max = parseInt(input.max);
-                if (isNaN(val) || val < 1) val = 1;
-                if (val > max) val = max;
-                input.value = val;
-                slider.value = val;
-            }
+            const coinRef = db.ref('crypto/coins/' + id);
+            coinRef.once('value').then(snap => {
+                const coin = snap.val();
+                if (!coin) return;
+                const price = coin.price || 0.01;
+                getWalletBalance((wallet) => {
+                    getPortfolio((portfolio) => {
+                        const myBal = portfolio[id] || 0;
+                        const maxBuy = Math.floor(wallet / price);
+                        const input = document.getElementById('tradeAmount_' + id);
+                        const slider = document.getElementById('tradeSlider_' + id);
+                        if (input && slider) {
+                            const maxVal = Math.max(1, maxBuy);
+                            input.max = maxVal;
+                            slider.max = maxVal;
+                            // Не сбрасываем значение, если оно больше макс
+                            let curVal = parseInt(input.value);
+                            if (isNaN(curVal) || curVal < 1) curVal = 1;
+                            if (curVal > maxVal) curVal = maxVal;
+                            input.value = curVal;
+                            slider.value = curVal;
+                        }
+                    });
+                });
+            });
         }
 
         function updateTradeSlider(id) {
-            const input = document.getElementById(`amountInput_${id}`);
-            const slider = document.getElementById(`slider_${id}`);
+            const input = document.getElementById('tradeAmount_' + id);
+            const slider = document.getElementById('tradeSlider_' + id);
+            if (input && slider) {
+                slider.value = input.value;
+            }
+        }
+
+        function updateTradeInput(id) {
+            const input = document.getElementById('tradeAmount_' + id);
+            const slider = document.getElementById('tradeSlider_' + id);
             if (input && slider) {
                 input.value = slider.value;
             }
         }
 
-        function buyCrypto(id) {
-            const coin = gameData.cryptoState.coins[id];
-            if (!coin) return;
-            const input = document.getElementById(`amountInput_${id}`);
-            const amount = parseInt(input.value);
-            if (isNaN(amount) || amount < 1) return;
+        // Выполнить сделку
+        function executeTrade(id, type) {
+            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
+            const amountInput = document.getElementById('tradeAmount_' + id);
+            const amount = parseInt(amountInput.value);
+            if (isNaN(amount) || amount < 1) { customMsg("Ошибка", "Введи корректное количество!"); return; }
 
-            const price = coin.price || 500;
-            const totalCost = price * amount;
+            const coinRef = db.ref('crypto/coins/' + id);
+            coinRef.once('value').then(snap => {
+                const coin = snap.val();
+                if (!coin) { customMsg("Ошибка", "Монета не найдена!"); return; }
 
-            if (gameData.balance < totalCost) {
-                customMsg("Ошибка", `Не хватает денег! Нужно $${totalCost.toFixed(2)}`);
-                return;
-            }
-
-            // Проверка лимита 1 000 000 000 монет
-            const currentBalance = gameData.cryptoState.portfolio[id] || 0;
-            if (currentBalance + amount > 1000000000) {
-                customMsg("Ошибка", `Лимит 1 000 000 000 монет. У тебя уже ${currentBalance.toLocaleString()}, можешь купить максимум ${(1000000000 - currentBalance).toLocaleString()}.`);
-                return;
-            }
-
-            gameData.balance -= totalCost;
-            if (!gameData.cryptoState.portfolio[id]) gameData.cryptoState.portfolio[id] = 0;
-            gameData.cryptoState.portfolio[id] += amount;
-            
-            coin.supply -= amount; 
-            coin.poolMoney += totalCost; 
-            coin.price = coin.poolMoney / coin.supply;
-            
-            if (!gameData.cryptoState.volume[id]) gameData.cryptoState.volume[id] = 0;
-            gameData.cryptoState.volume[id] += totalCost;
-            
-            // Добавляем историю цены
-            if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-            if (!gameData.cryptoState.priceHistory[id]) gameData.cryptoState.priceHistory[id] = [];
-            gameData.cryptoState.priceHistory[id].push(coin.price);
-            if (gameData.cryptoState.priceHistory[id].length > 30) gameData.cryptoState.priceHistory[id].shift();
-
-            saveLocalGame(); saveCloudGame();
-            updateUI();
-            renderCrypto();
-            addHistory('🟢', `Куплено ${amount} ${coin.symbol} за $${totalCost.toFixed(0)}`);
-
-            const priceEl = document.getElementById(`price_${id}`);
-            if(priceEl) {
-                priceEl.classList.remove('down');
-                priceEl.style.color = '#0ecb81';
-                setTimeout(() => { priceEl.style.color = ''; }, 1000);
-            }
-        }
-
-        function sellCrypto(id) {
-            const coin = gameData.cryptoState.coins[id];
-            if (!coin) return;
-            const myBalance = (gameData.cryptoState.portfolio && gameData.cryptoState.portfolio[id]) || 0;
-            if (myBalance <= 0) return;
-
-            const input = document.getElementById(`amountInput_${id}`);
-            const amount = parseInt(input.value);
-            if (isNaN(amount) || amount < 1 || amount > myBalance) {
-                customMsg("Ошибка", `У вас только ${myBalance} монет!`);
-                return;
-            }
-
-            // Защита от отрицательного пула
-            if (coin.supply <= amount) {
-                customMsg("Ошибка", "Нельзя продать так много, чтобы пул стал нулевым или отрицательным!");
-                return;
-            }
-
-            const price = coin.price || 500;
-            const totalEarn = price * amount;
-
-            gameData.balance += totalEarn;
-            gameData.cryptoState.portfolio[id] -= amount;
-            
-            coin.supply += amount;
-            let dropMultiplier = 1 - (0.01 * amount);
-            if (dropMultiplier < 0.5) dropMultiplier = 0.5;
-            let newPrice = price * dropMultiplier;
-            newPrice = Math.max(0.01, newPrice);
-            
-            coin.price = newPrice;
-            coin.poolMoney = newPrice * coin.supply;
-            
-            // Добавляем историю цены
-            if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-            if (!gameData.cryptoState.priceHistory[id]) gameData.cryptoState.priceHistory[id] = [];
-            gameData.cryptoState.priceHistory[id].push(coin.price);
-            if (gameData.cryptoState.priceHistory[id].length > 30) gameData.cryptoState.priceHistory[id].shift();
-
-            saveLocalGame(); saveCloudGame();
-            updateUI();
-            renderCrypto();
-            addHistory('🔴', `Продано ${amount} ${coin.symbol} за $${totalEarn.toFixed(0)}`);
-
-            const priceEl = document.getElementById(`price_${id}`);
-            if(priceEl) {
-                priceEl.classList.add('down');
-                priceEl.style.color = '#f6465d';
-                setTimeout(() => { priceEl.style.color = ''; }, 1000);
-            }
-        }
-
-        function renderCrypto() {
-            const container = document.getElementById('cryptoList');
-            container.innerHTML = '';
-            
-            if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="big-icon">🪙</span>
-                        <div style="font-size:16px; font-weight:600;">Нет монет</div>
-                        <div style="margin-top:5px;">Создай свою первую криптовалюту!</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const coinArray = Object.values(gameData.cryptoState.coins);
-            coinArray.sort((a, b) => {
-                const capA = (a.price || 0) * (a.supply || 0);
-                const capB = (b.price || 0) * (b.supply || 0);
-                return capB - capA;
-            });
-
-            coinArray.forEach(coin => {
-                const id = coin.id;
-                const myBalance = (gameData.cryptoState.portfolio && gameData.cryptoState.portfolio[id]) || 0;
-                const price = coin.price || 500;
+                const price = coin.price || 0.01;
                 const supply = coin.supply || 0;
-                const marketCap = price * supply;
-                const volume = (gameData.cryptoState.volume && gameData.cryptoState.volume[id]) || 0;
+                const poolMoney = coin.poolMoney || 0;
 
-                const card = document.createElement('div');
-                card.className = 'coin-card';
-                
-                let iconHtml = `<div class="coin-icon">${coin.symbol.charAt(0)}</div>`;
-                if (coin.image && coin.image.startsWith('data:image')) {
-                    iconHtml = `<div class="coin-icon"><img src="${coin.image}" alt="${coin.symbol}"></div>`;
+                if (type === 'buy') {
+                    getWalletBalance(async (walletBal) => {
+                        const totalCost = price * amount;
+                        if (walletBal < totalCost) { customMsg("Ошибка", `Не хватает денег на кошельке! Нужно $${totalCost.toFixed(2)}`); return; }
+                        if (supply < amount) { customMsg("Ошибка", "Недостаточно монет в пуле!"); return; }
+
+                        const newSupply = supply - amount;
+                        const newPoolMoney = poolMoney + totalCost;
+                        const newPrice = newPoolMoney / newSupply;
+
+                        const updates = {};
+                        updates['crypto/wallet/' + safePath(currentUser)] = walletBal - totalCost;
+                        updates['crypto/portfolio/' + safePath(currentUser) + '/' + id] = firebase.database.ServerValue.increment(amount);
+                        updates['crypto/coins/' + id + '/supply'] = newSupply;
+                        updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
+                        updates['crypto/coins/' + id + '/price'] = newPrice;
+                        updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
+                        updates['crypto/volume/' + id] = firebase.database.ServerValue.increment(totalCost);
+
+                        db.ref().update(updates).then(() => {
+                            renderCryptoMarket();
+                            customMsg("✅ Куплено!", `Куплено ${amount} ${coin.symbol} за $${totalCost.toFixed(0)}.`);
+                        }).catch(err => customMsg("❌ Ошибка", "Не удалось выполнить покупку."));
+                    });
+                } else if (type === 'sell') {
+                    getPortfolio((portfolio) => {
+                        const myBal = portfolio[id] || 0;
+                        if (myBal < amount) { customMsg("Ошибка", `У тебя только ${myBal} монет!`); return; }
+                        if (supply + amount > 1000000000) { customMsg("Ошибка", "Нельзя продать так много, лимит пула!"); return; }
+
+                        const totalEarn = price * amount;
+                        const newSupply = supply + amount;
+                        // Уменьшаем цену при продаже, чтобы не было инфляции
+                        let dropMultiplier = 1 - (0.01 * amount);
+                        if (dropMultiplier < 0.5) dropMultiplier = 0.5;
+                        let newPrice = price * dropMultiplier;
+                        newPrice = Math.max(0.01, newPrice);
+                        const newPoolMoney = newPrice * newSupply;
+
+                        const updates = {};
+                        updates['crypto/wallet/' + safePath(currentUser)] = firebase.database.ServerValue.increment(totalEarn);
+                        updates['crypto/portfolio/' + safePath(currentUser) + '/' + id] = -amount;
+                        updates['crypto/coins/' + id + '/supply'] = newSupply;
+                        updates['crypto/coins/' + id + '/poolMoney'] = newPoolMoney;
+                        updates['crypto/coins/' + id + '/price'] = newPrice;
+                        updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
+                        updates['crypto/volume/' + id] = firebase.database.ServerValue.increment(totalEarn);
+
+                        db.ref().update(updates).then(() => {
+                            renderCryptoMarket();
+                            customMsg("✅ Продано!", `Продано ${amount} ${coin.symbol} за $${totalEarn.toFixed(0)}.`);
+                        }).catch(err => customMsg("❌ Ошибка", "Не удалось выполнить продажу."));
+                    });
                 }
-
-                card.innerHTML = `
-                    <div class="coin-info" onclick="toggleTrade('${id}');">
-                        ${iconHtml}
-                        <div class="coin-names">
-                            <div class="coin-symbol">${coin.symbol}</div>
-                            <div class="coin-fullname">${coin.name}</div>
-                            <div style="font-size:11px; color:#848e9c; margin-top:2px;">В пуле: ${supply}</div>
-                        </div>
-                    </div>
-                    <div class="coin-stats">
-                        <div class="coin-price" id="price_${id}">$${price.toFixed(2)}</div>
-                        <div class="coin-marketcap">Кап: $${marketCap.toFixed(0)}</div>
-                        <div class="coin-volume">📊 Объем: $${volume.toFixed(0)}</div>
-                        <div style="font-size:11px; color:#848e9c;">У вас: ${myBalance}</div>
-                    </div>
-                    <div class="coin-actions">
-                        <button class="btn btn-buy" onclick="event.stopPropagation(); toggleTrade('${id}')">📈 Торг</button>
-                        <button class="btn btn-news" onclick="event.stopPropagation(); toggleChart('${id}')">📊 График</button>
-                    </div>
-                    <div class="trade-box" id="tradeBox_${id}">
-                        <div class="trade-header">
-                            <span class="trade-balance">Ваш баланс: $${Math.floor(gameData.balance).toLocaleString()}</span>
-                            <span class="trade-balance">У вас ${myBalance} ${coin.symbol}</span>
-                        </div>
-                        <div class="trade-input-row">
-                            <input type="number" id="amountInput_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeNumber('${id}')">
-                            <input type="range" id="slider_${id}" min="1" max="${Math.max(1, Math.floor(gameData.balance / price))}" value="1" oninput="updateTradeSlider('${id}')">
-                        </div>
-                        <div class="trade-buttons">
-                            <button class="btn btn-buy" onclick="buyCrypto('${id}')">Купить</button>
-                            ${myBalance > 0 ? `<button class="btn btn-sell" onclick="sellCrypto('${id}')">Продать</button>` : ''}
-                        </div>
-                    </div>
-                    <div class="chart-box" id="chartBox_${id}">
-                        <canvas id="chartCanvas_${id}" width="300" height="100" style="width:100%; height:auto;"></canvas>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            
-            renderHistory();
-            updateUI();
-        }
-
-        function addHistory(icon, text, isGood = true) {
-            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            const finalIcon = isGood ? icon : '🔴';
-            gameData.cryptoState.history.unshift({ time, icon: finalIcon, text });
-            if (gameData.cryptoState.history.length > 50) gameData.cryptoState.history = gameData.cryptoState.history.slice(-50);
-            saveLocalGame();
-            if (currentUser) saveCloudGame();
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('historyItems');
-            container.innerHTML = '';
-            const history = gameData.cryptoState?.history || [];
-            history.slice(0, 20).forEach(item => {
-                const span = document.createElement('span');
-                span.className = 'h-item';
-                span.innerHTML = `[${item.time}] ${item.icon} ${item.text}`;
-                container.appendChild(span);
             });
         }
 
-        function drawChart(id) {
-            const canvas = document.getElementById(`chartCanvas_${id}`);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const history = gameData.cryptoState.priceHistory?.[id] || [];
-            if (history.length < 2) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#848e9c';
-                ctx.font = '12px sans-serif';
-                ctx.fillText('Недостаточно данных', 10, 20);
-                return;
-            }
-            const w = canvas.width, h = canvas.height;
-            const padding = 10;
-            const maxPrice = Math.max(...history);
-            const minPrice = Math.min(...history);
-            const range = maxPrice - minPrice || 1;
-
-            ctx.clearRect(0, 0, w, h);
-            ctx.beginPath();
-            ctx.strokeStyle = '#0ecb81';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < history.length; i++) {
-                const x = padding + (i / (history.length - 1)) * (w - 2 * padding);
-                const y = h - padding - ((history[i] - minPrice) / range) * (h - 2 * padding);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-        }
-
-        function updateAllPrices() {
-            if (!gameData.cryptoState || !gameData.cryptoState.coins) return;
-            for (let id in gameData.cryptoState.coins) {
-                const coin = gameData.cryptoState.coins[id];
-                if (!coin) continue;
-                const changePercent = (Math.random() - 0.5) * 0.04; // ±2%
-                let newPrice = coin.price * (1 + changePercent);
-                newPrice = Math.max(0.01, newPrice);
-                coin.price = newPrice;
-                coin.poolMoney = newPrice * coin.supply;
-
-                if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-                if (!gameData.cryptoState.priceHistory[id]) gameData.cryptoState.priceHistory[id] = [];
-                gameData.cryptoState.priceHistory[id].push(newPrice);
-                if (gameData.cryptoState.priceHistory[id].length > 30) gameData.cryptoState.priceHistory[id].shift();
-            }
-            if (document.getElementById('cryptoList').style.display !== 'none') {
-                renderCrypto();
-            }
-            saveLocalGame();
-            if (currentUser) saveCloudGame();
-        }
-
-        setInterval(updateAllPrices, 5000);
-
-        function triggerRandomNews() {
-            if (!gameData.cryptoState || Object.keys(gameData.cryptoState.coins).length === 0) {
-                customMsg("Внимание", "Сначала создай хотя бы одну монету!");
-                return;
-            }
-            const coinIds = Object.keys(gameData.cryptoState.coins);
-            const randomId = coinIds[Math.floor(Math.random() * coinIds.length)];
-            const coin = gameData.cryptoState.coins[randomId];
-            if (!coin) return;
-
-            const currentPrice = coin.price || 500;
-            const symbol = coin.symbol;
-
-            const newsPool = [
-                { text: `📈 Хайп! Создатель ${symbol} закупился!`, multiplier: 1.4, isGood: true },
-                { text: `🚀 Крупный инвестор зашел в ${symbol}!`, multiplier: 1.3, isGood: true },
-                { text: `💎 ${symbol} анонсировал апгрейд!`, multiplier: 1.25, isGood: true },
-                { text: `🐳 Кит купил много ${symbol}!`, multiplier: 1.35, isGood: true },
-                { text: `🌟 ${symbol} в тренде! Все покупают!`, multiplier: 1.2, isGood: true },
-                { text: `📉 Кит сливает ${symbol}!`, multiplier: 0.7, isGood: false },
-                { text: `😱 Скандал вокруг ${symbol}!`, multiplier: 0.75, isGood: false },
-                { text: `🥶 Рынок в шоке! ${symbol} падает!`, multiplier: 0.65, isGood: false },
-                { text: `🤖 Бот продал весь ${symbol}!`, multiplier: 0.8, isGood: false },
-                { text: `🔻 ${symbol} потерял поддержку!`, multiplier: 0.7, isGood: false },
-                { text: `🐱 Кот наступил на клавиатуру, ${symbol} скачет!`, multiplier: 1.15, isGood: true },
-                { text: `😂 ${symbol} — мем года!`, multiplier: 1.9, isGood: true }
-            ];
-            const news = newsPool[Math.floor(Math.random() * newsPool.length)];
-            const newPrice = currentPrice * news.multiplier;
-            const currentSupply = coin.supply || 1;
-            const newPoolMoney = newPrice * currentSupply;
-            coin.price = newPrice;
-            coin.poolMoney = newPoolMoney;
-            
-            if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-            if (!gameData.cryptoState.priceHistory[randomId]) gameData.cryptoState.priceHistory[randomId] = [];
-            gameData.cryptoState.priceHistory[randomId].push(newPrice);
-            if (gameData.cryptoState.priceHistory[randomId].length > 30) gameData.cryptoState.priceHistory[randomId].shift();
-
-            const icon = news.isGood ? '🟢' : '🔻';
-            addHistory(icon, `${news.text} (Цена: ${currentPrice.toFixed(2)}$ → ${newPrice.toFixed(2)}$)`);
-            saveLocalGame(); if(currentUser) saveCloudGame();
-            renderCrypto();
-            const priceEl = document.getElementById(`price_${randomId}`);
-            if(priceEl) {
-                if (news.isGood) {
-                    priceEl.classList.remove('down');
-                    priceEl.style.color = '#0ecb81';
-                } else {
-                    priceEl.classList.add('down');
-                    priceEl.style.color = '#f6465d';
+        // Автоматическое обновление цен (каждые 5 секунд)
+        setInterval(() => {
+            const coinsRef = db.ref('crypto/coins');
+            coinsRef.once('value').then(snap => {
+                const data = snap.val();
+                if (!data) return;
+                const updates = {};
+                for (let id in data) {
+                    const coin = data[id];
+                    const changePercent = (Math.random() - 0.5) * 0.04; // ±2%
+                    let newPrice = coin.price * (1 + changePercent);
+                    newPrice = Math.max(0.01, newPrice);
+                    updates['crypto/coins/' + id + '/price'] = newPrice;
+                    updates['crypto/coins/' + id + '/poolMoney'] = newPrice * coin.supply;
+                    updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(newPrice);
                 }
-                setTimeout(() => { priceEl.style.color = ''; }, 1500);
-            }
-        }
-
-        function initPopularCoins() {
-            if (!gameData.cryptoState) gameData.cryptoState = { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-            
-            const popular = [
-                { id: 'btc', name: 'Bitcoin', symbol: 'BTC', price: 60000, supply: 21000000, desc: 'Самая популярная криптовалюта' },
-                { id: 'ton', name: 'Toncoin', symbol: 'TON', price: 5.5, supply: 5000000000, desc: 'Криптовалюта от Telegram' },
-                { id: 'eth', name: 'Ethereum', symbol: 'ETH', price: 3000, supply: 120000000, desc: 'Лидер смарт-контрактов' },
-                { id: 'sol', name: 'Solana', symbol: 'SOL', price: 150, supply: 500000000, desc: 'Быстрая блокчейн-платформа' }
-            ];
-
-            let changed = false;
-            popular.forEach(p => {
-                let exists = false;
-                for (let key in gameData.cryptoState.coins) {
-                    if (gameData.cryptoState.coins[key].symbol === p.symbol) {
-                        exists = true;
-                        break;
+                db.ref().update(updates).then(() => {
+                    // Обновляем UI только если вкладка открыта
+                    const cryptoPane = document.getElementById('crypto');
+                    if (cryptoPane && cryptoPane.classList.contains('active')) {
+                        renderCryptoMarket();
                     }
-                }
-                if (!exists) {
-                    const id = p.id + '_' + Date.now();
-                    gameData.cryptoState.coins[id] = {
+                });
+            });
+        }, 5000);
+
+        // Случайные новости
+        function triggerRandomNews() {
+            const coinsRef = db.ref('crypto/coins');
+            coinsRef.once('value').then(snap => {
+                const data = snap.val();
+                if (!data) { customMsg("Внимание", "Сначала создай хотя бы одну монету!"); return; }
+                const ids = Object.keys(data);
+                const id = ids[Math.floor(Math.random() * ids.length)];
+                const coin = data[id];
+                if (!coin) return;
+
+                const currentPrice = coin.price || 0.01;
+                const newsPool = [
+                    { text: `📈 Хайп! Создатель ${coin.symbol} закупился!`, multiplier: 1.4 },
+                    { text: `🚀 Крупный инвестор зашел в ${coin.symbol}!`, multiplier: 1.3 },
+                    { text: `💎 ${coin.symbol} анонсировал апгрейд!`, multiplier: 1.25 },
+                    { text: `🐳 Кит купил много ${coin.symbol}!`, multiplier: 1.35 },
+                    { text: `🌟 ${coin.symbol} в тренде!`, multiplier: 1.2 },
+                    { text: `📉 Кит сливает ${coin.symbol}!`, multiplier: 0.7 },
+                    { text: `😱 Скандал вокруг ${coin.symbol}!`, multiplier: 0.75 },
+                    { text: `🥶 Рынок в шоке! ${coin.symbol} падает!`, multiplier: 0.65 },
+                    { text: `🤖 Бот продал весь ${coin.symbol}!`, multiplier: 0.8 },
+                    { text: `🔻 ${coin.symbol} потерял поддержку!`, multiplier: 0.7 },
+                    { text: `😂 ${coin.symbol} — мем года!`, multiplier: 1.9 }
+                ];
+                const news = newsPool[Math.floor(Math.random() * newsPool.length)];
+                const newPrice = currentPrice * news.multiplier;
+                const finalPrice = Math.max(0.01, newPrice);
+
+                const updates = {};
+                updates['crypto/coins/' + id + '/price'] = finalPrice;
+                updates['crypto/coins/' + id + '/poolMoney'] = finalPrice * coin.supply;
+                updates['crypto/priceHistory/' + id] = firebase.database.ServerValue.push(finalPrice);
+
+                db.ref().update(updates).then(() => {
+                    const icon = news.multiplier > 1 ? '🟢' : '🔴';
+                    document.getElementById('lastNews').innerText = `${icon} ${news.text} (${currentPrice.toFixed(2)}$ → ${finalPrice.toFixed(2)}$)`;
+                    renderCryptoMarket();
+                });
+            });
+        }
+
+        // Инициализация популярных монет при первом запуске
+        function initPopularCoins() {
+            const coinsRef = db.ref('crypto/coins');
+            coinsRef.once('value').then(snap => {
+                if (snap.exists()) return; // Уже есть монеты
+
+                const popular = [
+                    { symbol: 'BTC', name: 'Bitcoin', price: 60000, supply: 21000000, desc: 'Самая популярная криптовалюта' },
+                    { symbol: 'ETH', name: 'Ethereum', price: 3000, supply: 120000000, desc: 'Лидер смарт-контрактов' },
+                    { symbol: 'SOL', name: 'Solana', price: 150, supply: 500000000, desc: 'Быстрая блокчейн-платформа' },
+                    { symbol: 'TON', name: 'Toncoin', price: 5.5, supply: 5000000000, desc: 'Криптовалюта от Telegram' }
+                ];
+
+                const updates = {};
+                popular.forEach(p => {
+                    const ref = coinsRef.push();
+                    const id = ref.key;
+                    updates['crypto/coins/' + id] = {
                         id: id,
                         name: p.name,
                         symbol: p.symbol,
@@ -1768,23 +1753,57 @@
                         supply: p.supply,
                         price: p.price,
                         poolMoney: p.price * p.supply,
-                        image: null
+                        creator: 'System',
+                        image: null,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
-                    gameData.cryptoState.portfolio[id] = 0;
-                    gameData.cryptoState.volume[id] = 0;
-                    if (!gameData.cryptoState.priceHistory) gameData.cryptoState.priceHistory = {};
-                    gameData.cryptoState.priceHistory[id] = [p.price];
-                    changed = true;
-                }
+                    updates['crypto/priceHistory/' + id] = [p.price];
+                    updates['crypto/volume/' + id] = 0;
+                });
+                db.ref().update(updates).then(() => {
+                    console.log("Популярные монеты созданы!");
+                    if (currentUser) renderCryptoMarket();
+                });
             });
-            if (changed) {
-                saveLocalGame();
-                if (currentUser) saveCloudGame();
-                renderCrypto();
-            }
         }
 
+        // Вызов инициализации
         initPopularCoins();
+
+        // ==========================================
+        // ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА СОЗДАНИЯ КРИПТЫ
+        // ==========================================
+        function openCreateModal() {
+            const modal = document.getElementById('cryptoCreateModal');
+            if (!modal) {
+                customMsg("Ошибка", "Окно создания монеты не найдено. Попробуйте обновить страницу (Ctrl+F5).");
+                return;
+            }
+            modal.classList.add('active');
+            document.getElementById('coinName').value = '';
+            document.getElementById('coinSymbol').value = '';
+            document.getElementById('coinDesc').value = '';
+            document.getElementById('coinCreateCost').value = 10000;
+            document.getElementById('imgPreview').innerHTML = '📁';
+            uploadedImageData = null;
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('cryptoCreateModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageData = e.target.result;
+                    document.getElementById('imgPreview').innerHTML = `<img src="${uploadedImageData}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
         // ==========================================
         // АВТОРИЗАЦИЯ
@@ -1830,20 +1849,17 @@
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || pass;
-                    gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-                    gameData.packPurchases = data.packPurchases || {};
-                    initPopularCoins();
                     currentUser = login;
                     localStorage.setItem('cachedUser', login);
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
-                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
-                    calculateOfflineIncome(); // Начисляем офлайн-доход при входе
+                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
                     if (login === 'Dushka') renderAdminPanel();
                     if (!silent) customMsg("✅ Вход выполнен!", `С возвращением, ${login}!`);
                     setupBanListener();
                     startRoadmap();
                     renderMarketplace();
+                    calculateOfflineIncome();
                     resolve();
                 });
             });
@@ -1856,15 +1872,14 @@
             if (login.toLowerCase() === 'dushka') { customMsg("Ошибка", "Этот ник заблокирован для регистрации!"); return; }
             loadCloudData(login, function(data) {
                 if (data) { customMsg("Ошибка", "Этот логин уже занят!"); return; }
-                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, cryptoState: { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} }, packPurchases: {} };
+                gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
                 localStorage.setItem('cachedUser', login);
                 saveLocalGame();
                 saveCloudGame();
                 document.getElementById('authOverlay').classList.add('hidden');
-                initPopularCoins();
-                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
+                renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
                 if (login === 'Dushka') renderAdminPanel();
                 customMsg("✅ Аккаунт создан!", `Добро пожаловать, ${login}!`);
                 setupBanListener();
@@ -1905,18 +1920,15 @@
                     gameData.inventory = data.inventory || [];
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || '';
-                    gameData.cryptoState = data.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} };
-                    gameData.packPurchases = data.packPurchases || {};
-                    initPopularCoins();
                     currentUser = cachedUser;
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
-                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCrypto();
-                    calculateOfflineIncome();
+                    renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
                     if (cachedUser === 'Dushka') renderAdminPanel();
                     setupBanListener();
                     startRoadmap();
                     renderMarketplace();
+                    calculateOfflineIncome();
                 } else {
                     if (data && data.banned === true) { customMsg("🚫 Вы забанены!", "Ваш аккаунт заблокирован."); }
                     document.getElementById('authOverlay').classList.remove('hidden');
@@ -2002,7 +2014,6 @@
             const container = document.getElementById('marketplaceContainer');
             container.innerHTML = `<div class="empty-state" style="color:#848e9c;">Загрузка лотов...</div>`;
             
-            // Убрали orderByChild, теперь Firebase не ругается
             const listingsRef = db.ref('marketplace/listings').limitToLast(100);
             
             listingsRef.on('value', (snapshot) => {
@@ -2012,7 +2023,6 @@
                     return;
                 }
                 
-                // Сортируем лоты вручную по времени (новые сверху)
                 const ids = Object.keys(data);
                 const sortedIds = ids.sort((a, b) => {
                     return (data[b].timestamp || 0) - (data[a].timestamp || 0);
@@ -2142,7 +2152,6 @@
                     else rarityColor = '#6b7280';
 
                     slot.className = 'roadmap-slot filled';
-                    // Показываем доход за 10 минут, умноженный на 4 (как ты просил)
                     const income10min = card.income * 10 * 4;
                     slot.innerHTML = `
                         <div class="card-emoji">${card.emoji}</div>
@@ -2363,9 +2372,7 @@
                     cards: gameData.cards || {},
                     equipped: gameData.equipped || [],
                     inventory: gameData.inventory || [],
-                    avatar: gameData.avatar || '👤',
-                    cryptoState: gameData.cryptoState || { coins: {}, portfolio: {}, volume: {}, history: [], priceHistory: {} },
-                    packPurchases: gameData.packPurchases || {}
+                    avatar: gameData.avatar || '👤'
                 }).then(() => {
                     const oldUserRef = db.ref('users/' + safePath(currentUser));
                     return oldUserRef.remove();
