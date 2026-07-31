@@ -2169,7 +2169,7 @@
         }
 
         // ==========================================
-        // АВТОРИЗАЦИЯ
+        // АВТОРИЗАЦИЯ (С сохранением пароля для быстрого входа)
         // ==========================================
         function setupBanListener() {
             if (!currentUser) return;
@@ -2180,6 +2180,7 @@
                 if (isBanned === true) {
                     customMsg('🚫 Вас забанили!', 'Администратор заблокировал ваш аккаунт.');
                     if (banListener) banListener.off();
+                    localStorage.removeItem('cachedCredentials');
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
@@ -2214,7 +2215,11 @@
                     gameData.password = data.password || pass;
                     gameData.favoriteCard = data.favoriteCard || null;
                     currentUser = login;
+                    
+                    // Сохраняем логин и пароль
+                    localStorage.setItem('cachedCredentials', JSON.stringify({login: login, pass: pass}));
                     localStorage.setItem('cachedUser', login);
+                    
                     saveLocalGame();
                     document.getElementById('authOverlay').classList.add('hidden');
                     renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
@@ -2240,6 +2245,7 @@
                 gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: pass, favoriteCard: null };
                 for(let i=0; i<3; i++) gameData.inventory.push('pack5');
                 currentUser = login;
+                localStorage.setItem('cachedCredentials', JSON.stringify({login: login, pass: pass}));
                 localStorage.setItem('cachedUser', login);
                 saveLocalGame();
                 saveCloudGame();
@@ -2267,6 +2273,7 @@
         document.getElementById('logoutBtn').onclick = function() {
             if (currentUser) {
                 if (banListener) banListener.off();
+                localStorage.removeItem('cachedCredentials');
                 localStorage.removeItem('cachedUser');
                 currentUser = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
@@ -2280,9 +2287,39 @@
         };
 
         // ==========================================
-        // СИСТЕМА ЛС И УВЕДОМЛЕНИЙ (НОВОЕ)
+        // АВТОМАТИЧЕСКИЙ ВХОД С ДИАЛОГОМ
         // ==========================================
-        // Функция добавления красивого уведомления
+        const cachedCredentials = localStorage.getItem('cachedCredentials');
+        if (cachedCredentials) {
+            try {
+                const creds = JSON.parse(cachedCredentials);
+                showCustomMsg("🔑 Авторизация", `Войти в аккаунт ${creds.login}?`, [
+                    { text: '✅ Да, войти', class: 'confirm' },
+                    { text: '❌ Нет, войти в другой', class: 'cancel' }
+                ]).then(res => {
+                    if (res === 0) {
+                        // Выполняем вход
+                        performLogin(creds.login, creds.pass, false);
+                    } else {
+                        // Стираем кеш и показываем обычный вход
+                        localStorage.removeItem('cachedCredentials');
+                        localStorage.removeItem('cachedUser');
+                        document.getElementById('authOverlay').classList.remove('hidden');
+                    }
+                });
+            } catch(e) {
+                localStorage.removeItem('cachedCredentials');
+                localStorage.removeItem('cachedUser');
+                document.getElementById('authOverlay').classList.remove('hidden');
+            }
+        } else {
+            document.getElementById('authOverlay').classList.remove('hidden');
+        }
+
+
+        // ==========================================
+        // СИСТЕМА ЛС И УВЕДОМЛЕНИЙ
+        // ==========================================
         function addNotification(title, text, duration = 8000) {
             const area = document.getElementById('notificationArea');
             const notif = document.createElement('div');
@@ -2301,7 +2338,6 @@
             }, duration);
         }
 
-        // Просмотр профиля другого игрока
         window.viewUserProfile = function(username) {
             loadCloudData(username, function(data) {
                 if (!data) { customMsg("Ошибка", "Профиль не найден!"); return; }
@@ -2334,7 +2370,6 @@
             });
         };
 
-        // Открытие окна отправки ЛС
         window.openPrivateMessageModal = function(targetUser = '') {
             const modal = document.getElementById('privateMessageModal');
             const targetInput = document.getElementById('pmTargetUser');
@@ -2354,7 +2389,6 @@
             modal.classList.add('active');
         };
 
-        // Отправка сообщения
         window.sendMessage = function() {
             const targetInput = document.getElementById('pmTargetUser');
             let targetUser = targetSpan.innerText;
@@ -2369,7 +2403,6 @@
             const messageText = document.getElementById('pmMessageText').value.trim();
             if (!messageText) { customMsg("Ошибка", "Введите текст сообщения!"); return; }
 
-            // Проверяем, существует ли пользователь
             loadCloudData(targetUser, function(data) {
                 if (!data) { customMsg("Ошибка", "Пользователь с таким ником не найден!"); return; }
 
@@ -2389,21 +2422,15 @@
             });
         };
 
-        // Слушатель входящих сообщений
         function setupInboxListener() {
             if (!currentUser) return;
             const inboxRef = db.ref('users/' + safePath(currentUser) + '/inbox');
             
-            // Слушаем только новые сообщения (после входа)
-            inboxRef.off(); // Убираем старые, чтобы не дублировать
+            inboxRef.off(); 
             inboxRef.on('child_added', (snapshot) => {
                 const msg = snapshot.val();
                 if (!msg) return;
-                // Проверяем, что сообщение не от самого себя и не старое (относительно времени сессии)
-                // Просто показываем уведомление
                 addNotification(`💬 Новое ЛС от ${msg.from}`, msg.text);
-                // Можно пометить как прочитанное сразу или сохранить, но для этого понадобится отдельная логика, 
-                // а пока просто оставляем в базе.
             });
         }
 
@@ -2644,7 +2671,7 @@
         window.placeBid = function(listingId, currentBidAmount) {
             if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
             
-            showCustomMsg("🔨 Сделать ставку", `Текущая ставка: $${currentBidAmount}. Введи сумму твоей ставки:`, [
+            showCustomMsg("🔨 Сделать ставку", `Текущая ставка: $${currentBidAmount}. Введи сумму твоей ставки (минимум на $1 больше):`, [
                 { text: 'Ввести', class: 'confirm' },
                 { text: 'Отмена', class: 'cancel' }
             ]).then(res => {
@@ -2652,7 +2679,7 @@
                 
                 const bidAmount = parseInt(prompt('Сумма ставки в $:'));
                 if (isNaN(bidAmount) || bidAmount <= currentBidAmount) {
-                    customMsg("Ошибка", `Ставка должна быть больше $${currentBidAmount}!`);
+                    customMsg("Ошибка", `Ставка должна быть больше текущей! Нужно минимум $${currentBidAmount + 1}!`);
                     return;
                 }
                 if (gameData.balance < bidAmount) {
@@ -2665,8 +2692,10 @@
                     const lot = snap.val();
                     if (!lot) { customMsg("Ошибка", "Этот лот уже удален."); return; }
                     if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя делать ставку на свой лот!"); return; }
+                    
+                    // Проверяем, не перебили ли уже
                     if (bidAmount <= (lot.currentBid || lot.startingPrice)) {
-                        customMsg("Ошибка", `Кто-то уже успел перебить твою ставку! Текущая: $${lot.currentBid}`);
+                        customMsg("Ошибка", `Кто-то уже перебил твою ставку! Текущая: $${lot.currentBid}`);
                         return;
                     }
 
@@ -2684,7 +2713,7 @@
                         gameData.balance -= bidAmount;
                         saveLocalGame();
                         updateUI();
-                        renderMarketplace();
+                        renderMarketplace(); // Мгновенно перерисовываем страницу и обновляем лот
                         customMsg("✅ Ставка принята!", `Твоя ставка $${bidAmount} на ${lot.cardName} принята!`);
                     }).catch(err => {
                         customMsg("❌ Ошибка", "Не удалось сделать ставку. Попробуй позже.");
@@ -2829,7 +2858,6 @@
                 const secondsLeft = 3 - (roadmapTimerCounter % 3);
                 timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
             } else {
-                // Если дорожка заморожена, показываем 9 секунд
                 timerText.innerText = `⏳ Админский спавн: 9 секунд`;
             }
         }
@@ -2844,7 +2872,6 @@
                 customMsg("Ошибка", "В этом слоте нет карты!");
                 return;
             }
-            // Если слот 2 (3-я карта) и она заспавнена админом, разрешаем купить за 0$ или другую цену
             const price = (slotIndex === 2 && isRoadmapFrozen) ? 0 : (card.price || 50);
             
             if (gameData.balance < price) {
@@ -2860,9 +2887,7 @@
             updateUI();
             renderInventory();
             
-            // Если купили спавненную, убираем её
             if (slotIndex === 2 && isRoadmapFrozen) {
-                // Удаляем с дорожки и размораживаем
                 clearSpawnedCard();
             } else {
                 roadmapSlotsData[slotIndex] = generateRoadmapCard();
@@ -2871,18 +2896,16 @@
             customMsg("✅ Куплено!", `Ты купил ${card.emoji} ${card.name} за $${price}.`);
         }
 
-        // Вспомогательная функция для разморозки и удаления спавна
         function clearSpawnedCard() {
             isRoadmapFrozen = false;
             const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
             spawnRef.remove();
-            roadmapSlotsData[2] = generateRoadmapCard(); // Генерим новую обычную карту
+            roadmapSlotsData[2] = generateRoadmapCard();
             if (roadmapInterval) {
                 clearInterval(roadmapInterval);
                 roadmapInterval = null;
             }
             roadmapTimerCounter = 0;
-            // Перезапускаем обычный цикл
             roadmapInterval = setInterval(() => {
                 roadmapTimerCounter++;
                 if (roadmapTimerCounter % 3 === 0) {
@@ -2902,31 +2925,25 @@
             renderRoadmapSlots();
             isRoadmapFrozen = false;
 
-            // Слушаем админский спавн
             if (currentUser) {
                 const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
-                spawnRef.off(); // Убираем старые слушатели
+                spawnRef.off();
                 spawnRef.on('value', (snapshot) => {
                     const spawnData = snapshot.val();
                     if (!spawnData || !spawnData.cardId) return;
-                    
-                    // Если уже есть активный спавн, ничего не делаем
                     if (isRoadmapFrozen) return;
 
                     const card = ALL_CARDS.find(c => c.id === spawnData.cardId);
                     if (!card) return;
 
-                    // Замораживаем дорожку и ставим карту
                     isRoadmapFrozen = true;
                     if (roadmapInterval) clearInterval(roadmapInterval);
                     
                     roadmapSlotsData[2] = card;
                     renderRoadmapSlots();
                     
-                    // Показываем уведомление
                     addNotification("🛠️ Админ заспавнил карту!", `На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`, 9000);
 
-                    // Ждём 9 секунд, затем размораживаем
                     setTimeout(() => {
                         if (isRoadmapFrozen && currentUser) {
                             clearSpawnedCard();
@@ -2935,9 +2952,8 @@
                 });
             }
 
-            // Основной цикл
             roadmapInterval = setInterval(() => {
-                if (isRoadmapFrozen) return; // Заморожено
+                if (isRoadmapFrozen) return;
                 roadmapTimerCounter++;
                 if (roadmapTimerCounter % 3 === 0) {
                     roadmapSlotsData[2] = roadmapSlotsData[1];
@@ -2959,7 +2975,6 @@
                 slot.innerHTML = `<span style="color:#555;">Остановлено</span>`;
             });
             document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
-            // Очищаем слушатель спавна
             if (currentUser) {
                 const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
                 spawnRef.off();
@@ -2967,7 +2982,7 @@
         }
 
         // ==========================================
-        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ (НОВОЕ)
+        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ
         // ==========================================
         function fillAdminCardSelect() {
             const select = document.getElementById('adminCardSelect');
@@ -3000,7 +3015,6 @@
             };
 
             if (targetUser === '') {
-                // Спавн всем
                 const usersRef = db.ref('users');
                 usersRef.once('value', (snap) => {
                     const data = snap.val();
@@ -3012,10 +3026,6 @@
                     }
                     db.ref().update(updates).then(() => {
                         customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);
-                        // Если админ сам себе спавнит, обновляем его UI
-                        if (currentUser && currentUser !== 'Dushka') {
-                            // Слушатель сам сработает
-                        }
                         renderAdminPanel();
                     }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карты."));
                 });
@@ -3028,9 +3038,6 @@
                     const userRef = db.ref('users/' + safePath(targetUser) + '/roadmapSpawn');
                     userRef.set(spawnData).then(() => {
                         customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${targetUser}.`);
-                        if (currentUser === targetUser) {
-                            // Слушатель сам сработает
-                        }
                         renderAdminPanel();
                     }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карту."));
                 });
@@ -3075,6 +3082,7 @@
                         userRef.set(newPass).then(() => {
                             customMsg("✅ Пароль изменён!", "Теперь войдите с новым паролем.");
                             if (banListener) banListener.off();
+                            localStorage.removeItem('cachedCredentials');
                             localStorage.removeItem('cachedUser');
                             currentUser = null;
                             document.getElementById('authOverlay').classList.remove('hidden');
@@ -3110,6 +3118,7 @@
                 }).then(() => {
                     customMsg("✅ Ник изменён!", `Теперь ты ${newNick.trim()}! Войди заново.`);
                     if (banListener) banListener.off();
+                    localStorage.removeItem('cachedCredentials');
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
@@ -3126,6 +3135,7 @@
             userRef.remove().then(() => {
                 customMsg("🗑️ Аккаунт удалён!", "Все твои данные стерты из облака.");
                 if (banListener) banListener.off();
+                localStorage.removeItem('cachedCredentials');
                 localStorage.removeItem('cachedUser');
                 currentUser = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
