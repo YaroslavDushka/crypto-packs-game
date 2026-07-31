@@ -2282,7 +2282,7 @@
         function setupBanListener() {
             if (!currentUser) return;
             const banRef = db.ref('users/' + safePath(currentUser) + '/banned');
-            if (banListener) banListener(); // Исправлено: off -> вызов функции
+            if (banListener) banListener();
             banListener = banRef.on('value', (snapshot) => {
                 const isBanned = snapshot.val();
                 if (isBanned === true) {
@@ -2291,6 +2291,7 @@
                     localStorage.removeItem('cachedCredentials');
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
+                    currentClan = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
                     document.getElementById('globalAvatarBtn').classList.add('hidden');
                     document.getElementById('globalMailBtn').classList.add('hidden');
@@ -2459,7 +2460,7 @@
                 
                 const avatar = document.getElementById('viewProfileAvatar');
                 if (data.avatar && data.avatar.startsWith('data:image')) {
-                    avatar.innerHTML = `<img src="${data.avatar}" alt="avatar">`;
+                    avatar.innerHTML = `<img src="${data.avatar}" alt="avatar" onerror="this.style.display='none'; this.parentElement.innerHTML='👤';">`;
                 } else {
                     avatar.innerHTML = '👤';
                 }
@@ -2875,35 +2876,249 @@
         }
 
         // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ
+        // ДОРОЖКА (РОТАЦИЯ КАРТ) и АДМИН-СПАВН (ИСПРАВЛЕНО)
         // ==========================================
-        function initGame() {
-            loadLocalGame();
-            // Проверяем авторизацию и загружаем данные
-            const cachedUser = localStorage.getItem('cachedUser');
-            if (cachedUser) {
-                loadCloudData(cachedUser, data => {
-                    if (data && data.banned !== true) {
-                        currentUser = cachedUser;
-                        currentClan = data.clan || null;
-                        Object.assign(gameData, data);
-                        saveLocalGame();
-                        document.getElementById('authOverlay').classList.add('hidden');
-                        renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
-                        renderClan();
-                        startRoadmap();
-                        renderMarketplace();
-                        setupInboxListener();
-                    } else {
-                        document.getElementById('authOverlay').classList.remove('hidden');
+        function generateRoadmapCard() {
+            const rand = Math.random() * 100;
+            let rarityGroup;
+            if (rand < 51.5) rarityGroup = 'common';
+            else if (rand < 51.5 + 41.5) rarityGroup = 'rare';
+            else if (rand < 51.5 + 41.5 + 5) rarityGroup = 'epic';
+            else if (rand < 51.5 + 41.5 + 5 + 1) rarityGroup = 'legendary';
+            else rarityGroup = 'deadly';
+            
+            const pool = ALL_CARDS.filter(c => c.rarity === rarityGroup);
+            if (pool.length === 0) return { name: 'Пусто', emoji: '💀', rarity: rarityGroup, id: 'empty', price: 0 };
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function renderRoadmapSlots() {
+            const slots = document.querySelectorAll('.roadmap-slot');
+            const timerText = document.getElementById('roadmapTimerText');
+            
+            roadmapSlotsData.forEach((card, idx) => {
+                const slot = slots[idx];
+                if (card && card.id !== 'empty') {
+                    let rarityColor = '';
+                    if (card.rarity === 'deadly') rarityColor = '#ef4444';
+                    else if (card.rarity === 'legendary') rarityColor = '#ffd700';
+                    else if (card.rarity === 'epic') rarityColor = '#a855f7';
+                    else if (card.rarity === 'rare') rarityColor = '#3b82f6';
+                    else if (card.rarity === 'sigma') rarityColor = '#ff00ff';
+                    else rarityColor = '#6b7280';
+
+                    slot.className = 'roadmap-slot filled';
+                    
+                    let imgHtml = `<span class="card-img">${card.emoji}</span>`;
+                    if (card.img) {
+                        imgHtml = `<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
                     }
-                });
+
+                    const income10min = card.income * 10 * 4;
+                    slot.innerHTML = `
+                        ${imgHtml}
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-rarity" style="background:${rarityColor}; color:#fff;">${card.rarity.toUpperCase()}</div>
+                        <div class="timer-label">${idx === 0 ? '9с' : idx === 1 ? '6с' : '3с'}</div>
+                        <div style="font-size:10px; color:#64ffda; margin-top:2px;">+${income10min} за 10 мин</div>
+                    `;
+                    slot.onclick = () => buyRoadmapCard(idx);
+                } else {
+                    slot.className = 'roadmap-slot';
+                    slot.innerHTML = `<span style="color:#555;">Пусто</span>`;
+                    slot.onclick = null;
+                }
+            });
+
+            if (!isRoadmapFrozen) {
+                const secondsLeft = 3 - (roadmapTimerCounter % 3);
+                timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
             } else {
-                document.getElementById('authOverlay').classList.remove('hidden');
+                timerText.innerText = `⏳ Админский спавн: 9 секунд`;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initGame);
+        function buyRoadmapCard(slotIndex) {
+            if (!currentUser) {
+                customMsg("Ошибка", "Сначала войди в аккаунт!");
+                return;
+            }
+            const card = roadmapSlotsData[slotIndex];
+            if (!card || card.id === 'empty') {
+                customMsg("Ошибка", "В этом слоте нет карты!");
+                return;
+            }
+            const price = (slotIndex === 2 && isRoadmapFrozen) ? 0 : (card.price || 50);
+            
+            if (gameData.balance < price) {
+                customMsg("Не хватает денег", `Карта стоит $${price}, у тебя $${Math.floor(gameData.balance)}`);
+                return;
+            }
+
+            gameData.balance -= price;
+            if (!gameData.cards[card.id]) gameData.cards[card.id] = 0;
+            gameData.cards[card.id]++;
+            saveLocalGame();
+            saveCloudGame();
+            updateUI();
+            renderInventory();
+            
+            if (slotIndex === 2 && isRoadmapFrozen) {
+                clearSpawnedCard();
+            } else {
+                roadmapSlotsData[slotIndex] = generateRoadmapCard();
+                renderRoadmapSlots();
+            }
+            customMsg("✅ Куплено!", `Ты купил ${card.emoji} ${card.name} за $${price}.`);
+        }
+
+        function clearSpawnedCard() {
+            isRoadmapFrozen = false;
+            const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+            spawnRef.remove();
+            roadmapSlotsData[2] = generateRoadmapCard();
+            if (roadmapInterval) {
+                clearInterval(roadmapInterval);
+                roadmapInterval = null;
+            }
+            roadmapTimerCounter = 0;
+            roadmapInterval = setInterval(() => {
+                roadmapTimerCounter++;
+                if (roadmapTimerCounter % 3 === 0) {
+                    roadmapSlotsData[2] = roadmapSlotsData[1];
+                    roadmapSlotsData[1] = roadmapSlotsData[0];
+                    roadmapSlotsData[0] = generateRoadmapCard();
+                }
+                renderRoadmapSlots();
+            }, 1000);
+            renderRoadmapSlots();
+        }
+
+        function startRoadmap() {
+            if (roadmapInterval) clearInterval(roadmapInterval);
+            roadmapTimerCounter = 0;
+            roadmapSlotsData = [generateRoadmapCard(), generateRoadmapCard(), generateRoadmapCard()];
+            renderRoadmapSlots();
+            isRoadmapFrozen = false;
+
+            if (currentUser) {
+                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+                spawnRef.off();
+                spawnRef.on('value', (snapshot) => {
+                    const spawnData = snapshot.val();
+                    if (!spawnData || !spawnData.cardId) return;
+                    if (isRoadmapFrozen) return;
+
+                    const card = ALL_CARDS.find(c => c.id === spawnData.cardId);
+                    if (!card) return;
+
+                    isRoadmapFrozen = true;
+                    if (roadmapInterval) clearInterval(roadmapInterval);
+                    
+                    roadmapSlotsData[2] = card;
+                    renderRoadmapSlots();
+                    
+                    addNotification("🛠️ Админ заспавнил карту!", `На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`, 9000);
+
+                    setTimeout(() => {
+                        if (isRoadmapFrozen && currentUser) {
+                            clearSpawnedCard();
+                        }
+                    }, 9000);
+                });
+            }
+
+            roadmapInterval = setInterval(() => {
+                if (isRoadmapFrozen) return;
+                roadmapTimerCounter++;
+                if (roadmapTimerCounter % 3 === 0) {
+                    roadmapSlotsData[2] = roadmapSlotsData[1];
+                    roadmapSlotsData[1] = roadmapSlotsData[0];
+                    roadmapSlotsData[0] = generateRoadmapCard();
+                }
+                renderRoadmapSlots();
+            }, 1000);
+        }
+
+        function stopRoadmap() {
+            if (roadmapInterval) {
+                clearInterval(roadmapInterval);
+                roadmapInterval = null;
+            }
+            const slots = document.querySelectorAll('.roadmap-slot');
+            slots.forEach(slot => {
+                slot.className = 'roadmap-slot';
+                slot.innerHTML = `<span style="color:#555;">Остановлено</span>`;
+            });
+            document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
+            if (currentUser) {
+                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+                spawnRef.off();
+            }
+        }
+
+        // ==========================================
+        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ
+        // ==========================================
+        function fillAdminCardSelect() {
+            const select = document.getElementById('adminCardSelect');
+            select.innerHTML = '<option value="">Выбери карту</option>';
+            ALL_CARDS.forEach(card => {
+                const opt = document.createElement('option');
+                opt.value = card.id;
+                opt.innerText = `${card.emoji} ${card.name} (${card.rarity})`;
+                select.appendChild(opt);
+            });
+        }
+
+        document.getElementById('adminSpawnBtn').onclick = function() {
+            if (currentUser !== 'Dushka') {
+                customMsg("Ошибка", "Только для админа!");
+                return;
+            }
+            const cardId = document.getElementById('adminCardSelect').value;
+            const targetUser = document.getElementById('adminTargetUser').value.trim();
+            if (!cardId) {
+                customMsg("Ошибка", "Выбери карту!");
+                return;
+            }
+            const card = ALL_CARDS.find(c => c.id === cardId);
+            if (!card) return;
+
+            const spawnData = {
+                cardId: cardId,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            if (targetUser === '') {
+                const usersRef = db.ref('users');
+                usersRef.once('value', (snap) => {
+                    const data = snap.val();
+                    if (!data) { customMsg("Ошибка", "Нет игроков."); return; }
+                    const updates = {};
+                    for (let key in data) {
+                        if (key === 'Dushka') continue;
+                        updates['users/' + safePath(key) + '/roadmapSpawn'] = spawnData;
+                    }
+                    db.ref().update(updates).then(() => {
+                        customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);
+                        renderAdminPanel();
+                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карты."));
+                });
+            } else {
+                loadCloudData(targetUser, function(data) {
+                    if (!data) {
+                        customMsg("Ошибка", "Игрок не найден!");
+                        return;
+                    }
+                    const userRef = db.ref('users/' + safePath(targetUser) + '/roadmapSpawn');
+                    userRef.set(spawnData).then(() => {
+                        customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${targetUser}.`);
+                        renderAdminPanel();
+                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карту."));
+                });
+            }
+        };
 
         // ==========================================
         // ЗАГРУЗКА АВАТАРКИ И ПРОЧЕЕ
