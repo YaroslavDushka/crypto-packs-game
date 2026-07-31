@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>₿</text></svg>">
-    <title>Крипто-паки</title>
+    <title>Крипто-паки · Кланы</title>
     <style>
         /* --- СТИЛИ ИГРЫ --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
@@ -430,19 +430,10 @@
         .inbox-message-item .msg-actions .reply-btn { background: #64ffda; color: #000; }
         .inbox-message-item .msg-actions .delete-btn { background: #4a1a1a; color: #ff6b6b; }
         
-        /* --- СТИЛИ ДЛЯ ВКЛАДКИ КЛАН (ЗАГЛУШКА) --- */
-        .clan-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            color: #848e9c;
-            text-align: center;
-        }
-        .clan-placeholder .clan-icon { font-size: 80px; margin-bottom: 20px; }
-        .clan-placeholder h3 { font-size: 24px; color: #64ffda; margin-bottom: 10px; }
-        .clan-placeholder p { font-size: 16px; max-width: 300px; line-height: 1.5; }
+        /* --- СТИЛИ ВКЛАДКИ КЛАН (НОВОЕ) --- */
+        #clanSection { display: none; }
+        .clan-top-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #2a3348; }
+        .clan-battle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -713,20 +704,53 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА КЛАН (ЗАГЛУШКА) -->
+            <!-- ВКЛАДКА КЛАН (НОВОЕ) -->
             <div class="tab-pane" id="clan">
                 <div class="content-card">
                     <h2>🏰 Клан</h2>
-                    <div class="clan-placeholder">
-                        <div class="clan-icon">🏗️</div>
-                        <h3>Раздел кланов в разработке</h3>
-                        <p>Скоро здесь появится возможность создавать свои гильдии, сражаться за территорию и получать общие награды!</p>
-                        <div style="margin-top:20px; font-size:13px; color:#555;">⚔️ Следите за обновлениями</div>
+                    <div id="clanSection">
+                        <div id="clanLoginArea" style="text-align:center; padding:10px;">
+                            <p style="color:#8892b0;">Войдите в аккаунт, чтобы управлять кланом.</p>
+                        </div>
+                        <div id="clanMainArea" style="display:none;">
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                                <div style="background:#111722; border-radius:8px; padding:8px 16px; border:1px solid #2a3348;">
+                                    <span style="color:#848e9c;">Клан:</span> <strong id="clanNameDisplay" style="color:#64ffda;">-</strong>
+                                </div>
+                                <div style="background:#111722; border-radius:8px; padding:8px 16px; border:1px solid #2a3348;">
+                                    <span style="color:#848e9c;">Очки:</span> <strong id="clanPointsDisplay" style="color:#ffb347;">0</strong>
+                                </div>
+                                <div style="background:#111722; border-radius:8px; padding:8px 16px; border:1px solid #2a3348;">
+                                    <span style="color:#848e9c;">💰 Казна:</span> <strong id="clanMoneyDisplay" style="color:#f7931a;">$0</strong>
+                                </div>
+                                <div style="background:#111722; border-radius:8px; padding:8px 16px; border:1px solid #2a3348;">
+                                    <span style="color:#848e9c;">Танк:</span> <strong id="clanTankStatus" style="color:#64ffda;">🟢 Цел</strong>
+                                </div>
+                                <button id="buyClanTankBtn" style="display:none; background:#0ecb81; color:#fff;" onclick="buyClanTank()">💰 Купить танк (1 млн)</button>
+                            </div>
+                            
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                                <button onclick="openClanInvite()" style="background:#2a3348; color:#fff;">📤 Пригласить</button>
+                                <button onclick="clanDeposit(1000000)" style="background:#ffb347;">+1 млн в казну</button>
+                                <button onclick="clanDeposit(10000000)" style="background:#ffb347;">+10 млн</button>
+                                <button onclick="clanDeposit(100000000)" style="background:#ffb347;">+100 млн</button>
+                                <button onclick="startClanBattle()" id="startClanBattleBtn" style="background:#ef4444; color:#fff;" disabled>⚔️ Начать битву</button>
+                            </div>
+
+                            <h3 style="font-size:16px; color:#64ffda; margin-bottom:8px;">👥 Участники</h3>
+                            <div id="clanMembersList" style="background:#0b0e1a; border-radius:8px; padding:10px; border:1px solid #2a3348; margin-bottom:15px; min-height:40px;"></div>
+
+                            <h3 style="font-size:16px; color:#f7931a; margin-bottom:8px;">⚔️ Битвы</h3>
+                            <div id="clanBattleLog" style="background:#0b0e1a; border-radius:8px; padding:10px; border:1px solid #2a3348; max-height:120px; overflow-y:auto; font-size:13px; margin-bottom:15px;"></div>
+
+                            <h3 style="font-size:16px; color:#ffb347; margin-bottom:8px;">🏆 Недельный топ кланов</h3>
+                            <div id="clanTopList" style="background:#0b0e1a; border-radius:8px; padding:10px; border:1px solid #2a3348;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- НОВАЯ ВКЛАДКА КРИПТОБИРЖА (BINANCE) -->
+            <!-- ВКЛАДКА КРИПТОБИРЖА -->
             <div class="tab-pane" id="crypto">
                 <div class="content-card">
                     <h2 style="margin-bottom: 12px; font-size: 20px;">₿ Крипто-биржа</h2>
@@ -772,7 +796,7 @@
             </div>
         </div>
 
-        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ (ВЫЛЕТАЕТ ПО КЛИКУ) -->
+        <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КРИПТЫ -->
         <div class="modal-overlay" id="cryptoCreateModal">
             <div class="modal-box">
                 <h2>🪙 Создать новую монету</h2>
@@ -810,7 +834,7 @@
             </div>
         </div>
 
-        <!-- ЛЕНТА ИСТОРИИ (ВНИЗУ) -->
+        <!-- ЛЕНТА ИСТОРИИ -->
         <div class="history-bar" id="historyBar">
             <span style="color:#848e9c; font-size:12px;">📰 Лента:</span>
             <div id="historyItems" style="display:flex; gap:20px; overflow-x:auto;"></div>
@@ -1040,11 +1064,12 @@
         // ==========================================
         let gameData = { balance: 10, cards: {}, equipped: [], inventory: [], store: {}, storeTimer: 180, avatar: '👤', password: '', favoriteCard: null };
         let currentUser = null;
+        let currentClan = null; // никнейм клана, в котором состоит игрок
         let banListener = null;
         let roadmapInterval = null;
         let roadmapTimerCounter = 0;
         let roadmapSlotsData = [null, null, null];
-        let isRoadmapFrozen = false; // Для заморозки дорожки при спавне
+        let isRoadmapFrozen = false;
         let offlineEarnings = 0;
         let lastOnlineTime = Date.now();
         let uploadedImageData = null;
@@ -1080,8 +1105,7 @@
                 inventory: gameData.inventory || [],
                 avatar: gameData.avatar || '👤',
                 favoriteCard: gameData.favoriteCard || null,
-                // Рейтинг продавца
-                rating: gameData.rating || { totalVotes: 0, totalScore: 0 }
+                clan: currentClan || null
             }).catch((err) => console.error(err));
         }
 
@@ -1097,7 +1121,6 @@
             if (!Array.isArray(gameData.inventory)) gameData.inventory = [];
             if (!gameData.avatar) gameData.avatar = '👤';
             if (!gameData.favoriteCard) gameData.favoriteCard = null;
-            if (!gameData.rating) gameData.rating = { totalVotes: 0, totalScore: 0 };
         }
         function saveLocalGame() { localStorage.setItem('cryptoGameData', JSON.stringify(gameData)); }
 
@@ -2259,18 +2282,12 @@
         function setupBanListener() {
             if (!currentUser) return;
             const banRef = db.ref('users/' + safePath(currentUser) + '/banned');
-            if (banListener) {
-                banListener(); // Исправлено: off -> вызов функции
-                banListener = null;
-            }
+            if (banListener) banListener(); // Исправлено: off -> вызов функции
             banListener = banRef.on('value', (snapshot) => {
                 const isBanned = snapshot.val();
                 if (isBanned === true) {
                     customMsg('🚫 Вас забанили!', 'Администратор заблокировал ваш аккаунт.');
-                    if (banListener) {
-                        banListener();
-                        banListener = null;
-                    }
+                    if (banListener) banListener();
                     localStorage.removeItem('cachedCredentials');
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
@@ -2306,8 +2323,8 @@
                     gameData.avatar = data.avatar || '👤';
                     gameData.password = data.password || pass;
                     gameData.favoriteCard = data.favoriteCard || null;
-                    gameData.rating = data.rating || { totalVotes: 0, totalScore: 0 };
                     currentUser = login;
+                    currentClan = data.clan || null;
                     
                     localStorage.setItem('cachedCredentials', JSON.stringify({login: login, pass: pass}));
                     localStorage.setItem('cachedUser', login);
@@ -2366,13 +2383,11 @@
 
         document.getElementById('logoutBtn').onclick = function() {
             if (currentUser) {
-                if (banListener) {
-                    banListener();
-                    banListener = null;
-                }
+                if (banListener) banListener();
                 localStorage.removeItem('cachedCredentials');
                 localStorage.removeItem('cachedUser');
                 currentUser = null;
+                currentClan = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('globalAvatarBtn').classList.add('hidden');
                 document.getElementById('globalMailBtn').classList.add('hidden');
@@ -2395,7 +2410,7 @@
                     { text: '❌ Нет, войти в другой', class: 'cancel' }
                 ]).then(res => {
                     if (res === 0) {
-                        // Выполняем вход тихо. Если аккаунта нет, ловим ошибку и чистим кеш!
+                        // Выполняем вход тихо. Если пароль неверный, ловим ошибку и очищаем кеш!
                         performLogin(creds.login, creds.pass, true).catch(() => {
                             localStorage.removeItem('cachedCredentials');
                             localStorage.removeItem('cachedUser');
@@ -2595,692 +2610,300 @@
         }
 
         // ==========================================
-        // РЫНОК (P2P ТОРГОВЛЯ) И АУКЦИОН
+        // ФУНКЦИИ КЛАНОВ (НОВОЕ)
         // ==========================================
+        function getClanRef(clanName) {
+            return db.ref('clans/' + safePath(clanName));
+        }
 
-        // Функция для получения среднего рейтинга продавца
-        function getSellerRating(seller) {
+        function getUserClan(user) {
             return new Promise((resolve) => {
-                const sellerRef = db.ref('users/' + safePath(seller) + '/rating');
-                sellerRef.once('value').then(snap => {
-                    const rating = snap.val();
-                    if (!rating || rating.totalVotes === 0) {
-                        resolve({ avg: 0, votes: 0 });
+                if (!user) resolve(null);
+                db.ref('users/' + safePath(user) + '/clan').once('value').then(snap => {
+                    resolve(snap.val());
+                }).catch(() => resolve(null));
+            });
+        }
+
+        function createClan(clanName, owner) {
+            return new Promise((resolve, reject) => {
+                const ref = getClanRef(clanName);
+                ref.transaction((current) => {
+                    if (current !== null) return; // клан уже существует
+                    return {
+                        name: clanName,
+                        owner: owner,
+                        members: [owner],
+                        money: 0,
+                        points: 0,
+                        wins: 0,
+                        losses: 0,
+                        tankAlive: true,
+                        tankHP: 100,
+                        weeklyPoints: 0
+                    };
+                }).then((result) => {
+                    if (result.committed) {
+                        db.ref('users/' + safePath(owner) + '/clan').set(clanName);
+                        resolve();
                     } else {
-                        const avg = rating.totalScore / rating.totalVotes;
-                        resolve({ avg: avg, votes: rating.totalVotes });
+                        reject("Клан уже существует");
                     }
-                }).catch(() => resolve({ avg: 0, votes: 0 }));
+                }).catch(reject);
             });
         }
 
-        // Функция для обновления рейтинга продавца
-        function updateSellerRating(seller, isPositive) {
-            const sellerRef = db.ref('users/' + safePath(seller) + '/rating');
-            sellerRef.transaction((current) => {
-                if (!current) {
-                    return { totalVotes: 1, totalScore: isPositive ? 1 : 0 };
-                }
-                const newVotes = current.totalVotes + 1;
-                const newScore = current.totalScore + (isPositive ? 1 : 0);
-                return { totalVotes: newVotes, totalScore: newScore };
-            }).then(() => {
-                customMsg("✅ Спасибо за отзыв!", "Рейтинг продавца обновлён.");
-                renderMarketplace();
-            }).catch(() => customMsg("❌ Ошибка", "Не удалось обновить рейтинг."));
-        }
-
-        function openSellModal(cardId) {
-            const card = ALL_CARDS.find(c => c.id === cardId);
-            if (!card) return;
-            const count = gameData.cards[cardId] || 0;
-            if (count <= 0) { customMsg("Ошибка", "У тебя нет этой карты для продажи!"); return; }
-            if (gameData.equipped.includes(cardId)) { customMsg("Ошибка", "Сначала сними карту с экипировки!"); return; }
-
-            showCustomMsg(`💰 Продажа: ${card.emoji} ${card.name}`, 
-                `У тебя: ${count} шт. Введи цену (от 1 до 100 000 000 000 $):`, 
-                [{ text: 'Ввести', class: 'confirm' }, { text: 'Отмена', class: 'cancel' }]
-            ).then(res => {
-                if (res === 0) {
-                    const price = prompt('Цена в $ (целое число):');
-                    const numPrice = parseInt(price);
-                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 100000000000) {
-                        customMsg("Ошибка", "Цена должна быть от 1 до 100 000 000 000 $");
-                        return;
+        function joinClan(clanName, user) {
+            return new Promise((resolve, reject) => {
+                const clanRef = getClanRef(clanName);
+                clanRef.transaction((current) => {
+                    if (!current) return; // клан не существует
+                    if (current.members.includes(user)) return; // уже в клане
+                    if (current.members.length >= 20) return; // лимит 20
+                    current.members.push(user);
+                    return current;
+                }).then((result) => {
+                    if (result.committed) {
+                        db.ref('users/' + safePath(user) + '/clan').set(clanName);
+                        resolve();
+                    } else {
+                        reject("Не удалось вступить в клан");
                     }
-                    createListing(cardId, numPrice);
-                }
+                }).catch(reject);
             });
         }
 
-        function createListing(cardId, price) {
-            const card = ALL_CARDS.find(c => c.id === cardId);
-            if (!card) return;
-            if (!gameData.cards[cardId] || gameData.cards[cardId] < 1) {
-                customMsg("Ошибка", "Карта уже продана или исчезла.");
-                return;
-            }
-            gameData.cards[cardId]--;
-            saveLocalGame(); saveCloudGame();
-            
-            const listingRef = db.ref('marketplace/listings').push();
-            const listingData = {
-                seller: currentUser,
-                cardId: cardId,
-                price: price,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                cardName: card.name,
-                cardEmoji: card.emoji,
-                cardRarity: card.rarity || 'common',
-                isAuction: false
-            };
-            listingRef.set(listingData).then(() => {
-                customMsg("✅ Выставлено!", `${card.emoji} ${card.name} выставлен за $${price}.`);
-                renderInventory(); updateUI(); renderMarketplace();
-            }).catch(err => {
-                customMsg("❌ Ошибка", "Не удалось выставить лот. Попробуй позже.");
-                console.error(err);
-                gameData.cards[cardId] = (gameData.cards[cardId] || 0) + 1;
-                saveLocalGame(); renderInventory();
-            });
-        }
-
-        function openAuctionModal(cardId) {
-            const card = ALL_CARDS.find(c => c.id === cardId);
-            if (!card) return;
-            const count = gameData.cards[cardId] || 0;
-            if (count <= 0) { customMsg("Ошибка", "У тебя нет этой карты для продажи!"); return; }
-            if (gameData.equipped.includes(cardId)) { customMsg("Ошибка", "Сначала сними карту с экипировки!"); return; }
-
-            showCustomMsg(`🔨 Аукцион: ${card.emoji} ${card.name}`, 
-                `У тебя: ${count} шт. Введи стартовую цену (от 1 до 100 000 000 000 $):`, 
-                [{ text: 'Ввести', class: 'confirm' }, { text: 'Отмена', class: 'cancel' }]
-            ).then(res => {
-                if (res === 0) {
-                    const price = prompt('Стартовая цена в $:');
-                    const numPrice = parseInt(price);
-                    if (isNaN(numPrice) || numPrice < 1 || numPrice > 100000000000) {
-                        customMsg("Ошибка", "Цена должна быть от 1 до 100 000 000 000 $");
-                        return;
-                    }
-                    createAuctionListing(cardId, numPrice);
-                }
-            });
-        }
-
-        function createAuctionListing(cardId, price) {
-            const card = ALL_CARDS.find(c => c.id === cardId);
-            if (!card) return;
-            if (!gameData.cards[cardId] || gameData.cards[cardId] < 1) {
-                customMsg("Ошибка", "Карта уже продана или исчезла.");
-                return;
-            }
-            gameData.cards[cardId]--;
-            saveLocalGame(); saveCloudGame();
-
-            const listingRef = db.ref('marketplace/auctions').push();
-            const expiryTime = Date.now() + (24 * 60 * 60 * 1000); // 24 часа
-            const listingData = {
-                seller: currentUser,
-                cardId: cardId,
-                startingPrice: price,
-                currentBid: price,
-                highestBidder: null,
-                previousBidder: null,
-                previousBidAmount: null,
-                expiryTime: expiryTime,
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                cardName: card.name,
-                cardEmoji: card.emoji,
-                cardRarity: card.rarity || 'common',
-                isAuction: true
-            };
-            listingRef.set(listingData).then(() => {
-                customMsg("✅ Выставлено на аукцион!", `${card.emoji} ${card.name} выставлен на аукцион за стартовые $${price}. Торги идут 24 часа!`);
-                renderInventory(); updateUI(); renderMarketplace();
-            }).catch(err => {
-                customMsg("❌ Ошибка", "Не удалось выставить лот. Попробуй позже.");
-                console.error(err);
-                gameData.cards[cardId] = (gameData.cards[cardId] || 0) + 1;
-                saveLocalGame(); renderInventory();
-            });
-        }
-
-        function renderMarketplace() {
-            const container = document.getElementById('marketplaceContainer');
-            container.innerHTML = `<div class="empty-state" style="color:#848e9c;">Загрузка лотов...</div>`;
-
-            const listingsRef = db.ref('marketplace/listings').limitToLast(100);
-            const auctionsRef = db.ref('marketplace/auctions').limitToLast(100);
-
-            Promise.all([
-                listingsRef.once('value'),
-                auctionsRef.once('value')
-            ]).then(([listingsSnap, auctionsSnap]) => {
-                let listingsData = listingsSnap.val() || {};
-                let auctionsData = auctionsSnap.val() || {};
-                let currentTime = Date.now();
-                let updates = {};
-
-                // Проверяем истекшие аукционы (если прошло 24 часа)
-                for (let id in auctionsData) {
-                    let lot = auctionsData[id];
-                    if (!lot) continue;
-                    if (lot.expiryTime < currentTime) {
-                        if (lot.highestBidder) {
-                            updates['users/' + safePath(lot.highestBidder) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
-                            updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.currentBid);
+        function leaveClan(user) {
+            return new Promise((resolve, reject) => {
+                getUserClan(user).then(clanName => {
+                    if (!clanName) { reject("Вы не в клане"); return; }
+                    const clanRef = getClanRef(clanName);
+                    clanRef.transaction((current) => {
+                        if (!current) return;
+                        const idx = current.members.indexOf(user);
+                        if (idx !== -1) current.members.splice(idx, 1);
+                        if (current.members.length === 0) return null; // удаляем клан
+                        if (current.owner === user) {
+                            // передаём владение первому в списке
+                            current.owner = current.members[0];
+                        }
+                        return current;
+                    }).then((result) => {
+                        if (result.committed) {
+                            db.ref('users/' + safePath(user) + '/clan').set(null);
+                            resolve();
                         } else {
-                            updates['users/' + safePath(lot.seller) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
+                            reject("Не удалось выйти из клана");
                         }
-                        updates['marketplace/auctions/' + id] = null;
-                    }
-                }
-
-                if (Object.keys(updates).length > 0) {
-                    db.ref().update(updates).then(() => {
-                        renderMarketplace();
-                    });
-                    return;
-                }
-
-                // Собираем всех продавцов, для которых нужно получить рейтинг
-                let sellers = new Set();
-                for (let id in listingsData) {
-                    let lot = listingsData[id];
-                    if (lot && lot.seller) sellers.add(lot.seller);
-                }
-                for (let id in auctionsData) {
-                    let lot = auctionsData[id];
-                    if (lot && lot.seller) sellers.add(lot.seller);
-                }
-
-                // Получаем рейтинги для всех продавцов и рендерим
-                let ratingPromises = [];
-                sellers.forEach(seller => {
-                    ratingPromises.push(getSellerRating(seller));
+                    }).catch(reject);
                 });
-                Promise.all(ratingPromises).then((ratings) => {
-                    // Создаем мапу: seller -> rating
-                    let sellerRatingMap = {};
-                    let idx = 0;
-                    sellers.forEach(seller => {
-                        sellerRatingMap[seller] = ratings[idx];
-                        idx++;
-                    });
-
-                    let html = '';
-                    for (let id in listingsData) {
-                        let lot = listingsData[id];
-                        if (!lot) continue;
-                        html += generateListingHtml(id, lot, false, sellerRatingMap);
-                    }
-                    for (let id in auctionsData) {
-                        let lot = auctionsData[id];
-                        if (!lot) continue;
-                        if (lot.expiryTime < currentTime) continue;
-                        html += generateListingHtml(id, lot, true, sellerRatingMap);
-                    }
-                    container.innerHTML = html || `<div class="empty-state">📭 Нет доступных лотов.</div>`;
-                });
-            }).catch(err => {
-                console.error(err);
-                container.innerHTML = `<div class="empty-state" style="color:#ff6b6b;">❌ Ошибка загрузки рынка</div>`;
             });
         }
 
-        function generateListingHtml(id, lot, isAuction, sellerRatingMap) {
-            const isMyListing = lot.seller === currentUser;
-            let canBuy = !isMyListing && gameData.balance >= lot.price;
-            let canBid = !isMyListing && gameData.balance > (lot.currentBid || 0);
-            
-            let rarityColor = '';
-            const rar = (lot.cardRarity || 'common').toLowerCase();
-            if (rar === 'deadly') rarityColor = '#ef4444';
-            else if (rar === 'legendary') rarityColor = '#ffd700';
-            else if (rar === 'epic') rarityColor = '#a855f7';
-            else if (rar === 'rare') rarityColor = '#3b82f6';
-            else if (rar === 'sigma') rarityColor = '#ff00ff';
-            else rarityColor = '#6b7280';
+        function clanDeposit(amount) {
+            if (!currentUser || !currentClan) { customMsg("Ошибка", "Вы не в клане!"); return; }
+            if (gameData.balance < amount) { customMsg("Ошибка", "Не хватает денег на балансе!"); return; }
+            gameData.balance -= amount;
+            saveLocalGame(); saveCloudGame();
+            const clanRef = getClanRef(currentClan);
+            clanRef.transaction((current) => {
+                if (current) current.money += amount;
+                return current;
+            }).then(() => {
+                updateUI(); renderClan();
+                customMsg("✅ Казна пополнена!", `В казну клана добавлено $${amount.toLocaleString()}`);
+            }).catch(err => customMsg("❌ Ошибка", "Не удалось пополнить казну."));
+        }
 
-            // Рейтинг продавца
-            const ratingData = sellerRatingMap[lot.seller] || { avg: 0, votes: 0 };
-            const stars = ratingData.avg > 0 ? '⭐'.repeat(Math.round(ratingData.avg)) : '—';
-            const ratingDisplay = ratingData.votes > 0 ? `${stars} (${ratingData.avg.toFixed(1)}/5, ${ratingData.votes} гол.)` : 'Рейтинг отсутствует';
+        function buyClanTank() {
+            if (!currentUser || !currentClan) return;
+            const clanRef = getClanRef(currentClan);
+            clanRef.transaction((current) => {
+                if (!current || !current.tankAlive) return current;
+                if (current.money < 1000000) return current;
+                current.money -= 1000000;
+                current.tankAlive = true;
+                current.tankHP = 100;
+                return current;
+            }).then(() => {
+                renderClan();
+                customMsg("✅ Танк куплен!", "Новый танк готов к бою!");
+            });
+        }
 
-            let html = `<div class="listing-card" id="listing_${id}" style="border:1px solid ${isAuction ? '#64ffda' : '#f0b90b'}; margin-bottom:12px; padding:12px; border-radius:10px; background:#111722; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">`;
-            
-            html += `<div style="display:flex; align-items:center; gap:12px; flex:1;">`;
-            html += `<div class="listing-emoji" style="font-size:32px;">${lot.cardEmoji || '🃏'}</div>`;
-            html += `<div class="listing-details">`;
-            html += `<div class="listing-name" style="font-weight:bold; font-size:15px;">${lot.cardName || 'Неизвестно'}</div>`;
-            html += `<div class="listing-rarity" style="background:${rarityColor}; color:#fff; padding:2px 10px; border-radius:12px; display:inline-block; font-size:11px; margin-top:4px;">${(lot.cardRarity || 'common').toUpperCase()}</div>`;
-            html += `<div class="listing-seller" style="font-size:11px; color:#848e9c; margin-top:4px;">Продавец: ${lot.seller} ${ratingDisplay}</div>`;
-            html += `</div></div>`;
-            
-            html += `<div class="listing-actions" style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:120px;">`;
-            
-            if (isAuction) {
-                let timeLeftMs = lot.expiryTime - Date.now();
-                let hoursLeft = Math.floor(timeLeftMs / (1000 * 60 * 60));
-                let minutesLeft = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
-                let timeDisplay = hoursLeft > 0 ? `${hoursLeft}ч ${minutesLeft}м` : `${minutesLeft}м`;
-                
-                html += `<div style="font-size:11px; color:#64ffda; font-weight:bold;">⚡ Аукцион</div>`;
-                html += `<div style="font-size:12px; color:#848e9c;">Старт: $${lot.startingPrice}</div>`;
-                html += `<div style="font-size:14px; color:#f7931a;">Текущая: $${lot.currentBid || lot.startingPrice}`;
-                if (lot.highestBidder) html += ` <span style="font-size:11px; color:#848e9c;">(${lot.highestBidder})</span>`;
-                html += `</div>`;
-                html += `<div style="font-size:11px; color:#555;">⏳ ${timeDisplay}</div>`;
-                if (isMyListing) {
-                    html += `<button class="btn btn-sell" onclick="cancelAuction('${id}')" style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:#4a1a1a; color:#ff6b6b; cursor:pointer;">Отменить</button>`;
-                } else {
-                    html += `<button class="btn-buy-listing" ${canBid ? `onclick="placeBid('${id}', ${lot.currentBid})"` : 'disabled'} style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:${canBid ? '#64ffda' : '#2a3348'}; color:${canBid ? '#000' : '#848e9c'}; cursor:${canBid ? 'pointer' : 'not-allowed'};">
-                        ${canBid ? '💸 Сделать ставку' : 'Не хватает денег'}
-                    </button>`;
+        function startClanBattle() {
+            if (!currentUser || !currentClan) return;
+            // Выбор вражеского клана – упрощённо: случайный клан, не равный твоему
+            db.ref('clans').once('value').then(snap => {
+                const allClans = snap.val();
+                if (!allClans) { customMsg("Ошибка", "Нет других кланов для битвы!"); return; }
+                const clanNames = Object.keys(allClans).filter(key => key !== currentClan);
+                if (clanNames.length === 0) { customMsg("Ошибка", "Нет противников!"); return; }
+                const enemy = clanNames[Math.floor(Math.random() * clanNames.length)];
+                // Запускаем симуляцию битвы
+                simulateBattle(currentClan, enemy);
+            });
+        }
+
+        function simulateBattle(myClan, enemyClan) {
+            // Простая симуляция: победа с вероятностью 50%
+            const win = Math.random() < 0.5;
+            const myRef = getClanRef(myClan);
+            const enemyRef = getClanRef(enemyClan);
+
+            const updates = {};
+            if (win) {
+                // Победа: +10 очков, +2 млн денег, +1 победа
+                updates[myRef.path] = {
+                    money: firebase.database.ServerValue.increment(2000000),
+                    points: firebase.database.ServerValue.increment(10),
+                    wins: firebase.database.ServerValue.increment(1),
+                    weeklyPoints: firebase.database.ServerValue.increment(10)
+                };
+                updates[enemyRef.path + '/losses'] = firebase.database.ServerValue.increment(1);
+                // Танк может быть уничтожен с вероятностью 30%
+                if (Math.random() < 0.3) {
+                    updates[myRef.path + '/tankAlive'] = false;
+                    updates[myRef.path + '/tankHP'] = 0;
                 }
+                addClanLog(`🏆 Победа! Клан ${myClan} разгромил ${enemyClan} и получил +10 очков и $2,000,000!`);
             } else {
-                html += `<div style="font-size:16px; color:#f7931a; font-weight:bold;">$${lot.price}</div>`;
-                if (isMyListing) {
-                    html += `<button class="btn btn-sell" onclick="cancelListing('${id}')" style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:#4a1a1a; color:#ff6b6b; cursor:pointer;">Отменить</button>`;
-                } else {
-                    html += `<button class="btn-buy-listing" ${canBuy ? `onclick="buyListing('${id}')"` : 'disabled'} style="padding:4px 10px; font-size:11px; width:100%; border-radius:6px; border:none; background:${canBuy ? '#f0b90b' : '#2a3348'}; color:${canBuy ? '#000' : '#848e9c'}; cursor:${canBuy ? 'pointer' : 'not-allowed'};">
-                        ${canBuy ? 'Купить' : 'Не хватает денег'}
-                    </button>`;
+                updates[enemyRef.path] = {
+                    points: firebase.database.ServerValue.increment(10),
+                    wins: firebase.database.ServerValue.increment(1),
+                    weeklyPoints: firebase.database.ServerValue.increment(10)
+                };
+                updates[myRef.path + '/losses'] = firebase.database.ServerValue.increment(1);
+                if (Math.random() < 0.3) {
+                    updates[myRef.path + '/tankAlive'] = false;
+                    updates[myRef.path + '/tankHP'] = 0;
                 }
+                addClanLog(`😞 Поражение! Клан ${enemyClan} победил.`);
             }
-            html += `</div></div>`;
-            return html;
+            db.ref().update(updates).then(() => {
+                renderClan();
+                customMsg(win ? "🎉 Победа!" : "😞 Поражение", win ? "Клан получил 10 очков и $2,000,000!" : "Попробуйте ещё раз!");
+            });
         }
 
-        window.placeBid = function(listingId, currentBidAmount) {
-            if (!currentUser) { customMsg("Ошибка", "Сначала войди в аккаунт!"); return; }
-            
-            showCustomMsg("🔨 Сделать ставку", `Текущая ставка: $${currentBidAmount}. Введи сумму твоей ставки (минимум на $1 больше):`, [
-                { text: 'Ввести', class: 'confirm' },
-                { text: 'Отмена', class: 'cancel' }
-            ]).then(res => {
-                if (res !== 0) return;
-                
-                const bidAmount = parseInt(prompt('Сумма ставки в $:'));
-                if (isNaN(bidAmount) || bidAmount <= currentBidAmount) {
-                    customMsg("Ошибка", `Ставка должна быть больше текущей! Нужно минимум $${currentBidAmount + 1}!`);
-                    return;
-                }
-                if (gameData.balance < bidAmount) {
-                    customMsg("Ошибка", `У тебя недостаточно денег ($${gameData.balance})!`);
-                    return;
-                }
-
-                const listingRef = db.ref('marketplace/auctions/' + listingId);
-                listingRef.once('value').then((snap) => {
-                    const lot = snap.val();
-                    if (!lot) { customMsg("Ошибка", "Этот лот уже удален."); return; }
-                    if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя делать ставку на свой лот!"); return; }
-                    
-                    // Проверяем, не перебили ли уже
-                    if (bidAmount <= (lot.currentBid || lot.startingPrice)) {
-                        customMsg("Ошибка", `Кто-то уже перебил твою ставку! Текущая: $${lot.currentBid}`);
-                        return;
-                    }
-
-                    const updates = {};
-                    updates['users/' + safePath(currentUser) + '/balance'] = gameData.balance - bidAmount;
-                    if (lot.highestBidder) {
-                        updates['users/' + safePath(lot.highestBidder) + '/balance'] = firebase.database.ServerValue.increment(lot.currentBid);
-                    }
-                    // Обязательно проверяем на null, чтобы избежать undefined в Firebase
-                    updates['marketplace/auctions/' + listingId + '/currentBid'] = bidAmount;
-                    updates['marketplace/auctions/' + listingId + '/highestBidder'] = currentUser;
-                    updates['marketplace/auctions/' + listingId + '/previousBidder'] = (lot.highestBidder || null);
-                    updates['marketplace/auctions/' + listingId + '/previousBidAmount'] = (lot.currentBid || null);
-
-                    db.ref().update(updates).then(() => {
-                        gameData.balance -= bidAmount;
-                        saveLocalGame();
-                        updateUI();
-                        renderMarketplace(); // Мгновенно перерисовываем страницу и обновляем лот
-                        customMsg("✅ Ставка принята!", `Твоя ставка $${bidAmount} на ${lot.cardName} принята!`);
-                    }).catch(err => {
-                        customMsg("❌ Ошибка", "Не удалось сделать ставку. Попробуй позже.");
-                        console.error(err);
-                    });
-                });
-            });
-        };
-
-        window.cancelAuction = function(listingId) {
-            const listingRef = db.ref('marketplace/auctions/' + listingId);
-            listingRef.once('value', (snap) => {
-                const lot = snap.val();
-                if (lot && lot.seller === currentUser) {
-                    if (!confirm("Точно снять карту с аукциона?")) return;
-                    const cardRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
-                    cardRef.set(firebase.database.ServerValue.increment(1)).then(() => {
-                        listingRef.remove().then(() => {
-                            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
-                            gameData.cards[lot.cardId]++;
-                            saveLocalGame();
-                            customMsg("✅ Аукцион отменен", "Карта возвращена в инвентарь.");
-                            renderInventory();
-                            renderMarketplace();
-                        });
-                    });
-                } else {
-                    customMsg("Ошибка", "Вы не являетесь продавцом этого лота или лот уже удален.");
-                }
-            });
-        };
-
-        window.buyListing = function(listingId) {
-            const listingRef = db.ref('marketplace/listings/' + listingId);
-            listingRef.once('value', (snap) => {
-                const lot = snap.val();
-                if (!lot) { customMsg("Ошибка", "Этот лот уже куплен или удален."); return; }
-                if (lot.seller === currentUser) { customMsg("Ошибка", "Нельзя купить свой же лот!"); return; }
-                if (gameData.balance < lot.price) { customMsg("Ошибка", "Не хватает денег!"); return; }
-
-                const updates = {};
-                updates['users/' + safePath(currentUser) + '/balance'] = gameData.balance - lot.price;
-                updates['users/' + safePath(lot.seller) + '/balance'] = firebase.database.ServerValue.increment(lot.price * 0.9);
-                updates['users/' + safePath(currentUser) + '/cards/' + lot.cardId] = firebase.database.ServerValue.increment(1);
-                updates['marketplace/listings/' + listingId] = null;
-
-                db.ref().update(updates).then(() => {
-                    gameData.balance -= lot.price;
-                    if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
-                    gameData.cards[lot.cardId]++;
-                    saveLocalGame();
-                    
-                    // После успешной покупки предлагаем оценить продавца
-                    showCustomMsg("💬 Оцените продавца", `Как вам сделка с ${lot.seller}?`, [
-                        { text: '👍 Нравится', class: 'confirm' },
-                        { text: '👎 Не нравится', class: 'cancel' }
-                    ]).then(res => {
-                        if (res === 0) {
-                            updateSellerRating(lot.seller, true);
-                        } else if (res === 1) {
-                            updateSellerRating(lot.seller, false);
-                        }
-                    });
-
-                    customMsg("✅ Покупка успешна!", `Вы купили ${lot.cardName || 'карту'} за $${lot.price}.`);
-                    updateUI();
-                    renderInventory();
-                    renderMarketplace();
-                }).catch(err => {
-                    customMsg("❌ Ошибка", "Что-то пошло не так. Попробуй позже.");
-                    console.error(err);
-                });
-            });
-        };
-
-        window.cancelListing = function(listingId) {
-            const listingRef = db.ref('marketplace/listings/' + listingId);
-            listingRef.once('value', (snap) => {
-                const lot = snap.val();
-                if (lot && lot.seller === currentUser) {
-                    const cardRef = db.ref('users/' + safePath(currentUser) + '/cards/' + lot.cardId);
-                    cardRef.set(firebase.database.ServerValue.increment(1)).then(() => {
-                        listingRef.remove().then(() => {
-                            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
-                            gameData.cards[lot.cardId]++;
-                            saveLocalGame();
-                            customMsg("✅ Лот отменен", "Карта возвращена в инвентарь.");
-                            renderInventory();
-                            renderMarketplace();
-                        });
-                    });
-                } else {
-                    customMsg("Ошибка", "Вы не являетесь продавцом этого лота.");
-                }
-            });
-        };
-
         // ==========================================
-        // ДОРОЖКА (РОТАЦИЯ КАРТ) и АДМИН-СПАВН
+        // ОТРИСОВКА КЛАНОВ
         // ==========================================
-        function generateRoadmapCard() {
-            const rand = Math.random() * 100;
-            let rarityGroup;
-            if (rand < 51.5) rarityGroup = 'common';
-            else if (rand < 51.5 + 41.5) rarityGroup = 'rare';
-            else if (rand < 51.5 + 41.5 + 5) rarityGroup = 'epic';
-            else if (rand < 51.5 + 41.5 + 5 + 1) rarityGroup = 'legendary';
-            else rarityGroup = 'deadly';
-            
-            const pool = ALL_CARDS.filter(c => c.rarity === rarityGroup);
-            if (pool.length === 0) return { name: 'Пусто', emoji: '💀', rarity: rarityGroup, id: 'empty', price: 0 };
-            return pool[Math.floor(Math.random() * pool.length)];
-        }
-
-        function renderRoadmapSlots() {
-            const slots = document.querySelectorAll('.roadmap-slot');
-            const timerText = document.getElementById('roadmapTimerText');
-            
-            roadmapSlotsData.forEach((card, idx) => {
-                const slot = slots[idx];
-                if (card && card.id !== 'empty') {
-                    let rarityColor = '';
-                    if (card.rarity === 'deadly') rarityColor = '#ef4444';
-                    else if (card.rarity === 'legendary') rarityColor = '#ffd700';
-                    else if (card.rarity === 'epic') rarityColor = '#a855f7';
-                    else if (card.rarity === 'rare') rarityColor = '#3b82f6';
-                    else if (card.rarity === 'sigma') rarityColor = '#ff00ff';
-                    else rarityColor = '#6b7280';
-
-                    slot.className = 'roadmap-slot filled';
-                    
-                    let imgHtml = `<span class="card-img">${card.emoji}</span>`;
-                    if (card.img) {
-                        imgHtml = `<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
-                    }
-
-                    const income10min = card.income * 10 * 4;
-                    slot.innerHTML = `
-                        ${imgHtml}
-                        <div class="card-name">${card.name}</div>
-                        <div class="card-rarity" style="background:${rarityColor}; color:#fff;">${card.rarity.toUpperCase()}</div>
-                        <div class="timer-label">${idx === 0 ? '9с' : idx === 1 ? '6с' : '3с'}</div>
-                        <div style="font-size:10px; color:#64ffda; margin-top:2px;">+${income10min} за 10 мин</div>
+        function renderClan() {
+            if (!currentUser) return;
+            getUserClan(currentUser).then(clanName => {
+                currentClan = clanName;
+                if (!clanName) {
+                    document.getElementById('clanLoginArea').style.display = 'block';
+                    document.getElementById('clanMainArea').style.display = 'none';
+                    // Предлагаем создать клан или вступить
+                    document.getElementById('clanLoginArea').innerHTML = `
+                        <p style="color:#8892b0;">Вы не состоите в клане.</p>
+                        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                            <input type="text" id="createClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
+                            <button onclick="createClanFromInput()" style="background:#ffb347;">Создать клан</button>
+                            <input type="text" id="joinClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
+                            <button onclick="joinClanFromInput()" style="background:#2a3348; color:#fff;">Вступить</button>
+                        </div>
                     `;
-                    slot.onclick = () => buyRoadmapCard(idx);
-                } else {
-                    slot.className = 'roadmap-slot';
-                    slot.innerHTML = `<span style="color:#555;">Пусто</span>`;
-                    slot.onclick = null;
+                    return;
                 }
-            });
+                document.getElementById('clanLoginArea').style.display = 'none';
+                document.getElementById('clanMainArea').style.display = 'block';
+                document.getElementById('clanNameDisplay').textContent = clanName;
 
-            if (!isRoadmapFrozen) {
-                const secondsLeft = 3 - (roadmapTimerCounter % 3);
-                timerText.innerText = `⏳ До следующей смены: ${secondsLeft} секунд${secondsLeft > 1 ? 'ы' : 'а'}`;
-            } else {
-                timerText.innerText = `⏳ Админский спавн: 9 секунд`;
-            }
-        }
-
-        function buyRoadmapCard(slotIndex) {
-            if (!currentUser) {
-                customMsg("Ошибка", "Сначала войди в аккаунт!");
-                return;
-            }
-            const card = roadmapSlotsData[slotIndex];
-            if (!card || card.id === 'empty') {
-                customMsg("Ошибка", "В этом слоте нет карты!");
-                return;
-            }
-            const price = (slotIndex === 2 && isRoadmapFrozen) ? 0 : (card.price || 50);
-            
-            if (gameData.balance < price) {
-                customMsg("Не хватает денег", `Карта стоит $${price}, у тебя $${Math.floor(gameData.balance)}`);
-                return;
-            }
-
-            gameData.balance -= price;
-            if (!gameData.cards[card.id]) gameData.cards[card.id] = 0;
-            gameData.cards[card.id]++;
-            saveLocalGame();
-            saveCloudGame();
-            updateUI();
-            renderInventory();
-            
-            if (slotIndex === 2 && isRoadmapFrozen) {
-                clearSpawnedCard();
-            } else {
-                roadmapSlotsData[slotIndex] = generateRoadmapCard();
-                renderRoadmapSlots();
-            }
-            customMsg("✅ Куплено!", `Ты купил ${card.emoji} ${card.name} за $${price}.`);
-        }
-
-        function clearSpawnedCard() {
-            isRoadmapFrozen = false;
-            const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
-            spawnRef.remove();
-            roadmapSlotsData[2] = generateRoadmapCard();
-            if (roadmapInterval) {
-                clearInterval(roadmapInterval);
-                roadmapInterval = null;
-            }
-            roadmapTimerCounter = 0;
-            roadmapInterval = setInterval(() => {
-                roadmapTimerCounter++;
-                if (roadmapTimerCounter % 3 === 0) {
-                    roadmapSlotsData[2] = roadmapSlotsData[1];
-                    roadmapSlotsData[1] = roadmapSlotsData[0];
-                    roadmapSlotsData[0] = generateRoadmapCard();
-                }
-                renderRoadmapSlots();
-            }, 1000);
-            renderRoadmapSlots();
-        }
-
-        function startRoadmap() {
-            if (roadmapInterval) clearInterval(roadmapInterval);
-            roadmapTimerCounter = 0;
-            roadmapSlotsData = [generateRoadmapCard(), generateRoadmapCard(), generateRoadmapCard()];
-            renderRoadmapSlots();
-            isRoadmapFrozen = false;
-
-            if (currentUser) {
-                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
-                spawnRef.off();
-                spawnRef.on('value', (snapshot) => {
-                    const spawnData = snapshot.val();
-                    if (!spawnData || !spawnData.cardId) return;
-                    if (isRoadmapFrozen) return;
-
-                    const card = ALL_CARDS.find(c => c.id === spawnData.cardId);
-                    if (!card) return;
-
-                    isRoadmapFrozen = true;
-                    if (roadmapInterval) clearInterval(roadmapInterval);
-                    
-                    roadmapSlotsData[2] = card;
-                    renderRoadmapSlots();
-                    
-                    addNotification("🛠️ Админ заспавнил карту!", `На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`, 9000);
-
-                    setTimeout(() => {
-                        if (isRoadmapFrozen && currentUser) {
-                            clearSpawnedCard();
-                        }
-                    }, 9000);
-                });
-            }
-
-            roadmapInterval = setInterval(() => {
-                if (isRoadmapFrozen) return;
-                roadmapTimerCounter++;
-                if (roadmapTimerCounter % 3 === 0) {
-                    roadmapSlotsData[2] = roadmapSlotsData[1];
-                    roadmapSlotsData[1] = roadmapSlotsData[0];
-                    roadmapSlotsData[0] = generateRoadmapCard();
-                }
-                renderRoadmapSlots();
-            }, 1000);
-        }
-
-        function stopRoadmap() {
-            if (roadmapInterval) {
-                clearInterval(roadmapInterval);
-                roadmapInterval = null;
-            }
-            const slots = document.querySelectorAll('.roadmap-slot');
-            slots.forEach(slot => {
-                slot.className = 'roadmap-slot';
-                slot.innerHTML = `<span style="color:#555;">Остановлено</span>`;
-            });
-            document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
-            if (currentUser) {
-                const spawnRef = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
-                spawnRef.off();
-            }
-        }
-
-        // ==========================================
-        // АДМИНСКИЙ СПАВН НА ДОРОЖКЕ
-        // ==========================================
-        function fillAdminCardSelect() {
-            const select = document.getElementById('adminCardSelect');
-            select.innerHTML = '<option value="">Выбери карту</option>';
-            ALL_CARDS.forEach(card => {
-                const opt = document.createElement('option');
-                opt.value = card.id;
-                opt.innerText = `${card.emoji} ${card.name} (${card.rarity})`;
-                select.appendChild(opt);
-            });
-        }
-
-        document.getElementById('adminSpawnBtn').onclick = function() {
-            if (currentUser !== 'Dushka') {
-                customMsg("Ошибка", "Только для админа!");
-                return;
-            }
-            const cardId = document.getElementById('adminCardSelect').value;
-            const targetUser = document.getElementById('adminTargetUser').value.trim();
-            if (!cardId) {
-                customMsg("Ошибка", "Выбери карту!");
-                return;
-            }
-            const card = ALL_CARDS.find(c => c.id === cardId);
-            if (!card) return;
-
-            const spawnData = {
-                cardId: cardId,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            if (targetUser === '') {
-                const usersRef = db.ref('users');
-                usersRef.once('value', (snap) => {
+                const clanRef = getClanRef(clanName);
+                clanRef.on('value', snap => {
                     const data = snap.val();
-                    if (!data) { customMsg("Ошибка", "Нет игроков."); return; }
-                    const updates = {};
-                    for (let key in data) {
-                        if (key === 'Dushka') continue;
-                        updates['users/' + safePath(key) + '/roadmapSpawn'] = spawnData;
+                    if (!data) { /* клан удалён */ return; }
+                    document.getElementById('clanPointsDisplay').textContent = data.points || 0;
+                    document.getElementById('clanMoneyDisplay').textContent = '$' + (data.money || 0).toLocaleString();
+                    document.getElementById('clanTankStatus').textContent = data.tankAlive ? '🟢 Цел' : '💀 Уничтожен';
+                    document.getElementById('buyClanTankBtn').style.display = data.tankAlive ? 'none' : 'block';
+
+                    // Участники
+                    const members = data.members || [];
+                    let mhtml = '';
+                    members.forEach(m => {
+                        const isOwner = m === data.owner;
+                        mhtml += `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #2a3348;">
+                            <span>${m} ${isOwner ? '👑' : ''}</span>
+                            ${m === currentUser ? `<button onclick="leaveClan('${m}')" class="danger" style="font-size:10px; padding:2px 8px;">Выйти</button>` : ''}
+                        </div>`;
+                    });
+                    document.getElementById('clanMembersList').innerHTML = mhtml || 'Нет участников.';
+                    document.getElementById('startClanBattleBtn').disabled = data.members.length < 2;
+                });
+            });
+        }
+
+        function createClanFromInput() {
+            const name = document.getElementById('createClanInput').value.trim();
+            if (!name) { customMsg("Ошибка", "Введите название клана!"); return; }
+            createClan(name, currentUser).then(() => {
+                customMsg("✅ Клан создан!", `Клан "${name}" успешно создан!`);
+                renderClan();
+            }).catch(err => customMsg("Ошибка", err));
+        }
+
+        function joinClanFromInput() {
+            const name = document.getElementById('joinClanInput').value.trim();
+            if (!name) { customMsg("Ошибка", "Введите название клана!"); return; }
+            joinClan(name, currentUser).then(() => {
+                customMsg("✅ Вы вступили!", `Вы присоединились к клану "${name}"!`);
+                renderClan();
+            }).catch(err => customMsg("Ошибка", err));
+        }
+
+        function addClanLog(msg) {
+            const logDiv = document.getElementById('clanBattleLog');
+            const div = document.createElement('div');
+            div.textContent = msg;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // ==========================================
+        // ОБНОВЛЕНИЕ ВСЕГО UI
+        // ==========================================
+        function updateUI() {
+            document.getElementById('shopBalance').innerText = `💵 $${Math.floor(gameData.balance)}`;
+            let totalIncome = getCurrentIncome();
+            document.getElementById('incomeDisplay').innerText = `+$${(totalIncome / 60).toFixed(2)}/сек`;
+            // Клан тоже обновляем
+            renderClan();
+        }
+
+        // ==========================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ==========================================
+        function initGame() {
+            loadLocalGame();
+            // Проверяем авторизацию и загружаем данные
+            const cachedUser = localStorage.getItem('cachedUser');
+            if (cachedUser) {
+                loadCloudData(cachedUser, data => {
+                    if (data && data.banned !== true) {
+                        currentUser = cachedUser;
+                        currentClan = data.clan || null;
+                        Object.assign(gameData, data);
+                        saveLocalGame();
+                        document.getElementById('authOverlay').classList.add('hidden');
+                        renderShop(); renderInventory(); updateUI(); renderLeaderboard(); updateProfileUI(); renderCryptoMarket();
+                        renderClan();
+                        startRoadmap();
+                        renderMarketplace();
+                        setupInboxListener();
+                    } else {
+                        document.getElementById('authOverlay').classList.remove('hidden');
                     }
-                    db.ref().update(updates).then(() => {
-                        customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);
-                        renderAdminPanel();
-                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карты."));
                 });
             } else {
-                loadCloudData(targetUser, function(data) {
-                    if (!data) {
-                        customMsg("Ошибка", "Игрок не найден!");
-                        return;
-                    }
-                    const userRef = db.ref('users/' + safePath(targetUser) + '/roadmapSpawn');
-                    userRef.set(spawnData).then(() => {
-                        customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${targetUser}.`);
-                        renderAdminPanel();
-                    }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карту."));
-                });
+                document.getElementById('authOverlay').classList.remove('hidden');
             }
-        };
+        }
+
+        document.addEventListener('DOMContentLoaded', initGame);
 
         // ==========================================
         // ЗАГРУЗКА АВАТАРКИ И ПРОЧЕЕ
@@ -3319,13 +2942,11 @@
                         const userRef = db.ref('users/' + safePath(currentUser) + '/password');
                         userRef.set(newPass).then(() => {
                             customMsg("✅ Пароль изменён!", "Теперь войдите с новым паролем.");
-                            if (banListener) {
-                                banListener();
-                                banListener = null;
-                            }
+                            if (banListener) banListener();
                             localStorage.removeItem('cachedCredentials');
                             localStorage.removeItem('cachedUser');
                             currentUser = null;
+                            currentClan = null;
                             document.getElementById('authOverlay').classList.remove('hidden');
                             customMsg("Выход", "Выйдите и зайдите с новым паролем.");
                         });
@@ -3358,13 +2979,11 @@
                     return oldUserRef.remove();
                 }).then(() => {
                     customMsg("✅ Ник изменён!", `Теперь ты ${newNick.trim()}! Войди заново.`);
-                    if (banListener) {
-                        banListener();
-                        banListener = null;
-                    }
+                    if (banListener) banListener();
                     localStorage.removeItem('cachedCredentials');
                     localStorage.removeItem('cachedUser');
                     currentUser = null;
+                    currentClan = null;
                     document.getElementById('authOverlay').classList.remove('hidden');
                 });
             });
@@ -3378,13 +2997,11 @@
             const userRef = db.ref('users/' + safePath(currentUser));
             userRef.remove().then(() => {
                 customMsg("🗑️ Аккаунт удалён!", "Все твои данные стерты из облака.");
-                if (banListener) {
-                    banListener();
-                    banListener = null;
-                }
+                if (banListener) banListener();
                 localStorage.removeItem('cachedCredentials');
                 localStorage.removeItem('cachedUser');
                 currentUser = null;
+                currentClan = null;
                 document.getElementById('authOverlay').classList.remove('hidden');
             });
         };
