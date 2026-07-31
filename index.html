@@ -2344,7 +2344,7 @@
         };
 
         // ==========================================
-        // АВТОМАТИЧЕСКИЙ ВХОД С ДИАЛОГОМ
+        // АВТОМАТИЧЕСКИЙ ВХОД С ДИАЛОГОМ (С исправленной обработкой ошибок)
         // ==========================================
         const cachedCredentials = localStorage.getItem('cachedCredentials');
         if (cachedCredentials) {
@@ -2355,7 +2355,12 @@
                     { text: '❌ Нет, войти в другой', class: 'cancel' }
                 ]).then(res => {
                     if (res === 0) {
-                        performLogin(creds.login, creds.pass, false);
+                        // Выполняем вход тихо. Если пароль неверный, ловим ошибку и очищаем кеш!
+                        performLogin(creds.login, creds.pass, true).catch(() => {
+                            localStorage.removeItem('cachedCredentials');
+                            localStorage.removeItem('cachedUser');
+                            document.getElementById('authOverlay').classList.remove('hidden');
+                        });
                     } else {
                         localStorage.removeItem('cachedCredentials');
                         localStorage.removeItem('cachedUser');
@@ -2446,7 +2451,6 @@
 
         window.sendMessage = function() {
             const targetInput = document.getElementById('pmTargetUser');
-            // ИСПРАВЛЕНИЕ ОШИБКИ: берем элемент прямо по ID
             const targetSpan = document.getElementById('pmTargetUserSpan');
             let targetUser = targetSpan.innerText;
             
@@ -2594,7 +2598,7 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                 cardName: card.name,
                 cardEmoji: card.emoji,
-                cardRarity: card.rarity,
+                cardRarity: card.rarity || 'common',
                 isAuction: false
             };
             listingRef.set(listingData).then(() => {
@@ -2655,7 +2659,7 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                 cardName: card.name,
                 cardEmoji: card.emoji,
-                cardRarity: card.rarity,
+                cardRarity: card.rarity || 'common',
                 isAuction: true
             };
             listingRef.set(listingData).then(() => {
@@ -2732,11 +2736,12 @@
             let canBid = !isMyListing && gameData.balance > (lot.currentBid || 0);
             
             let rarityColor = '';
-            if (lot.cardRarity === 'deadly') rarityColor = '#ef4444';
-            else if (lot.cardRarity === 'legendary') rarityColor = '#ffd700';
-            else if (lot.cardRarity === 'epic') rarityColor = '#a855f7';
-            else if (lot.cardRarity === 'rare') rarityColor = '#3b82f6';
-            else if (lot.cardRarity === 'sigma') rarityColor = '#ff00ff';
+            const rar = (lot.cardRarity || 'common').toLowerCase();
+            if (rar === 'deadly') rarityColor = '#ef4444';
+            else if (rar === 'legendary') rarityColor = '#ffd700';
+            else if (rar === 'epic') rarityColor = '#a855f7';
+            else if (rar === 'rare') rarityColor = '#3b82f6';
+            else if (rar === 'sigma') rarityColor = '#ff00ff';
             else rarityColor = '#6b7280';
 
             let html = `<div class="listing-card" id="listing_${id}" style="border:1px solid ${isAuction ? '#64ffda' : '#f0b90b'}; margin-bottom:12px; padding:12px; border-radius:10px; background:#111722; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">`;
@@ -2820,10 +2825,11 @@
                     if (lot.highestBidder) {
                         updates['users/' + safePath(lot.highestBidder) + '/balance'] = firebase.database.ServerValue.increment(lot.currentBid);
                     }
+                    // Обязательно проверяем на null, чтобы избежать undefined в Firebase
                     updates['marketplace/auctions/' + listingId + '/currentBid'] = bidAmount;
                     updates['marketplace/auctions/' + listingId + '/highestBidder'] = currentUser;
-                    updates['marketplace/auctions/' + listingId + '/previousBidder'] = lot.highestBidder;
-                    updates['marketplace/auctions/' + listingId + '/previousBidAmount'] = lot.currentBid;
+                    updates['marketplace/auctions/' + listingId + '/previousBidder'] = (lot.highestBidder || null);
+                    updates['marketplace/auctions/' + listingId + '/previousBidAmount'] = (lot.currentBid || null);
 
                     db.ref().update(updates).then(() => {
                         gameData.balance -= bidAmount;
