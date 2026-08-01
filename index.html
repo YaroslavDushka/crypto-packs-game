@@ -704,14 +704,26 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА КЛАН (НОВОЕ) -->
+            <!-- ВКЛАДКА КЛАН (НОВОЕ) - СТАТИЧЕСКАЯ ФОРМА, ЧТОБЫ ТЕКСТ НЕ ПРОПАДАЛ -->
             <div class="tab-pane" id="clan">
                 <div class="content-card">
                     <h2>🏰 Клан</h2>
                     <div id="clanSection">
-                        <div id="clanLoginArea" style="text-align:center; padding:10px;">
+                        <!-- Блок для неавторизованных -->
+                        <div id="clanLoginArea" style="text-align:center; padding:10px; display:none;">
                             <p style="color:#8892b0;">Войдите в аккаунт, чтобы управлять кланом.</p>
                         </div>
+                        <!-- Блок для тех, кто не в клане (статическая форма) -->
+                        <div id="clanNotInClanArea" style="text-align:center; padding:10px; display:none;">
+                            <p style="color:#8892b0;">Вы не состоите в клане.</p>
+                            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                                <input type="text" id="createClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
+                                <button onclick="createClanFromInput()" style="background:#ffb347;">Создать клан</button>
+                                <input type="text" id="joinClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
+                                <button onclick="joinClanFromInput()" style="background:#2a3348; color:#fff;">Вступить</button>
+                            </div>
+                        </div>
+                        <!-- Блок для участников клана -->
                         <div id="clanMainArea" style="display:none;">
                             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
                                 <div style="background:#111722; border-radius:8px; padding:8px 16px; border:1px solid #2a3348;">
@@ -2786,12 +2798,13 @@
         }
 
         // ==========================================
-        // ОТРИСОВКА КЛАНОВ
+        // ОТРИСОВКА КЛАНОВ (БЕЗ ПЕРЕСОЗДАНИЯ ФОРМЫ)
         // ==========================================
         function renderClan() {
             console.log('renderClan вызвана, currentUser =', currentUser);
             if (!currentUser) {
                 document.getElementById('clanLoginArea').style.display = 'block';
+                document.getElementById('clanNotInClanArea').style.display = 'none';
                 document.getElementById('clanMainArea').style.display = 'none';
                 document.getElementById('clanLoginArea').innerHTML = `
                     <p style="color:#8892b0;">Войдите в аккаунт, чтобы управлять кланом.</p>
@@ -2802,20 +2815,14 @@
             getUserClan(currentUser).then(clanName => {
                 currentClan = clanName;
                 if (!clanName) {
-                    document.getElementById('clanLoginArea').style.display = 'block';
+                    document.getElementById('clanLoginArea').style.display = 'none';
+                    document.getElementById('clanNotInClanArea').style.display = 'block';
                     document.getElementById('clanMainArea').style.display = 'none';
-                    document.getElementById('clanLoginArea').innerHTML = `
-                        <p style="color:#8892b0;">Вы не состоите в клане.</p>
-                        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                            <input type="text" id="createClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
-                            <button onclick="createClanFromInput()" style="background:#ffb347;">Создать клан</button>
-                            <input type="text" id="joinClanInput" placeholder="Название клана" style="background:#0b0e1a; border:1px solid #2a3348; padding:8px; border-radius:8px; color:#fff; width:150px;">
-                            <button onclick="joinClanFromInput()" style="background:#2a3348; color:#fff;">Вступить</button>
-                        </div>
-                    `;
+                    // Статическая форма уже существует, ничего не перезаписываем
                     return;
                 }
                 document.getElementById('clanLoginArea').style.display = 'none';
+                document.getElementById('clanNotInClanArea').style.display = 'none';
                 document.getElementById('clanMainArea').style.display = 'block';
                 document.getElementById('clanNameDisplay').textContent = clanName;
 
