@@ -89,6 +89,162 @@
             font-size:12px;
             color:#848e9c;
         }
+
+        /* Стили для анимации открытия пакетов (кейсов) */
+        #caseOpenModal .modal-box {
+            max-width: 450px;
+        }
+        .case-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            margin: 10px 0;
+            background: #0b0e1a;
+            border-radius: 50%;
+            border: 3px solid #ffb347;
+            overflow: hidden;
+        }
+        .case-wheel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .case-card {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            top: 50%;
+            left: 50%;
+            transform-origin: center center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: #1a2133;
+            border-radius: 12px;
+            border: 2px solid #2a3348;
+            color: #fff;
+            padding: 4px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        .case-card .card-emoji {
+            font-size: 24px;
+        }
+        .case-card .card-name {
+            font-size: 9px;
+            margin-top: 2px;
+            line-height: 1.1;
+        }
+        .case-card.winner {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px #ffd700;
+            transform: scale(1.1);
+        }
+        .case-arrow {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            color: #ef4444;
+            filter: drop-shadow(0 0 10px #ef4444);
+            z-index: 10;
+            pointer-events: none;
+        }
+        .case-result {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #64ffda;
+            min-height: 40px;
+        }
+        .case-result .winner-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #111722;
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+        }
+        .case-result .winner-card .emoji {
+            font-size: 32px;
+        }
+        .case-btn {
+            background: #ffb347;
+            color: #000;
+            font-weight: 700;
+            padding: 10px 30px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: .2s;
+        }
+        .case-btn:hover {
+            transform: scale(1.05);
+        }
+        .case-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .case-btn.green {
+            background: #0ecb81;
+            color: #fff;
+        }
+        .case-btn.green:hover {
+            background: #1bd691;
+        }
+        .case-btn.red {
+            background: #4a1a1a;
+            color: #ff6b6b;
+        }
+        .case-btn.red:hover {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        /* Админ-команды */
+        .admin-command-area {
+            background: #111722;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #2a3348;
+            margin-bottom: 15px;
+        }
+        .admin-command-area input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 4px 0;
+            background: #0b0e1a;
+            border: 1px solid #2a3348;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        .admin-command-area .cmd-output {
+            background: #0b0e1a;
+            border: 1px solid #2a3348;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            color: #64ffda;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +267,68 @@
     <div class="card-modal" id="cardModal"><div class="modal-content"><h3 id="modalCardTitle">Название</h3><p id="modalCardDesc">Информация</p><button class="modal-btn" id="modalEquipBtn">Одеть</button><button class="modal-btn" id="modalUnequipBtn">Снять</button><button class="modal-btn sell-btn" id="modalSellBtn">Продать</button><button class="modal-btn" id="modalMarketBtn" style="background:#f0b90b;color:#000;">📊 Рынок</button><button class="modal-btn" id="modalAuctionBtn" style="background:#64ffda;color:#000;">🔨 Аукцион</button><button class="modal-btn" id="modalFavoriteBtn" style="background:#ffb347;color:#000;">⭐ Любимая</button><button class="modal-btn close-btn" id="modalCloseBtn">Закрыть</button></div></div>
     <div class="modal-overlay crypto-create-modal" id="cryptoCreateModal"><div class="modal-box"><h2>🪙 Создать монету</h2><div style="font-size:13px;color:#848e9c;margin-bottom:15px;">Вклад от 1000$ до 1B$</div><div class="upload-container"><div class="upload-preview" id="imgPreview">📁</div><input type="file" accept="image/*" onchange="previewImage(event)"></div><div class="input-group"><label>Название</label><input type="text" id="coinName" placeholder="Bitcoin"></div><div class="input-group"><label>Тикер</label><input type="text" id="coinSymbol" placeholder="BTC"></div><div class="input-group"><label>Описание</label><textarea id="coinDesc" rows="2"></textarea></div><div class="input-group"><label>Вклад ($)</label><input type="number" id="coinCreateCost" min="1000" value="10000"></div><div class="modal-actions"><button class="btn btn-buy" onclick="createCoin()">💸 Создать</button><button class="btn btn-sell" onclick="closeCreateModal()">Отмена</button></div></div></div>
 
+    <!-- Модалки для рынка и аукциона (карты) -->
+    <div class="modal-overlay" id="marketSellModal"><div class="modal-box"><h2>📊 Выставить на рынок</h2><div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;"><div style="font-size:14px;color:#848e9c;">Укажите цену (целое число)</div><input type="number" id="marketPriceInput" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;"></div><div class="modal-actions"><button class="btn btn-buy" onclick="confirmMarketSell()">✅ Выставить</button><button class="btn btn-sell" onclick="document.getElementById('marketSellModal').classList.remove('active')">Отмена</button></div></div></div>
+    <div class="modal-overlay" id="auctionSellModal"><div class="modal-box"><h2>🔨 Выставить на аукцион</h2><div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;"><div style="font-size:14px;color:#848e9c;">Стартовая цена (целое число)</div><input type="number" id="auctionStartPrice" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;"><div style="font-size:14px;color:#848e9c;">Длительность (часы, 1-48)</div><input type="number" id="auctionDuration" min="1" max="48" step="1" value="24" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;"></div><div class="modal-actions"><button class="btn btn-buy" onclick="confirmAuctionSell()">✅ Выставить</button><button class="btn btn-sell" onclick="document.getElementById('auctionSellModal').classList.remove('active')">Отмена</button></div></div></div>
+
+    <!-- Модалки для ПАКЕТОВ: выбор действия, продажа на рынок, аукцион -->
+    <div class="modal-overlay" id="packActionModal">
+        <div class="modal-box">
+            <h2>📦 Действие с пакетом</h2>
+            <div style="display:flex;flex-direction:column;gap:12px;margin:15px 0;">
+                <button class="case-btn green" onclick="openPackWithAnimation(currentPackId)">🎲 Открыть</button>
+                <button class="case-btn" onclick="sellPackOnMarket(currentPackId)" style="background:#f0b90b;color:#000;">💰 Продать на рынке</button>
+                <button class="case-btn" onclick="sellPackOnAuction(currentPackId)" style="background:#64ffda;color:#000;">🔨 Аукцион</button>
+                <button class="case-btn red" onclick="document.getElementById('packActionModal').classList.remove('active')">Отмена</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="packMarketModal">
+        <div class="modal-box">
+            <h2>💰 Продать пакет на рынке</h2>
+            <div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;">
+                <div style="font-size:14px;color:#848e9c;">Укажите цену (целое число)</div>
+                <input type="number" id="packMarketPrice" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-buy" onclick="confirmPackMarketSell()">✅ Выставить</button>
+                <button class="btn btn-sell" onclick="document.getElementById('packMarketModal').classList.remove('active')">Отмена</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="packAuctionModal">
+        <div class="modal-box">
+            <h2>🔨 Выставить пакет на аукцион</h2>
+            <div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;">
+                <div style="font-size:14px;color:#848e9c;">Стартовая цена (целое число)</div>
+                <input type="number" id="packAuctionStartPrice" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
+                <div style="font-size:14px;color:#848e9c;">Длительность (часы, 1-48)</div>
+                <input type="number" id="packAuctionDuration" min="1" max="48" step="1" value="24" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-buy" onclick="confirmPackAuctionSell()">✅ Выставить</button>
+                <button class="btn btn-sell" onclick="document.getElementById('packAuctionModal').classList.remove('active')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка для анимации открытия пакета (кейс) -->
+    <div class="modal-overlay" id="caseOpenModal">
+        <div class="modal-box">
+            <h2>🎲 Открытие пакета</h2>
+            <div class="case-container">
+                <div class="case-arrow">▼</div>
+                <div class="case-wheel" id="caseWheel"></div>
+            </div>
+            <div class="case-result" id="caseResult">Нажмите "Открыть"</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <button class="case-btn" id="caseSpinBtn" onclick="spinCase()">Открыть</button>
+                <button class="case-btn green" id="caseClaimBtn" style="display:none;" onclick="claimCaseResult()">Забрать</button>
+                <button class="case-btn red" onclick="closeCaseModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ТАНКОВЫЙ БОЙ ===== -->
     <div class="tank-battle-overlay" id="tankBattleOverlay">
         <div class="tank-battle-close" onclick="closeTankBattle()">✕</div>
@@ -124,36 +342,6 @@
         <div class="tank-controls-hint">Управляйте танком и стреляйте по противнику!</div>
     </div>
 
-    <!-- Модалки для рынка и аукциона (всплывают) -->
-    <div class="modal-overlay" id="marketSellModal">
-        <div class="modal-box">
-            <h2>📊 Выставить на рынок</h2>
-            <div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;">
-                <div style="font-size:14px;color:#848e9c;">Укажите цену (целое число)</div>
-                <input type="number" id="marketPriceInput" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-buy" onclick="confirmMarketSell()">✅ Выставить</button>
-                <button class="btn btn-sell" onclick="document.getElementById('marketSellModal').classList.remove('active')">Отмена</button>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="auctionSellModal">
-        <div class="modal-box">
-            <h2>🔨 Выставить на аукцион</h2>
-            <div style="margin:15px 0;display:flex;flex-direction:column;gap:10px;">
-                <div style="font-size:14px;color:#848e9c;">Стартовая цена (целое число)</div>
-                <input type="number" id="auctionStartPrice" min="1" step="1" value="100" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
-                <div style="font-size:14px;color:#848e9c;">Длительность (часы, 1-48)</div>
-                <input type="number" id="auctionDuration" min="1" max="48" step="1" value="24" style="background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;padding:10px;width:100%;">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-buy" onclick="confirmAuctionSell()">✅ Выставить</button>
-                <button class="btn btn-sell" onclick="document.getElementById('auctionSellModal').classList.remove('active')">Отмена</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== ОСНОВНОЙ КОНТЕЙНЕР ===== -->
     <div class="app" id="gameApp">
         <div class="content" id="contentArea">
@@ -162,7 +350,17 @@
             <div class="tab-pane" id="inventory"><div class="content-card"><h2>🎒 Инвентарь</h2><h3 style="font-size:16px;margin-bottom:10px;color:#64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px;background:#101826;padding:4px 12px;border-radius:12px;">+$0/сек</span></h3><div class="equip-slots" id="equipContainer"></div><h3 style="font-size:14px;margin:15px 0 10px;color:#f7931a;">📦 Закрытые пакеты</h3><div id="invPacksContainer" class="inv-packs-grid"></div><h3 style="font-size:14px;margin:15px 0 10px;color:#64ffda;">🃏 Открытые карты</h3><div id="cardsContainer"></div></div></div>
             <div class="tab-pane" id="leaders"><div class="content-card" style="padding:0;border:none;background:0 0;box-shadow:none;"><div class="leader-wrapper"><div class="leader-header"><h2><span>🏆</span> Топ лидеров</h2><div class="leader-stats">👥 <strong id="totalPlayers">0</strong></div></div><input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск..." oninput="filterPlayers()"><div class="leader-table-header"><div>№</div><div>Игрок</div><div style="text-align:center;">💰 Доход</div></div><div id="leaderList"><div class="leader-loading">Загрузка...</div></div><div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span></div></div></div></div>
             <div class="tab-pane" id="profile"><div class="content-card"><h2>👤 Профиль</h2><div style="text-align:center;padding:10px 0;"><h3 style="color:#64ffda;margin-bottom:10px;">Логин</h3><div id="profileLoginDisplay" style="font-size:20px;font-weight:700;color:#ffb347;margin-bottom:20px;">Не авторизован</div><h3 style="color:#64ffda;margin-bottom:10px;">Аватарка</h3><div id="profileAvatarPreview" style="width:120px;height:120px;border-radius:50%;background:#0b0e1a;border:2px solid #ffb347;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;">👤</div><input type="file" id="avatarUploadInput" accept="image/*" style="display:none;"><button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">📸 Загрузить</button></div><div style="text-align:center;padding:10px 0;margin-top:15px;border-top:1px solid #2a3348;"><h3 style="color:#ffb347;margin-bottom:10px;">⭐ Любимая карта</h3><div id="favoriteCardDisplay" style="font-size:16px;color:#8892b0;min-height:40px;"><span>Выбери в инвентаре</span></div></div><div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid #2a3348;margin-top:15px;"><button class="auth-btn" id="changeNickBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">✏️ Сменить ник</button><button class="auth-btn" id="changePasswordBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">🔑 Сменить пароль</button><button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🗑️ Удалить аккаунт</button><button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🚪 Выйти</button></div></div><div class="content-card" style="margin-top:5px;"><h2>👥 Аккаунты</h2><div style="text-align:center;padding:10px 0;"><button class="auth-btn" id="addAccountBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">➕ Добавить (до 3)</button><div id="savedAccountsList" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div></div></div></div>
-            <div class="tab-pane" id="admin"><div class="content-card"><h2>🛠️ Админ-панель</h2><div style="background:#111722;border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid #2a3348;"><h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">💸 Баланс</h3><input type="text" id="adminGiveLogin" placeholder="Ник" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><input type="number" id="adminGiveAmount" placeholder="Сумма $" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><div style="display:flex;gap:10px;margin-top:6px;"><button class="auth-btn" id="adminGiveBtn" style="width:auto;padding:8px 20px;">💰 Выдать</button><button class="auth-btn danger" id="adminTakeBtn" style="width:auto;padding:8px 20px;">💸 Забрать</button></div></div><div style="background:#111722;border-radius:12px;padding:15px;margin-top:15px;border:1px solid #2a3348;"><h3 style="color:#ffb347;font-size:16px;margin-bottom:10px;">🎲 Спавн на дорожку</h3><select id="adminCardSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="">Выбери карту</option></select><input type="text" id="adminTargetUser" placeholder="Ник (пусто = всем)" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><button class="auth-btn" id="adminSpawnBtn" style="width:auto;padding:8px 20px;">💥 Заспавнить</button></div><div id="adminContainer" style="padding:10px 0;"><div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка...</div></div></div></div>
+            <div class="tab-pane" id="admin"><div class="content-card"><h2>🛠️ Админ-панель</h2>
+                <!-- Новая админ-панель с командами -->
+                <div class="admin-command-area">
+                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">Введите команду:</h3>
+                    <input type="text" id="adminCommandInput" placeholder="help, ban ник, give ник сумма, card ник id, spawn ник id, list, ..." style="font-family:monospace;">
+                    <button class="auth-btn" onclick="executeAdminCommand()" style="width:auto;padding:8px 20px;">▶ Выполнить</button>
+                    <div class="cmd-output" id="adminCommandOutput">Введите help для справки</div>
+                </div>
+                <!-- Оставляем старую таблицу с игроками (можно скрыть или показать) -->
+                <div id="adminContainer" style="padding:10px 0;"><div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка...</div></div>
+            </div></div>
             <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок и Аукцион</h2><div style="margin-bottom:12px;font-size:14px;color:#848e9c;">💰 Фикс. цена (рынок) · 🔨 Аукцион (ставки)</div><div id="marketplaceContainer" style="padding:10px 0;"><div class="empty-state">📭 Лотов нет</div></div></div></div>
             <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div style="font-size:14px;color:#848e9c;margin-bottom:15px;">Карты меняются каждые 3 сек. Нажми, чтобы купить.</div><div class="roadmap-container"><div class="roadmap-slots" id="roadmapSlots"><div class="roadmap-slot" id="roadmapSlot0"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot1"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot2"><span style="color:#555;">Загрузка...</span></div></div><div class="roadmap-timer-container" id="roadmapTimerText">⏳ 3 сек</div></div></div></div>
             <div class="tab-pane" id="clan"><div class="content-card"><h2>🏰 Кланы</h2><div id="clanSection"><div id="clanLoginArea" style="text-align:center;padding:10px;display:none;"><p style="color:#8892b0;">Войдите в аккаунт</p></div><div id="clanNotInClanArea" style="display:none;"><div style="margin-bottom:15px;"><h3 style="font-size:16px;color:#64ffda;">📋 Все кланы</h3><div id="allClansList"></div></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">📨 Ваши запросы</h3><div id="myJoinRequestsList"></div></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">🏆 Топ кланов</h3><div id="clanTopList"></div></div></div><div id="clanMainArea" style="display:none;"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;"><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Клан:</span> <strong id="clanNameDisplay" style="color:#64ffda;">-</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Очки:</span> <strong id="clanPointsDisplay" style="color:#ffb347;">0</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">💰 Казна:</span> <strong id="clanMoneyDisplay" style="color:#f7931a;">$0</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Танк:</span> <strong id="clanTankStatus" style="color:#64ffda;">🟢 Цел</strong></div><button id="buyClanTankBtn" style="display:none;background:#0ecb81;color:#fff;" onclick="buyClanTank()">💰 Купить танк (10 млн)</button></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;"><button onclick="openClanInvite()" style="background:#2a3348;color:#fff;">📤 Пригласить</button><button onclick="clanDeposit(1000000)" style="background:#ffb347;">+1 млн</button><button onclick="clanDeposit(10000000)" style="background:#ffb347;">+10 млн</button><button onclick="clanDeposit(100000000)" style="background:#ffb347;">+100 млн</button><button onclick="startClanBattle()" id="startClanBattleBtn" style="background:#ef4444;color:#fff;" disabled>⚔️ Битва с кланом</button><button onclick="startAIBattle()" style="background:#3b82f6;color:#fff;">🤖 ИИ (+1 очко)</button><button id="withdrawClanMoneyBtn" style="display:inline-block;background:#f7931a;color:#000;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;" onclick="withdrawClanMoney()">💸 Снять с казны</button></div><h3 style="font-size:16px;color:#f7931a;margin-bottom:8px;">Танки (10 млн/шт)</h3><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><input type="text" id="newTankName" placeholder="Имя танка" style="background:#0b0e1a;border:1px solid #2a3348;padding:6px;border-radius:6px;color:#fff;flex:1;"><button onclick="buyNamedTank()" style="background:#ffb347;color:#000;padding:6px 12px;border-radius:6px;border:none;">Купить танк</button></div><div id="clanTanksList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><h3 style="font-size:16px;color:#64ffda;margin-bottom:8px;">👥 Участники</h3><div id="clanMembersList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><h3 style="font-size:16px;color:#f7931a;margin-bottom:8px;">⚔️ Битвы</h3><div id="clanBattleLog" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;max-height:120px;overflow-y:auto;font-size:13px;margin-bottom:15px;"></div><h3 style="font-size:16px;color:#ffb347;margin-bottom:8px;">📢 Вызовы</h3><div id="clanChallengesList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><div id="clanOwnerRequests" style="display:none;border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#64ffda;">📨 Запросы на вступление</h3><div id="joinRequestsList"></div></div><div id="clanBattleRequestsList" style="border-top:1px solid #2a3348;padding-top:15px;margin-top:15px;"></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">🏆 Топ кланов</h3><div id="clanTopListMain"></div></div></div></div></div></div>
@@ -188,7 +386,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
         // =====================================================================
-        // ПОЛНЫЙ JAVASCRIPT – с поддержкой рынка, аукциона, целых цен, повышения пакетов
+        // ПОЛНЫЙ JAVASCRIPT – с анимацией кейсов, выбором действия для пакетов,
+        // изменёнными шансами на дорожке, админ-командами, рынком и аукционом для пакетов
         // =====================================================================
 
         // ---------- ВСПОМОГАТЕЛЬНЫЕ ----------
@@ -227,6 +426,8 @@
         let currentUser=null,currentClan=null,banListener=null,roadmapInterval=null,roadmapTimerCounter=0,roadmapSlotsData=[null,null,null],isRoadmapFrozen=false,lastOnlineTime=Date.now(),uploadedImageData=null,selectedTank=null;
         let tankBattleActive=false;
         let currentCardForSell = null; // id карты, которую продают/выставляют
+        let currentPackId = null; // id пакета, который открывают/продают
+        let caseResultCard = null; // результат анимации
 
         function safePath(s){return String(s).replace(/[.#$\/\[\]]/g,'_')}
         function loadCloudData(u,cb){db.ref('users/'+safePath(u)).once('value').then(s=>{cb(s.exists()?s.val():null)}).catch(()=>cb(null))}
@@ -237,7 +438,293 @@
         function generateStore(){gameData.store={};gameData.storeTimer=180;PACK_DATA.forEach(p=>{gameData.store[p.id]=1+Math.floor(Math.random()*4)});saveLocalGame();renderShop();updateUI();renderInventory()}
         function buyPack(id){const p=PACK_DATA.find(x=>x.id===id);if(!p)return;if(!gameData.store[id]||gameData.store[id]<=0){customMsg("Нет в наличии!","Этого пакета больше нет.");return}if(!gameData.packPurchases)gameData.packPurchases={};if(!gameData.packPurchases[id])gameData.packPurchases[id]=0;let price=p.price*Math.pow(1.05,gameData.packPurchases[id]);price=Math.floor(price); // целое число
             if(gameData.balance<price){customMsg("Не хватает денег!",`Сейчас этот пакет для тебя стоит $${price}`);return}if(p.drops.length===0){customMsg("Пакет пуст!","В этом пакете пока нет карт.");return}gameData.balance-=price;gameData.store[id]--;gameData.inventory.push(id);gameData.packPurchases[id]++;saveLocalGame();saveCloudGame();renderShop();updateUI();renderInventory();customMsg("✅ Покупка успешна!",`Вы купили ${p.name} за $${price}!`)}
-        function openPackFromInventory(idx){if(idx>=gameData.inventory.length)return;const pid=gameData.inventory[idx];const p=PACK_DATA.find(x=>x.id===pid);if(!p)return;gameData.inventory.splice(idx,1);let card;let r=Math.random(),cum=0;let drops=p.drops;if(Array.isArray(drops)&&drops.length>0&&typeof drops[0]==='object'&&drops[0].chance!==undefined){let sh=[...drops].sort(()=>Math.random()-.5);for(let item of sh){cum+=item.chance;if(r<=cum){card=ALL_CARDS.find(c=>c.id===item.id);break}}if(!card)card=ALL_CARDS.find(c=>c.id===sh[sh.length-1].id)}else{let sh=[...drops].sort(()=>Math.random()-.5);for(let c of sh){let card2=(typeof c==='string')?ALL_CARDS.find(x=>x.id===c):c;if(card2){card=card2;break}}if(!card)card=ALL_CARDS.find(x=>x.id===sh[0])}if(!card){customMsg("Ошибка","Не удалось найти карту.");return}if(!gameData.cards[card.id])gameData.cards[card.id]=0;gameData.cards[card.id]++;saveLocalGame();saveCloudGame();renderInventory();updateUI();customMsg("🎉 Открытие!",`Вам выпала: ${card.emoji} ${card.name}! +$${card.income}/сек`)}
+        // Функция открытия пакета с выбором действия
+        function openPackFromInventory(idx){
+            if(idx>=gameData.inventory.length)return;
+            const pid=gameData.inventory[idx];
+            const p=PACK_DATA.find(x=>x.id===pid);
+            if(!p)return;
+            currentPackId = idx; // запоминаем индекс для действий
+            document.getElementById('packActionModal').classList.add('active');
+        }
+        // Открыть с анимацией (кейс)
+        function openPackWithAnimation(idx){
+            document.getElementById('packActionModal').classList.remove('active');
+            if(idx===undefined || idx===null) idx = currentPackId;
+            if(idx>=gameData.inventory.length)return;
+            const pid=gameData.inventory[idx];
+            const p=PACK_DATA.find(x=>x.id===pid);
+            if(!p)return;
+            // Удаляем пакет из инвентаря (пока временно, чтобы нельзя было открыть дважды)
+            gameData.inventory.splice(idx,1);
+            saveLocalGame(); saveCloudGame();
+            renderInventory(); updateUI();
+
+            // Формируем список карт для колеса (не более 12, дублируем если нужно)
+            let cards = [];
+            let drops = p.drops;
+            if(Array.isArray(drops) && drops.length>0){
+                // Берём все карты из дропа, если их меньше 12, дополняем случайными из общего пула
+                let pool = [];
+                drops.forEach(item=>{
+                    let c = ALL_CARDS.find(c=>c.id===item.id);
+                    if(c) pool.push(c);
+                });
+                if(pool.length===0){
+                    customMsg("Ошибка","В пакете нет карт.");
+                    return;
+                }
+                // Наполняем до 12
+                while(pool.length < 12){
+                    let randomCard = ALL_CARDS[Math.floor(Math.random()*ALL_CARDS.length)];
+                    pool.push(randomCard);
+                }
+                // Перемешиваем
+                cards = shuffleArray(pool.slice(0,12));
+            } else {
+                // если нет дропа, берём случайные
+                for(let i=0;i<12;i++){
+                    let randomCard = ALL_CARDS[Math.floor(Math.random()*ALL_CARDS.length)];
+                    cards.push(randomCard);
+                }
+            }
+            // Выбираем победную карту на основе шансов
+            let winnerCard = null;
+            if(drops.length>0){
+                let r = Math.random();
+                let cum=0;
+                for(let item of drops){
+                    cum += (item.chance || 0);
+                    if(r <= cum){
+                        let c = ALL_CARDS.find(c=>c.id===item.id);
+                        if(c){ winnerCard = c; break; }
+                    }
+                }
+                if(!winnerCard){
+                    // fallback
+                    let last = drops[drops.length-1];
+                    winnerCard = ALL_CARDS.find(c=>c.id===last.id) || cards[0];
+                }
+            } else {
+                winnerCard = cards[0];
+            }
+            // Проверяем, что winnerCard есть в массиве cards, иначе добавляем
+            if(!cards.includes(winnerCard)){
+                cards[Math.floor(Math.random()*cards.length)] = winnerCard;
+            }
+            // Запускаем анимацию
+            showCaseAnimation(cards, winnerCard);
+        }
+
+        // Анимация кейса
+        function showCaseAnimation(cards, winnerCard){
+            const modal = document.getElementById('caseOpenModal');
+            const wheel = document.getElementById('caseWheel');
+            const resultDiv = document.getElementById('caseResult');
+            const spinBtn = document.getElementById('caseSpinBtn');
+            const claimBtn = document.getElementById('caseClaimBtn');
+            spinBtn.disabled = false;
+            claimBtn.style.display = 'none';
+            resultDiv.innerHTML = 'Нажмите "Открыть"';
+            modal.classList.add('active');
+            caseResultCard = null;
+
+            // Отрисовываем карточки на колесе
+            const count = cards.length;
+            const angleStep = 360 / count;
+            let html = '';
+            cards.forEach((card, i) => {
+                const angle = i * angleStep;
+                const radius = 35; // %
+                const x = 50 + radius * Math.sin(angle * Math.PI/180);
+                const y = 50 - radius * Math.cos(angle * Math.PI/180);
+                html += `<div class="case-card" style="left:${x}%; top:${y}%; transform: translate(-50%, -50%) rotate(${angle}deg);">
+                    <div class="card-emoji">${card.emoji}</div>
+                    <div class="card-name">${card.name}</div>
+                </div>`;
+            });
+            wheel.innerHTML = html;
+
+            // Флаг вращения
+            let spinning = false;
+
+            // Функция вращения
+            window.spinCase = function(){
+                if(spinning) return;
+                spinning = true;
+                spinBtn.disabled = true;
+                resultDiv.innerHTML = '🎡 Вращение...';
+
+                // Находим индекс победителя
+                let winnerIndex = cards.indexOf(winnerCard);
+                if(winnerIndex === -1) winnerIndex = 0;
+                // Вычисляем угол остановки: чтобы winner оказался под стрелкой (стрелка сверху, т.е. угол -90 градусов)
+                // Нужно повернуть так, чтобы карта с индексом winnerIndex оказалась на позиции 270° (сверху)
+                // Угол для каждой карты: i * angleStep, плюс смещение на половину шага для центрирования
+                // Чтобы остановиться на winnerIndex, нужно повернуть на (360 - winnerIndex*angleStep - 90) + случайные обороты
+                const extraSpins = 5 + Math.floor(Math.random() * 5); // 5-10 оборотов
+                const targetAngle = 360 * extraSpins + (360 - winnerIndex * angleStep - 90);
+                wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.15, 1)';
+                wheel.style.transform = `rotate(${targetAngle}deg)`;
+
+                // По окончании анимации
+                setTimeout(() => {
+                    spinning = false;
+                    spinBtn.disabled = true;
+                    // Подсвечиваем победителя
+                    const cardsElements = wheel.querySelectorAll('.case-card');
+                    cardsElements.forEach((el, i) => {
+                        if(i === winnerIndex) {
+                            el.classList.add('winner');
+                        }
+                    });
+                    // Показываем результат
+                    resultDiv.innerHTML = `<div class="winner-card"><span class="emoji">${winnerCard.emoji}</span> ${winnerCard.name}</div>`;
+                    caseResultCard = winnerCard;
+                    claimBtn.style.display = 'inline-block';
+                }, 4000);
+            };
+        }
+
+        // Забрать результат
+        function claimCaseResult(){
+            if(!caseResultCard){
+                customMsg("Ошибка","Сначала откройте пакет!");
+                return;
+            }
+            // Добавляем карту в коллекцию
+            if(!gameData.cards[caseResultCard.id]) gameData.cards[caseResultCard.id]=0;
+            gameData.cards[caseResultCard.id]++;
+            saveLocalGame(); saveCloudGame();
+            renderInventory(); updateUI();
+            customMsg("🎉 Поздравляем!",`Вы получили ${caseResultCard.emoji} ${caseResultCard.name}!`);
+            closeCaseModal();
+        }
+
+        function closeCaseModal(){
+            document.getElementById('caseOpenModal').classList.remove('active');
+            caseResultCard = null;
+            // Восстанавливаем кнопку
+            document.getElementById('caseSpinBtn').disabled = false;
+            document.getElementById('caseClaimBtn').style.display = 'none';
+        }
+
+        // Продажа пакета на рынок
+        function sellPackOnMarket(idx){
+            document.getElementById('packActionModal').classList.remove('active');
+            if(idx===undefined || idx===null) idx = currentPackId;
+            if(idx>=gameData.inventory.length)return;
+            currentPackId = idx;
+            document.getElementById('packMarketPrice').value = 100;
+            document.getElementById('packMarketModal').classList.add('active');
+        }
+        function confirmPackMarketSell(){
+            if(!currentUser || currentPackId===null || currentPackId>=gameData.inventory.length){
+                customMsg("Ошибка","Пакет не найден.");
+                return;
+            }
+            const price = parseInt(document.getElementById('packMarketPrice').value);
+            if(isNaN(price) || price < 1){
+                customMsg("Ошибка","Введите корректную цену (целое число >0)!");
+                return;
+            }
+            const pid = gameData.inventory[currentPackId];
+            const p = PACK_DATA.find(x=>x.id===pid);
+            if(!p){customMsg("Ошибка","Пакет не найден"); return;}
+            // Удаляем пакет из инвентаря
+            gameData.inventory.splice(currentPackId,1);
+            saveLocalGame(); saveCloudGame();
+            renderInventory(); updateUI();
+
+            // Создаём лот в Firebase
+            const lotRef = db.ref('market/lots').push();
+            const lotData = {
+                type: 'pack',
+                packId: pid,
+                seller: currentUser,
+                price: price,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            lotRef.set(lotData).then(()=>{
+                customMsg("✅ Пакет выставлен!",`Пакет ${p.name} выставлен на рынок за $${price}.`);
+                document.getElementById('packMarketModal').classList.remove('active');
+                renderMarketplace();
+            }).catch(err=>{
+                // Возвращаем пакет
+                gameData.inventory.splice(currentPackId,0,pid);
+                saveLocalGame(); saveCloudGame();
+                renderInventory();
+                customMsg("❌ Ошибка","Не удалось выставить пакет.");
+            });
+        }
+
+        // Продажа пакета на аукцион
+        function sellPackOnAuction(idx){
+            document.getElementById('packActionModal').classList.remove('active');
+            if(idx===undefined || idx===null) idx = currentPackId;
+            if(idx>=gameData.inventory.length)return;
+            currentPackId = idx;
+            document.getElementById('packAuctionStartPrice').value = 100;
+            document.getElementById('packAuctionDuration').value = 24;
+            document.getElementById('packAuctionModal').classList.add('active');
+        }
+        function confirmPackAuctionSell(){
+            if(!currentUser || currentPackId===null || currentPackId>=gameData.inventory.length){
+                customMsg("Ошибка","Пакет не найден.");
+                return;
+            }
+            const startPrice = parseInt(document.getElementById('packAuctionStartPrice').value);
+            const durationHours = parseInt(document.getElementById('packAuctionDuration').value);
+            if(isNaN(startPrice) || startPrice < 1){
+                customMsg("Ошибка","Введите корректную стартовую цену (целое число >0)!");
+                return;
+            }
+            if(isNaN(durationHours) || durationHours < 1 || durationHours > 48){
+                customMsg("Ошибка","Длительность должна быть от 1 до 48 часов.");
+                return;
+            }
+            const pid = gameData.inventory[currentPackId];
+            const p = PACK_DATA.find(x=>x.id===pid);
+            if(!p){customMsg("Ошибка","Пакет не найден"); return;}
+            gameData.inventory.splice(currentPackId,1);
+            saveLocalGame(); saveCloudGame();
+            renderInventory(); updateUI();
+
+            const endTime = Date.now() + durationHours * 3600 * 1000;
+            const lotRef = db.ref('auction/lots').push();
+            const lotData = {
+                type: 'pack',
+                packId: pid,
+                seller: currentUser,
+                startPrice: startPrice,
+                currentBid: startPrice,
+                buyer: null,
+                endTime: endTime,
+                status: 'active',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            lotRef.set(lotData).then(()=>{
+                customMsg("✅ Аукцион создан!",`Пакет ${p.name} выставлен на аукцион с начальной ставкой $${startPrice}.`);
+                document.getElementById('packAuctionModal').classList.remove('active');
+                renderMarketplace();
+            }).catch(err=>{
+                gameData.inventory.splice(currentPackId,0,pid);
+                saveLocalGame(); saveCloudGame();
+                renderInventory();
+                customMsg("❌ Ошибка","Не удалось создать аукцион.");
+            });
+        }
+
+        // Вспомогательная функция для перемешивания
+        function shuffleArray(arr){
+            for(let i=arr.length-1;i>0;i--){
+                const j=Math.floor(Math.random()*(i+1));
+                [arr[i],arr[j]]=[arr[j],arr[i]];
+            }
+            return arr;
+        }
+
+        // Остальные функции (equip, unequip, sell, карты) остаются без изменений
         function equipOne(id){if(!gameData.cards[id]||gameData.cards[id]<=0){customMsg("Ошибка","У вас нет этой карты!");return}if(gameData.equipped.length>=10){customMsg("Ошибка","Максимум 10 карт в экипировке!");return}gameData.cards[id]--;gameData.equipped.push(id);saveLocalGame();saveCloudGame();renderInventory();updateUI();closeModal()}
         function unequipOne(id){const idx=gameData.equipped.indexOf(id);if(idx===-1){customMsg("Ошибка","Эта карта не надета!");return}gameData.equipped.splice(idx,1);if(!gameData.cards[id])gameData.cards[id]=0;gameData.cards[id]++;saveLocalGame();saveCloudGame();renderInventory();updateUI();closeModal()}
         function sellOne(id){const card=ALL_CARDS.find(c=>c.id===id);if(!card)return;if(gameData.cards[id]<=0){customMsg("Ошибка","У вас нет этой карты для продажи!");return}const price=Math.floor(card.price/2);gameData.cards[id]--;gameData.balance+=price;const idx=gameData.equipped.indexOf(id);if(idx!==-1)gameData.equipped.splice(idx,1);saveLocalGame();saveCloudGame();renderInventory();updateUI();closeModal()}
@@ -251,11 +738,200 @@
         function renderInventory(){const eq=document.getElementById('equipContainer');eq.innerHTML='';gameData.equipped.forEach(id=>{const slot=document.createElement('div');slot.className='equip-slot filled';let card=ALL_CARDS.find(c=>c.id===id);if(card){slot.innerHTML=card.emoji;slot.title=`Надета: ${card.name}`;slot.onclick=function(){unequipOne(id)}}eq.appendChild(slot)});const inv=document.getElementById('invPacksContainer');inv.innerHTML='';if(!gameData.inventory||gameData.inventory.length===0){inv.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#8892b0;">У вас нет закрытых пакетов. Купите в магазине!</div>'}else{gameData.inventory.forEach((pid,idx)=>{const p=PACK_DATA.find(x=>x.id===pid);if(!p)return;const div=document.createElement('div');div.className='inv-pack-item';div.innerHTML=`<img src="${p.img}" onerror="this.remove()"><div class="p-name">${p.name}</div>`;div.onclick=()=>openPackFromInventory(idx);inv.appendChild(div)})}const cards=document.getElementById('cardsContainer');cards.innerHTML='';let has=false;if(gameData.cards){for(let k in gameData.cards)if(gameData.cards[k]>0)has=true}if(!has){cards.innerHTML='<div class="placeholder" style="padding:30px;text-align:center;">📭 У вас пока нет открытых карт.</div>';return}const grid=document.createElement('div');grid.className='cards-grid';ALL_CARDS.forEach(card=>{if(gameData.cards&&(gameData.cards[card.id]||0)>0){const item=document.createElement('div');item.className=`card-item rarity-${card.rarity}`;let img=`<span class="card-img">${card.emoji}</span>`;if(card.img){img=`<img src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`}item.innerHTML=`${img}<div style="font-size:12px">${card.name}</div><div class="card-income">+$${(card.income/60).toFixed(2)}/сек</div><div class="card-price">💰 $${card.price}</div><div class="card-count">${gameData.cards[card.id]} шт.</div>`;item.onclick=()=>openCardMenu(card.id);grid.appendChild(item)}});cards.appendChild(grid)}
         window.showChances=function(id){const p=PACK_DATA.find(x=>x.id===id);if(!p||p.drops.length===0)return;let msg=`📊 Шансы выпадения из ${p.name}:\n\n`;let drops=p.drops;if(Array.isArray(drops)&&drops.length>0&&typeof drops[0]==='object'&&drops[0].chance!==undefined){let sorted=[...drops].sort((a,b)=>a.chance-b.chance);sorted.forEach(item=>{let card=ALL_CARDS.find(c=>c.id===item.id);if(card)msg+=`${card.emoji} ${card.name}: ${(item.chance*100).toFixed(1)}%\n`})}else{let shuffled=[...drops].sort((a,b)=>a.dropRate-b.dropRate);shuffled.forEach(c=>{msg+=`${c.emoji} ${c.name}: ${(c.dropRate*100).toFixed(1)}%\n`})}customMsg(`📊 Шансы ${p.name}`,msg)};
 
-        // ---------- АДМИН ----------
-        function renderAdminPanel(){if(currentUser!=='Dushka'){document.getElementById('adminContainer').innerHTML='<div class="placeholder" style="text-align:center;padding:20px;color:#ff6b6b;">⛔ У вас нет прав администратора!</div>';return}db.ref('users').on('value',s=>{const data=s.val();if(!data){document.getElementById('adminContainer').innerHTML='<div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Нет пользователей.</div>';return}let html='<div style="overflow-x:auto;font-size:13px;"><table style="width:100%;border-collapse:collapse;"><tr style="background:#2a3348;"><th>Логин</th><th>Имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Действия</th></tr>';for(let key in data){const p=data[key];if(key==='Dushka')continue;const displayName=p.displayName||key;const cardsCount=p.cards?Object.keys(p.cards).filter(c=>p.cards[c]>0).length:0;const equippedCount=p.equipped?p.equipped.length:0;const isBanned=p.banned===true;html+=`<tr style="border-bottom:1px solid #2a3348;"><td style="padding:8px;">${key}</td><td style="padding:8px;">${displayName}</td><td style="padding:8px;">$${p.balance||0}</td><td style="padding:8px;">${cardsCount}</td><td style="padding:8px;">${equippedCount}</td><td style="padding:8px;"><button class="auth-btn ${isBanned?'':'danger'}" onclick="adminToggleBan('${key}',${isBanned})" style="width:auto;padding:2px 10px;font-size:11px;margin:0;">${isBanned?'✅ Разбанить':'⛔ Забанить'}</button></td></tr>`}html+='</table></div>';document.getElementById('adminContainer').innerHTML=html})}
-        window.adminToggleBan=function(u,b){const action=b?'разбанить':'забанить';if(!confirm(`Точно ${action} игрока ${u}?`))return;db.ref('users/'+safePath(u)+'/banned').set(b?null:true).then(()=>{customMsg("✅ Готово",`Игрок ${u} ${action}.`);renderAdminPanel()})};
-        document.getElementById('adminGiveBtn').onclick=function(){if(currentUser!=='Dushka'){customMsg("Ошибка","Только для админа!");return}const target=document.getElementById('adminGiveLogin').value.trim();const amount=parseInt(document.getElementById('adminGiveAmount').value);if(!target||isNaN(amount)||amount<=0){customMsg("Ошибка","Введи корректный ник и сумму!");return}loadCloudData(target,function(data){if(!data){customMsg("Ошибка","Игрок не найден!");return}db.ref('users/'+safePath(target)+'/balance').set((data.balance||0)+amount).then(()=>{customMsg("✅ Деньги выданы!",`Игроку ${target} выдано $${amount}.`);document.getElementById('adminGiveLogin').value='';document.getElementById('adminGiveAmount').value='';renderAdminPanel()})})};
-        document.getElementById('adminTakeBtn').onclick=function(){if(currentUser!=='Dushka'){customMsg("Ошибка","Только для админа!");return}const target=document.getElementById('adminGiveLogin').value.trim();const amount=parseInt(document.getElementById('adminGiveAmount').value);if(!target||isNaN(amount)||amount<=0){customMsg("Ошибка","Введи корректный ник и сумму!");return}loadCloudData(target,function(data){if(!data){customMsg("Ошибка","Игрок не найден!");return}const cur=data.balance||0;if(cur<amount){customMsg("Ошибка",`У игрока ${target} недостаточно денег ($${cur}) для списания $${amount}!`);return}db.ref('users/'+safePath(target)+'/balance').set(cur-amount).then(()=>{customMsg("✅ Деньги списаны!",`У игрока ${target} списано $${amount}. Новый баланс: $${cur-amount}.`);document.getElementById('adminGiveLogin').value='';document.getElementById('adminGiveAmount').value='';renderAdminPanel()})})};
+        // ---------- АДМИН-КОМАНДЫ (НОВЫЙ МЕХАНИЗМ) ----------
+        function executeAdminCommand(){
+            if(currentUser !== 'Dushka'){
+                customMsg("Ошибка","Только администратор Dushka может выполнять команды.");
+                return;
+            }
+            const input = document.getElementById('adminCommandInput');
+            const output = document.getElementById('adminCommandOutput');
+            const cmd = input.value.trim();
+            if(!cmd){output.innerText = 'Введите команду.'; return;}
+            const parts = cmd.split(/\s+/);
+            const action = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            let result = '';
+            switch(action){
+                case 'help':
+                    result = `Доступные команды:
+ban <ник> - забанить игрока
+unban <ник> - разбанить
+give <ник> <сумма> - выдать деньги (ник = all для всех)
+take <ник> <сумма> - забрать деньги
+card <ник> <id_карты> - выдать карту (ник = all для всех)
+spawn <ник> <id_карты> - заспавнить карту на дорожку (ник = all для всех)
+list - показать список игроков
+help - эта справка`;
+                    break;
+                case 'ban':
+                    if(args.length<1){result='Укажите ник'; break;}
+                    const banUser = args[0];
+                    db.ref('users/'+safePath(banUser)+'/banned').set(true).then(()=>{
+                        result = `Игрок ${banUser} забанен.`;
+                        output.innerText = result;
+                    }).catch(e=>{result='Ошибка: '+e.message;});
+                    break;
+                case 'unban':
+                    if(args.length<1){result='Укажите ник'; break;}
+                    const unbanUser = args[0];
+                    db.ref('users/'+safePath(unbanUser)+'/banned').remove().then(()=>{
+                        result = `Игрок ${unbanUser} разбанен.`;
+                        output.innerText = result;
+                    }).catch(e=>{result='Ошибка: '+e.message;});
+                    break;
+                case 'give':
+                    if(args.length<2){result='Укажите ник и сумму'; break;}
+                    const giveUser = args[0];
+                    const giveAmount = parseInt(args[1]);
+                    if(isNaN(giveAmount) || giveAmount<=0){result='Сумма должна быть положительным числом'; break;}
+                    if(giveUser === 'all'){
+                        db.ref('users').once('value', snap=>{
+                            const users = snap.val();
+                            if(!users){result='Нет пользователей'; output.innerText=result; return;}
+                            const updates = {};
+                            for(let key in users){
+                                if(key==='Dushka') continue;
+                                updates['users/'+safePath(key)+'/balance'] = firebase.database.ServerValue.increment(giveAmount);
+                            }
+                            db.ref().update(updates).then(()=>{
+                                result = `Выдано $${giveAmount} всем игрокам.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    } else {
+                        loadCloudData(giveUser, data=>{
+                            if(!data){result='Игрок не найден'; output.innerText=result; return;}
+                            db.ref('users/'+safePath(giveUser)+'/balance').transaction(cur=>(cur||0)+giveAmount).then(()=>{
+                                result = `Игроку ${giveUser} выдано $${giveAmount}.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    }
+                case 'take':
+                    if(args.length<2){result='Укажите ник и сумму'; break;}
+                    const takeUser = args[0];
+                    const takeAmount = parseInt(args[1]);
+                    if(isNaN(takeAmount) || takeAmount<=0){result='Сумма должна быть положительным числом'; break;}
+                    if(takeUser === 'all'){
+                        db.ref('users').once('value', snap=>{
+                            const users = snap.val();
+                            if(!users){result='Нет пользователей'; output.innerText=result; return;}
+                            const updates = {};
+                            for(let key in users){
+                                if(key==='Dushka') continue;
+                                updates['users/'+safePath(key)+'/balance'] = firebase.database.ServerValue.increment(-takeAmount);
+                            }
+                            db.ref().update(updates).then(()=>{
+                                result = `Списано $${takeAmount} у всех игроков.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    } else {
+                        loadCloudData(takeUser, data=>{
+                            if(!data){result='Игрок не найден'; output.innerText=result; return;}
+                            const cur = data.balance||0;
+                            if(cur < takeAmount){result=`У игрока ${takeUser} недостаточно денег ($${cur})`; output.innerText=result; return;}
+                            db.ref('users/'+safePath(takeUser)+'/balance').set(cur-takeAmount).then(()=>{
+                                result = `У игрока ${takeUser} списано $${takeAmount}. Новый баланс: $${cur-takeAmount}`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    }
+                case 'card':
+                    if(args.length<2){result='Укажите ник и id карты'; break;}
+                    const cardUser = args[0];
+                    const cardId = args[1];
+                    const cardObj = ALL_CARDS.find(c=>c.id===cardId);
+                    if(!cardObj){result='Карта с таким id не найдена'; break;}
+                    if(cardUser === 'all'){
+                        db.ref('users').once('value', snap=>{
+                            const users = snap.val();
+                            if(!users){result='Нет пользователей'; output.innerText=result; return;}
+                            const updates = {};
+                            for(let key in users){
+                                if(key==='Dushka') continue;
+                                updates['users/'+safePath(key)+'/cards/'+cardId] = firebase.database.ServerValue.increment(1);
+                            }
+                            db.ref().update(updates).then(()=>{
+                                result = `Карта ${cardObj.emoji} ${cardObj.name} выдана всем игрокам.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    } else {
+                        loadCloudData(cardUser, data=>{
+                            if(!data){result='Игрок не найден'; output.innerText=result; return;}
+                            db.ref('users/'+safePath(cardUser)+'/cards/'+cardId).transaction(cur=>(cur||0)+1).then(()=>{
+                                result = `Игроку ${cardUser} выдана карта ${cardObj.emoji} ${cardObj.name}.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    }
+                case 'spawn':
+                    if(args.length<2){result='Укажите ник и id карты'; break;}
+                    const spawnUser = args[0];
+                    const spawnCardId = args[1];
+                    const spawnCard = ALL_CARDS.find(c=>c.id===spawnCardId);
+                    if(!spawnCard){result='Карта с таким id не найдена'; break;}
+                    const spawnData = {cardId:spawnCardId, timestamp:firebase.database.ServerValue.TIMESTAMP};
+                    if(spawnUser === 'all'){
+                        db.ref('users').once('value', snap=>{
+                            const users = snap.val();
+                            if(!users){result='Нет пользователей'; output.innerText=result; return;}
+                            const updates = {};
+                            for(let key in users){
+                                if(key==='Dushka') continue;
+                                updates['users/'+safePath(key)+'/roadmapSpawn'] = spawnData;
+                            }
+                            db.ref().update(updates).then(()=>{
+                                result = `Карта ${spawnCard.emoji} ${spawnCard.name} заспавнена на дорожку всем игрокам.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    } else {
+                        loadCloudData(spawnUser, data=>{
+                            if(!data){result='Игрок не найден'; output.innerText=result; return;}
+                            db.ref('users/'+safePath(spawnUser)+'/roadmapSpawn').set(spawnData).then(()=>{
+                                result = `Игроку ${spawnUser} заспавнена карта ${spawnCard.emoji} ${spawnCard.name} на дорожку.`;
+                                output.innerText = result;
+                            }).catch(e=>{result='Ошибка: '+e.message; output.innerText=result;});
+                        });
+                        break;
+                    }
+                case 'list':
+                    db.ref('users').once('value', snap=>{
+                        const data = snap.val();
+                        if(!data){result='Нет пользователей'; output.innerText=result; return;}
+                        let text = 'Список игроков:\n';
+                        for(let key in data){
+                            const p = data[key];
+                            const bal = p.balance || 0;
+                            const cardsCount = p.cards ? Object.keys(p.cards).filter(c=>p.cards[c]>0).length : 0;
+                            text += `${key}: баланс $${bal}, карт ${cardsCount}\n`;
+                        }
+                        output.innerText = text;
+                        result = ''; // не выводить повторно
+                    });
+                    break;
+                default:
+                    result = `Неизвестная команда: ${action}. Введите help для справки.`;
+            }
+            if(result) output.innerText = result;
+            input.value = '';
+        }
+
+        // Добавляем обработчик на Enter
+        document.getElementById('adminCommandInput').addEventListener('keydown', function(e){
+            if(e.key === 'Enter') executeAdminCommand();
+        });
 
         // ---------- АККАУНТЫ ----------
         function getSavedAccounts(){try{const d=localStorage.getItem('cachedAccounts');return d?JSON.parse(d):[]}catch(e){return[]}}
@@ -422,15 +1098,26 @@
         function createClanFromInput(){const name=document.getElementById('createClanInput').value.trim();if(!name){customMsg("Ошибка","Введите название клана!");return}createClan(name,currentUser).then(()=>{customMsg("✅ Клан создан!",`Клан "${name}" успешно создан!`);renderClan()}).catch(err=>customMsg("Ошибка",err))}
         function joinClanFromInput(){const name=document.getElementById('joinClanInput').value.trim();if(!name){customMsg("Ошибка","Введите название клана!");return}joinClan(name,currentUser).then(()=>{customMsg("✅ Вы вступили!",`Вы присоединились к клану "${name}"!`);renderClan()}).catch(err=>customMsg("Ошибка",err))}
 
-        // ---------- ДОРОЖКА ----------
-        function generateRoadmapCard(){const r=Math.random()*100;let group;if(r<51.5)group='common';else if(r<51.5+41.5)group='rare';else if(r<51.5+41.5+5)group='epic';else if(r<51.5+41.5+5+1)group='legendary';else group='deadly';const pool=ALL_CARDS.filter(c=>c.rarity===group);if(pool.length===0)return{name:'Пусто',emoji:'💀',rarity:group,id:'empty',price:0};return pool[Math.floor(Math.random()*pool.length)]}
-        function renderRoadmapSlots(){const slots=document.querySelectorAll('.roadmap-slot');const timer=document.getElementById('roadmapTimerText');roadmapSlotsData.forEach((card,idx)=>{const slot=slots[idx];if(card&&card.id!=='empty'){let color=card.rarity==='deadly'?'#ef4444':card.rarity==='legendary'?'#ffd700':card.rarity==='epic'?'#a855f7':card.rarity==='rare'?'#3b82f6':card.rarity==='sigma'?'#ff00ff':'#6b7280';slot.className='roadmap-slot filled';let img=`<span class="card-img">${card.emoji}</span>`;if(card.img){img=`<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`}const income10=card.income*10*4;slot.innerHTML=`${img}<div class="card-name">${card.name}</div><div class="card-rarity" style="background:${color};color:#fff;">${card.rarity.toUpperCase()}</div><div class="timer-label">${idx===0?'9с':idx===1?'6с':'3с'}</div><div style="font-size:10px;color:#64ffda;margin-top:2px;">+${income10} за 10 мин</div>`;slot.onclick=()=>buyRoadmapCard(idx)}else{slot.className='roadmap-slot';slot.innerHTML='<span style="color:#555;">Пусто</span>';slot.onclick=null}});if(!isRoadmapFrozen){const left=3-(roadmapTimerCounter%3);timer.innerText=`⏳ До следующей смены: ${left} секунд${left>1?'ы':'а'}`}else{timer.innerText='⏳ Админский спавн: 9 секунд'}}
+        // ---------- ДОРОЖКА (с новыми шансами) ----------
+        function generateRoadmapCard(){
+            const r = Math.random() * 100;
+            let group;
+            if(r < 60) group = 'common';
+            else if(r < 60+30) group = 'rare';
+            else if(r < 60+30+8) group = 'epic';
+            else if(r < 60+30+8+1.5) group = 'legendary';
+            else group = 'sigma';
+            const pool = ALL_CARDS.filter(c => c.rarity === group);
+            if(pool.length === 0) return {name:'Пусто', emoji:'💀', rarity:group, id:'empty', price:0};
+            return pool[Math.floor(Math.random()*pool.length)];
+        }
+        function renderRoadmapSlots(){const slots=document.querySelectorAll('.roadmap-slot');const timer=document.getElementById('roadmapTimerText');roadmapSlotsData.forEach((card,idx)=>{const slot=slots[idx];if(card&&card.id!=='empty'){let color=card.rarity==='sigma'?'#ff00ff':card.rarity==='legendary'?'#ffd700':card.rarity==='epic'?'#a855f7':card.rarity==='rare'?'#3b82f6':'#6b7280';slot.className='roadmap-slot filled';let img=`<span class="card-img">${card.emoji}</span>`;if(card.img){img=`<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`}const income10=card.income*10*4;slot.innerHTML=`${img}<div class="card-name">${card.name}</div><div class="card-rarity" style="background:${color};color:#fff;">${card.rarity.toUpperCase()}</div><div class="timer-label">${idx===0?'9с':idx===1?'6с':'3с'}</div><div style="font-size:10px;color:#64ffda;margin-top:2px;">+${income10} за 10 мин</div>`;slot.onclick=()=>buyRoadmapCard(idx)}else{slot.className='roadmap-slot';slot.innerHTML='<span style="color:#555;">Пусто</span>';slot.onclick=null}});if(!isRoadmapFrozen){const left=3-(roadmapTimerCounter%3);timer.innerText=`⏳ До следующей смены: ${left} секунд${left>1?'ы':'а'}`}else{timer.innerText='⏳ Админский спавн: 9 секунд'}}
         function buyRoadmapCard(idx){if(!currentUser){customMsg("Ошибка","Сначала войди в аккаунт!");return}const card=roadmapSlotsData[idx];if(!card||card.id==='empty'){customMsg("Ошибка","В этом слоте нет карты!");return}const price=(idx===2&&isRoadmapFrozen)?0:(card.price||50);if(gameData.balance<price){customMsg("Не хватает денег",`Карта стоит $${price}, у тебя $${Math.floor(gameData.balance)}`);return}gameData.balance-=price;if(!gameData.cards[card.id])gameData.cards[card.id]=0;gameData.cards[card.id]++;saveLocalGame();saveCloudGame();updateUI();renderInventory();if(idx===2&&isRoadmapFrozen){clearSpawnedCard()}else{roadmapSlotsData[idx]=generateRoadmapCard();renderRoadmapSlots()}customMsg("✅ Куплено!",`Ты купил ${card.emoji} ${card.name} за $${price}.`)}
         function clearSpawnedCard(){isRoadmapFrozen=false;const ref=db.ref('users/'+safePath(currentUser)+'/roadmapSpawn');ref.remove();roadmapSlotsData[2]=generateRoadmapCard();if(roadmapInterval){clearInterval(roadmapInterval);roadmapInterval=null}roadmapTimerCounter=0;roadmapInterval=setInterval(()=>{roadmapTimerCounter++;if(roadmapTimerCounter%3===0){roadmapSlotsData[2]=roadmapSlotsData[1];roadmapSlotsData[1]=roadmapSlotsData[0];roadmapSlotsData[0]=generateRoadmapCard()}renderRoadmapSlots()},1000);renderRoadmapSlots()}
         function startRoadmap(){if(roadmapInterval)clearInterval(roadmapInterval);roadmapTimerCounter=0;roadmapSlotsData=[generateRoadmapCard(),generateRoadmapCard(),generateRoadmapCard()];renderRoadmapSlots();isRoadmapFrozen=false;if(currentUser){const ref=db.ref('users/'+safePath(currentUser)+'/roadmapSpawn');ref.off();ref.on('value',snap=>{const data=snap.val();if(!data||!data.cardId)return;if(isRoadmapFrozen)return;const card=ALL_CARDS.find(c=>c.id===data.cardId);if(!card)return;isRoadmapFrozen=true;if(roadmapInterval)clearInterval(roadmapInterval);roadmapSlotsData[2]=card;renderRoadmapSlots();addNotification("🛠️ Админ заспавнил карту!",`На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`,9000);setTimeout(()=>{if(isRoadmapFrozen&&currentUser)clearSpawnedCard()},9000)})}roadmapInterval=setInterval(()=>{if(isRoadmapFrozen)return;roadmapTimerCounter++;if(roadmapTimerCounter%3===0){roadmapSlotsData[2]=roadmapSlotsData[1];roadmapSlotsData[1]=roadmapSlotsData[0];roadmapSlotsData[0]=generateRoadmapCard()}renderRoadmapSlots()},1000)}
         function stopRoadmap(){if(roadmapInterval){clearInterval(roadmapInterval);roadmapInterval=null}document.querySelectorAll('.roadmap-slot').forEach(s=>{s.className='roadmap-slot';s.innerHTML='<span style="color:#555;">Остановлено</span>'});document.getElementById('roadmapTimerText').innerText='⏳ Дорожка приостановлена';if(currentUser){db.ref('users/'+safePath(currentUser)+'/roadmapSpawn').off()}}
 
-        // ---------- АДМИН-СПАВН ----------
+        // ---------- АДМИН-СПАВН (устаревшее, но оставим для совместимости) ----------
         function fillAdminCardSelect(){const select=document.getElementById('adminCardSelect');select.innerHTML='<option value="">Выбери карту</option>';ALL_CARDS.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.innerText=`${c.emoji} ${c.name} (${c.rarity})`;select.appendChild(opt)})}
         document.getElementById('adminSpawnBtn').onclick=function(){if(currentUser!=='Dushka'){customMsg("Ошибка","Только для админа!");return}const cardId=document.getElementById('adminCardSelect').value;const target=document.getElementById('adminTargetUser').value.trim();if(!cardId){customMsg("Ошибка","Выбери карту!");return}const card=ALL_CARDS.find(c=>c.id===cardId);if(!card)return;const data={cardId:cardId,timestamp:firebase.database.ServerValue.TIMESTAMP};if(target===''){db.ref('users').once('value',snap=>{const users=snap.val();if(!users){customMsg("Ошибка","Нет игроков.");return}const updates={};for(let key in users){if(key==='Dushka')continue;updates['users/'+safePath(key)+'/roadmapSpawn']=data}db.ref().update(updates).then(()=>{customMsg("✅ Спавн всем!",`Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);renderAdminPanel()}).catch(err=>customMsg("Ошибка","Не удалось заспавнить карты."))})}else{loadCloudData(target,function(userData){if(!userData){customMsg("Ошибка","Игрок не найден!");return}db.ref('users/'+safePath(target)+'/roadmapSpawn').set(data).then(()=>{customMsg("✅ Спавн!",`Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${target}.`);renderAdminPanel()}).catch(err=>customMsg("Ошибка","Не удалось заспавнить карту."))})}};
 
@@ -458,7 +1145,7 @@
         function calculateOfflineIncome(){if(!currentUser)return;const now=Date.now();const diff=Math.min((now-lastOnlineTime)/(1000*60),360);const incomePerMin=getCurrentIncome();const earn=Math.floor((incomePerMin/10)*diff);if(earn>0){gameData.balance+=earn;saveLocalGame();if(currentUser)saveCloudGame();updateUI();customMsg("⏰ Офлайн-доход!",`Пока тебя не было, ты заработал $${earn} (${diff.toFixed(0)} минут).`)}lastOnlineTime=now}
 
         // =====================================================================
-        //  РЫНОК И АУКЦИОН (НОВЫЕ ФУНКЦИИ)
+        //  РЫНОК И АУКЦИОН (НОВЫЕ ФУНКЦИИ для карт и пакетов)
         // =====================================================================
         function openSellModal(cardId){
             if(!currentUser){customMsg("Ошибка","Сначала войди в аккаунт!");return}
@@ -479,24 +1166,20 @@
                 customMsg("Ошибка","Введите корректную цену (целое число, больше 0)!");
                 return;
             }
-            // Проверяем, что карта ещё есть
             const card=ALL_CARDS.find(c=>c.id===currentCardForSell);
             if(!card || !gameData.cards[currentCardForSell] || gameData.cards[currentCardForSell]<=0){
                 customMsg("Ошибка","У вас больше нет этой карты.");
                 document.getElementById('marketSellModal').classList.remove('active');
                 return;
             }
-            // Удаляем карту из инвентаря
             gameData.cards[currentCardForSell]--;
-            saveLocalGame();
-            saveCloudGame();
-            // Создаём лот в Firebase
+            saveLocalGame(); saveCloudGame();
             const lotRef = db.ref('market/lots').push();
             const lotData = {
+                type: 'card',
                 cardId: currentCardForSell,
                 seller: currentUser,
                 price: price,
-                type: 'market',
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             lotRef.set(lotData).then(()=>{
@@ -506,14 +1189,12 @@
                 renderMarketplace();
                 updateUI();
             }).catch(err=>{
-                // Возвращаем карту
                 if(!gameData.cards[currentCardForSell]) gameData.cards[currentCardForSell]=0;
                 gameData.cards[currentCardForSell]++;
                 saveLocalGame(); saveCloudGame();
                 customMsg("❌ Ошибка","Не удалось выставить карту на рынок.");
             });
         }
-
         function openAuctionModal(cardId){
             if(!currentUser){customMsg("Ошибка","Сначала войди в аккаунт!");return}
             const card=ALL_CARDS.find(c=>c.id===cardId);
@@ -544,18 +1225,17 @@
                 document.getElementById('auctionSellModal').classList.remove('active');
                 return;
             }
-            // Удаляем карту
             gameData.cards[currentCardForSell]--;
-            saveLocalGame();
-            saveCloudGame();
+            saveLocalGame(); saveCloudGame();
             const endTime = Date.now() + durationHours * 3600 * 1000;
             const lotRef = db.ref('auction/lots').push();
             const lotData = {
+                type: 'card',
                 cardId: currentCardForSell,
                 seller: currentUser,
                 startPrice: startPrice,
                 currentBid: startPrice,
-                buyer: null, // пока нет покупателя
+                buyer: null,
                 endTime: endTime,
                 status: 'active',
                 timestamp: firebase.database.ServerValue.TIMESTAMP
@@ -579,37 +1259,26 @@
             const container = document.getElementById('marketplaceContainer');
             if(!container) return;
             container.innerHTML = '<div style="text-align:center;padding:10px;color:#848e9c;">Загрузка...</div>';
-            // Рынок
             db.ref('market/lots').on('value', snap => {
                 const marketData = snap.val() || {};
-                // Аукцион
                 db.ref('auction/lots').on('value', snap2 => {
                     const auctionData = snap2.val() || {};
                     let html = '';
-                    // Обрабатываем завершённые аукционы
+                    // Завершаем просроченные аукционы
                     const now = Date.now();
                     for(let id in auctionData){
                         const lot = auctionData[id];
                         if(lot.status === 'active' && lot.endTime && lot.endTime < now){
-                            // Завершаем аукцион
                             db.ref('auction/lots/'+id+'/status').set('ended');
-                            // Если есть buyer, он выиграл
-                            if(lot.buyer){
-                                // Ничего не делаем, победа уже записана
-                            }
                         }
                     }
-                    // Снова читаем данные после возможных обновлений
                     db.ref('auction/lots').once('value', snapAuc => {
                         const auctionData2 = snapAuc.val() || {};
-                        // Собираем все лоты
                         const allLots = [];
-                        // Рынок
                         for(let id in marketData){
                             const lot = marketData[id];
                             allLots.push({id, ...lot, type: 'market'});
                         }
-                        // Аукцион
                         for(let id in auctionData2){
                             const lot = auctionData2[id];
                             allLots.push({id, ...lot, type: 'auction'});
@@ -620,10 +1289,23 @@
                         }
                         html = '';
                         allLots.forEach(lot => {
-                            const card = ALL_CARDS.find(c => c.id === lot.cardId);
-                            if(!card) return;
-                            let imgHtml = `<img src="${card.img}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>${card.emoji}</span>';">`;
-                            if(!card.img) imgHtml = `<span>${card.emoji}</span>`;
+                            let name, emoji, imgHtml;
+                            if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                                const card = ALL_CARDS.find(c => c.id === lot.cardId);
+                                if(!card) return;
+                                name = card.emoji + ' ' + card.name;
+                                emoji = card.emoji;
+                                if(card.img) imgHtml = `<img src="${card.img}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>${card.emoji}</span>';">`;
+                                else imgHtml = `<span>${card.emoji}</span>`;
+                            } else if(lot.packId){
+                                const p = PACK_DATA.find(x => x.id === lot.packId);
+                                if(!p) return;
+                                name = p.name;
+                                emoji = '📦';
+                                imgHtml = `<img src="${p.img}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>📦</span>';">`;
+                            } else {
+                                return;
+                            }
                             const isSeller = (lot.seller === currentUser);
                             let actions = '';
                             if(lot.type === 'market'){
@@ -633,7 +1315,7 @@
                                 }
                             } else if(lot.type === 'auction'){
                                 if(lot.status === 'ended'){
-                                    if(lot.buyer === currentUser){
+                                    if(lot.buyer === currentUser && !lot.claimed){
                                         actions = `<button class="claim-btn" onclick="claimAuctionLot('${lot.id}')">Забрать</button>`;
                                     } else {
                                         actions = `<span style="color:#ff6b6b;">Завершён</span>`;
@@ -656,7 +1338,7 @@
                                 <div class="lot-card">
                                     ${imgHtml}
                                     <div>
-                                        <div class="lot-name">${card.emoji} ${card.name}</div>
+                                        <div class="lot-name">${name}</div>
                                         <div class="lot-seller">👤 ${lot.seller}</div>
                                     </div>
                                 </div>
@@ -671,7 +1353,7 @@
             });
         }
 
-        // Покупка с рынка
+        // Покупка лота (рынок)
         window.buyMarketLot = function(lotId){
             if(!currentUser){customMsg("Ошибка","Войдите в аккаунт!");return}
             const ref = db.ref('market/lots/'+lotId);
@@ -684,24 +1366,37 @@
                     customMsg("Ошибка",`Не хватает денег! Нужно $${price}.`);
                     return;
                 }
-                // Проверяем, есть ли карта у продавца (можно не проверять)
-                // Списываем деньги у покупателя, добавляем карту
+                // Списание денег у покупателя
                 gameData.balance -= price;
-                if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
-                gameData.cards[lot.cardId]++;
+                if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                    if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
+                    gameData.cards[lot.cardId]++;
+                } else if(lot.packId){
+                    gameData.inventory.push(lot.packId);
+                } else {
+                    customMsg("Ошибка","Неизвестный тип лота.");
+                    gameData.balance += price;
+                    saveLocalGame(); saveCloudGame();
+                    return;
+                }
                 saveLocalGame(); saveCloudGame();
-                // Передаём деньги продавцу
+                // Передача денег продавцу
                 db.ref('users/'+safePath(lot.seller)+'/balance').transaction(cur => (cur||0)+price);
                 // Удаляем лот
                 ref.remove().then(()=>{
-                    customMsg("✅ Покупка успешна!",`Карта куплена за $${price}.`);
+                    customMsg("✅ Покупка успешна!",`Лот куплен за $${price}.`);
                     renderInventory();
                     renderMarketplace();
                     updateUI();
                 }).catch(err=>{
-                    // Возврат денег
+                    // Возврат
                     gameData.balance += price;
-                    gameData.cards[lot.cardId]--;
+                    if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                        gameData.cards[lot.cardId]--;
+                    } else if(lot.packId){
+                        const idx = gameData.inventory.indexOf(lot.packId);
+                        if(idx !== -1) gameData.inventory.splice(idx,1);
+                    }
                     saveLocalGame(); saveCloudGame();
                     customMsg("❌ Ошибка","Не удалось завершить покупку.");
                 });
@@ -718,7 +1413,6 @@
                 if(lot.seller === currentUser){customMsg("Ошибка","Вы не можете делать ставку на свой лот!");return}
                 const currentBid = lot.currentBid || lot.startPrice;
                 const minBid = currentBid + 1;
-                // Запрашиваем сумму
                 showCustomMsg("Ставка на аукционе",`Текущая ставка: $${currentBid}. Минимальная: $${minBid}. Введите вашу ставку:`, [{text:'Ввести',class:'confirm'},{text:'Отмена',class:'cancel'}])
                 .then(res => {
                     if(res===0){
@@ -731,11 +1425,8 @@
                             customMsg("Ошибка",`Не хватает денег! Нужно $${amount}.`);
                             return;
                         }
-                        // Резервируем деньги (переводим на временный счёт?)
-                        // Просто списываем с баланса и возвращаем при проигрыше
                         gameData.balance -= amount;
                         saveLocalGame(); saveCloudGame();
-                        // Обновляем лот
                         ref.update({
                             currentBid: amount,
                             buyer: currentUser
@@ -744,7 +1435,6 @@
                             renderMarketplace();
                             updateUI();
                         }).catch(err=>{
-                            // Возврат денег
                             gameData.balance += amount;
                             saveLocalGame(); saveCloudGame();
                             customMsg("❌ Ошибка","Не удалось сделать ставку.");
@@ -754,7 +1444,7 @@
             });
         };
 
-        // Забрать выигранный аукцион
+        // Забрать выигранный лот (аукцион)
         window.claimAuctionLot = function(lotId){
             if(!currentUser){customMsg("Ошибка","Войдите в аккаунт!");return}
             const ref = db.ref('auction/lots/'+lotId);
@@ -762,20 +1452,25 @@
                 const lot = snap.val();
                 if(!lot || lot.status !== 'ended'){customMsg("Ошибка","Аукцион ещё не завершён или не существует!");return}
                 if(lot.buyer !== currentUser){customMsg("Ошибка","Вы не победитель этого аукциона!");return}
-                // Проверяем, не забрал ли уже
-                if(lot.claimed){customMsg("Ошибка","Вы уже забрали эту карту.");return}
-                // Добавляем карту победителю
-                if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
-                gameData.cards[lot.cardId]++;
+                if(lot.claimed){customMsg("Ошибка","Вы уже забрали этот лот.");return}
+                // Добавляем выигрыш
+                if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                    if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
+                    gameData.cards[lot.cardId]++;
+                } else if(lot.packId){
+                    gameData.inventory.push(lot.packId);
+                } else {
+                    customMsg("Ошибка","Неизвестный тип лота.");
+                    return;
+                }
                 saveLocalGame(); saveCloudGame();
-                // Помечаем как полученное
                 ref.update({claimed: true}).then(()=>{
-                    customMsg("✅ Карта получена!",`Вы забрали ${lot.cardId}.`);
+                    customMsg("✅ Лот получен!",`Вы забрали выигрыш.`);
                     renderInventory();
                     renderMarketplace();
                     updateUI();
                 }).catch(err=>{
-                    customMsg("❌ Ошибка","Не удалось забрать карту.");
+                    customMsg("❌ Ошибка","Не удалось забрать лот.");
                 });
             });
         };
@@ -793,25 +1488,34 @@
                     customMsg("Ошибка","Нельзя отменить завершённый аукцион.");
                     return;
                 }
-                // Возвращаем карту продавцу
-                if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
-                gameData.cards[lot.cardId]++;
+                // Возвращаем лот продавцу
+                if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                    if(!gameData.cards[lot.cardId]) gameData.cards[lot.cardId]=0;
+                    gameData.cards[lot.cardId]++;
+                } else if(lot.packId){
+                    gameData.inventory.push(lot.packId);
+                }
                 saveLocalGame(); saveCloudGame();
                 ref.remove().then(()=>{
-                    customMsg("✅ Лот отменён",`Карта возвращена в ваш инвентарь.`);
+                    customMsg("✅ Лот отменён",`Лот возвращён в ваш инвентарь.`);
                     renderInventory();
                     renderMarketplace();
                     updateUI();
                 }).catch(err=>{
-                    // Возврат карты
-                    gameData.cards[lot.cardId]--;
+                    // Возврат обратно (откат)
+                    if(lot.type === 'card' || (lot.cardId && !lot.packId)){
+                        gameData.cards[lot.cardId]--;
+                    } else if(lot.packId){
+                        const idx = gameData.inventory.indexOf(lot.packId);
+                        if(idx !== -1) gameData.inventory.splice(idx,1);
+                    }
                     saveLocalGame(); saveCloudGame();
                     customMsg("❌ Ошибка","Не удалось отменить лот.");
                 });
             });
         };
 
-        // ---------- ОБРАБОТЧИК ВКЛАДОК (с поддержкой почты и рынка) ----------
+        // ---------- ОБРАБОТЧИК ВКЛАДОК ----------
         document.addEventListener('DOMContentLoaded',function(){
             const tabs=document.querySelectorAll('.tab-btn');
             const panes=document.querySelectorAll('.tab-pane');
@@ -841,13 +1545,14 @@
             };
             generateStore();
             initPopularCoins();
-            renderMarketplace(); // начальная загрузка
+            renderMarketplace();
         });
 
+        // Переопределяем renderAdminPanel для отображения таблицы (для совместимости)
         const origRenderAdmin=renderAdminPanel;
         renderAdminPanel=function(){const btn=document.querySelector('.hidden-admin');if(currentUser==='Dushka'){if(btn)btn.style.display='flex';fillAdminCardSelect();origRenderAdmin()}else{if(btn)btn.style.display='none';document.getElementById('adminContainer').innerHTML='<div class="placeholder" style="text-align:center;padding:20px;color:#ff6b6b;">⛔ У вас нет прав администратора!</div>'}};
         if(currentUser)setTimeout(()=>renderClan(),500);
-        console.log('✅ Код обновлён: рынок и аукцион работают, цены целые, пакеты дорожают.');
+        console.log('✅ Код обновлён: анимация кейсов, выбор действия для пакетов, изменённые шансы дорожки, админ-команды, рынок и аукцион для пакетов работают.');
     </script>
 </body>
 </html>
