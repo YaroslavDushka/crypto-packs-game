@@ -763,12 +763,11 @@
         };
 
         // =====================================================================
-        // НОВАЯ УМНАЯ АДМИН КОНСОЛЬ (ГЛОБАЛЬНАЯ)
+        // АДМИН КОНСОЛЬ (ГЛОБАЛЬНАЯ)
         // =====================================================================
         let consoleHistory = [];
         let consoleHistoryIndex = -1;
         
-        // Списки для автокомплита
         const consoleAllowedCommands = ['spawn', 'spawnroad', 'givepack', 'claim', 'give', 'take', 'ban', 'unban', 'event', 'help'];
         const mutationList = ['gold', 'diamond', 'rainbow'];
         const packIdList = PACK_DATA.map(p => p.id);
@@ -784,7 +783,6 @@
             output.scrollTop = output.scrollHeight;
         }
 
-        // Логика подсказок
         function updateSuggestion() {
             const input = document.getElementById('adminConsoleInput');
             const suggest = document.getElementById('adminConsoleSuggest');
@@ -800,13 +798,11 @@
 
             let suggestion = null;
 
-            // 1. Подсказка для первой команды
             if(parts.length === 1) {
                 const cmd = parts[0].toLowerCase();
                 const match = consoleAllowedCommands.find(c => c.startsWith(cmd) && c !== cmd);
                 if(match) suggestion = match;
             } 
-            // 2. Подсказка аргументов (второе слово)
             else if(parts.length === 2) {
                 const cmd = parts[0].toLowerCase();
                 const arg = parts[1].toLowerCase();
@@ -824,7 +820,6 @@
                     if(match) suggestion = match;
                 }
             }
-            // 3. Подсказка мутации (третье слово)
             else if(parts.length === 3) {
                 const cmd = parts[0].toLowerCase();
                 if(cmd === 'spawn' || cmd === 'spawnroad' || cmd === 'givepack') {
@@ -913,10 +908,9 @@
         }
 
         // =====================================================================
-        // ПАРСЕР КОМАНД (ДЛЯ ЛЮБЫХ НИКОВ)
+        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ ТОЧНОГО СОВПАДЕНИЯ)
         // =====================================================================
         function parseCommand(input) {
-            // Ищем первую команду (первое слово)
             const match = input.match(/^\s*(\w+)\s+(.*)$/);
             if (!match) return { cmd: input.trim().toLowerCase(), args: [] };
             
@@ -925,12 +919,17 @@
             let args = [];
 
             if (cmd === 'claim') {
+                // Самая сложная команда. Мы просто берём всё, что осталось, и разбиваем с умом.
                 const allParts = rest.split(/\s+/);
                 if (allParts.length >= 2) {
+                    // Последний аргумент - это всегда ID карты (по логике игры)
                     const lastArg = allParts[allParts.length - 1];
+                    // Всё, что ДО последнего аргумента - это никнейм (даже если там скобки и пробелы)
                     const nickParts = allParts.slice(0, allParts.length - 1);
                     const nick = nickParts.join(' ');
+                    
                     args = [nick, lastArg];
+                    // Если есть еще 4-й аргумент, это мутация
                     if (allParts.length > nickParts.length + 1) {
                         args.push(allParts[allParts.length - 1]);
                     }
@@ -1025,7 +1024,8 @@
             // CLAIM
             if(cmd === 'claim') {
                 if(args.length < 2) { consolePrint("Используй: claim all &lt;cardId&gt; [mutation] или claim &lt;nick&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
-                const target = args[0];
+                // ВАЖНО: здесь мы НЕ приводим ник к нижнему регистру, чтобы искать точное совпадение в базе
+                const target = args[0]; 
                 const cardId = args[1].toLowerCase();
                 const mutation = args[2] || null;
                 const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
@@ -1049,6 +1049,7 @@
                         consolePrint(`Карта ${card.emoji} ${card.name} выдана ВСЕМ!`, 'success');
                     });
                 } else {
+                    // Ищем игрока БЕЗ приведения к нижнему регистру!
                     loadCloudData(target, function(data){
                         if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
                         const cardRef = db.ref('users/'+safePath(target)+'/cards/'+card.id);
