@@ -791,7 +791,7 @@
             const suggest = document.getElementById('adminConsoleSuggest');
             if(!input || !suggest) return;
 
-            const val = input.value.trim().toLowerCase();
+            const val = input.value.trim();
             const parts = val.split(/\s+/);
             
             if(val.length === 0) {
@@ -803,32 +803,23 @@
 
             // 1. Подсказка для первой команды
             if(parts.length === 1) {
-                const cmd = parts[0];
-                // Ищем совпадение среди команд (но не точное совпадение)
+                const cmd = parts[0].toLowerCase();
                 const match = consoleAllowedCommands.find(c => c.startsWith(cmd) && c !== cmd);
                 if(match) suggestion = match;
             } 
             // 2. Подсказка аргументов (второе слово)
             else if(parts.length === 2) {
-                const cmd = parts[0];
-                const arg = parts[1];
+                const cmd = parts[0].toLowerCase();
+                const arg = parts[1].toLowerCase();
                 
-                // Для команд, которые принимают ID карты
                 if(cmd === 'spawn' || cmd === 'spawnroad' || (cmd === 'claim' && parts[0] !== 'all')) {
-                    const match = cardIdList.find(id => id.startsWith(arg));
+                    const match = cardIdList.find(id => id.toLowerCase().startsWith(arg));
                     if(match) suggestion = match;
                 }
-                // Для команд, принимающих пакет
                 else if(cmd === 'givepack') {
-                    const match = packIdList.find(id => id.startsWith(arg));
+                    const match = packIdList.find(id => id.toLowerCase().startsWith(arg));
                     if(match) suggestion = match;
                 }
-                // Для команд, принимающих сумму или ник (не подсказываем сложные ники, только простые паттерны)
-                else if(cmd === 'give' || cmd === 'take' || cmd === 'ban' || cmd === 'unban') {
-                    // Тут сложно подсказывать ники из БД, оставим просто логику "введи ник"
-                    // Но если юзер ввел "give ", то можно не подсказывать ничего специфичного, кроме "all" для claim
-                }
-                // Для ивента
                 else if(cmd === 'event') {
                     const match = mutationList.find(m => m.startsWith(arg));
                     if(match) suggestion = match;
@@ -836,10 +827,9 @@
             }
             // 3. Подсказка мутации (третье слово)
             else if(parts.length === 3) {
-                const cmd = parts[0];
-                // spawn <id> [mutation]  ИЛИ spawnRoad <id> [mutation]
+                const cmd = parts[0].toLowerCase();
                 if(cmd === 'spawn' || cmd === 'spawnroad' || cmd === 'givepack') {
-                    const arg = parts[2];
+                    const arg = parts[2].toLowerCase();
                     const match = mutationList.find(m => m.startsWith(arg));
                     if(match) suggestion = match;
                 }
@@ -861,13 +851,9 @@
             const suggestionText = suggest.innerText;
             if(suggestionText) {
                 const parts = input.value.trim().split(/\s+/);
-                // Если ввели только начало команды
                 if(parts.length === 1) {
                     input.value = suggestionText + ' ';
-                } 
-                // Если вводим ID карты/пакета/мутации
-                else {
-                    // Удаляем последнее частичное слово и заменяем на полное
+                } else {
                     parts[parts.length - 1] = suggestionText;
                     input.value = parts.join(' ') + ' ';
                 }
@@ -880,7 +866,6 @@
             const input = document.getElementById('adminConsoleInput');
             const suggest = document.getElementById('adminConsoleSuggest');
             
-            // 1. Обработка стрелочек (История)
             if(e.key === 'ArrowUp') {
                 e.preventDefault();
                 if(consoleHistory.length > 0) {
@@ -903,27 +888,23 @@
                 return;
             }
 
-            // 2. Обработка Tab (принудительная вставка подсказки)
             if(e.key === 'Tab') {
                 e.preventDefault();
                 applySuggestion();
                 return;
             }
 
-            // 3. Обновление подсказки при вводе текста
             if(e.key.length === 1 || e.key === 'Backspace') {
                 setTimeout(updateSuggestion, 50);
             }
 
-            // 4. Обработка Enter (выполнение команды)
             if(e.key === 'Enter') {
                 suggest.style.display = 'none';
                 const val = input.value.trim();
                 if(!val) return;
 
-                // Сохраняем в историю
                 consoleHistory.unshift(val);
-                if(consoleHistory.length > 20) consoleHistory.pop(); // Ограничим историю
+                if(consoleHistory.length > 20) consoleHistory.pop();
                 consoleHistoryIndex = -1;
                 input.value = '';
 
@@ -932,15 +913,58 @@
             }
         }
 
+        // =====================================================================
+        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ НИКОВ С ПРОБЕЛАМИ)
+        // =====================================================================
+        function parseCommand(input) {
+            // Ищем команду (первое слово), а остальное - аргументы
+            const match = input.match(/^\s*(\w+)\s+(.*)$/);
+            if (!match) return { cmd: input.trim().toLowerCase(), args: [] };
+            
+            const cmd = match[1].toLowerCase();
+            let rest = match[2].trim();
+            let args = [];
+
+            if (cmd === 'claim') {
+                // Для claim особый парсинг.
+                // Если первый аргумент не "all", значит это ник (может быть с пробелами)
+                const firstSpace = rest.indexOf(' ');
+                if (firstSpace !== -1) {
+                    const potentialName = rest.substring(0, firstSpace);
+                    // Проверяем, является ли первый кусок словом "all"
+                    if (potentialName.toLowerCase() === 'all') {
+                        // Это "claim all ..."
+                        args = rest.split(/\s+/);
+                    } else {
+                        // Это "claim Имя Фамилия cardId ..."
+                        // Отделяем никнейм (все до последнего слова)
+                        const lastSpace = rest.lastIndexOf(' ');
+                        if (lastSpace !== -1) {
+                            const nick = rest.substring(0, lastSpace);
+                            const card = rest.substring(lastSpace + 1).split(/\s+/);
+                            args = [nick, ...card];
+                        } else {
+                            args = [rest];
+                        }
+                    }
+                } else {
+                    args = [rest];
+                }
+            } else {
+                // Обычные команды, где аргументы разделены пробелами
+                args = rest.split(/\s+/);
+            }
+            
+            return { cmd, args };
+        }
+
         function executeAdminCommand(fullCmd) {
             if(currentUser !== 'Dushka') {
                 consolePrint("У тебя нет прав админа, петушара!", 'error');
                 return;
             }
-            
-            const parts = fullCmd.split(/\s+/);
-            const cmd = parts[0].toLowerCase();
-            const args = parts.slice(1);
+
+            const { cmd, args } = parseCommand(fullCmd);
 
             // HELP
             if(cmd === 'help') {
@@ -961,11 +985,11 @@
             // SPAWN (себе)
             if(cmd === 'spawn') {
                 if(args.length < 1) { consolePrint("Используй: spawn &lt;cardId&gt; [mutation]", 'error'); return; }
-                const cardId = args[0];
+                const cardId = args[0].toLowerCase();
                 const mutation = args[1] || null;
-                const card = ALL_CARDS.find(c => c.id === cardId);
+                const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
-                addCard(cardId, mutation, 1);
+                addCard(card.id, mutation, 1);
                 saveToFirebase();
                 consolePrint(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`, 'success');
                 return;
@@ -974,9 +998,9 @@
             // SPAWNROAD
             if(cmd === 'spawnroad') {
                 if(args.length < 1) { consolePrint("Используй: spawnRoad &lt;cardId&gt; [mutation]", 'error'); return; }
-                const cardId = args[0];
+                const cardId = args[0].toLowerCase();
                 const mutation = args[1] || null;
-                const card = ALL_CARDS.find(c => c.id === cardId);
+                const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 const newSlot = {...card, mutation: mutation};
                 db.ref('roadmap/slots').transaction(cur => {
@@ -991,9 +1015,9 @@
             // GIVEPACK (всем)
             if(cmd === 'givepack') {
                 if(args.length < 1) { consolePrint("Используй: givepack &lt;packId&gt; [mutation]", 'error'); return; }
-                const packId = args[0];
+                const packId = args[0].toLowerCase();
                 const mutation = args[1] || null;
-                const pack = PACK_DATA.find(p => p.id === packId);
+                const pack = PACK_DATA.find(p => p.id.toLowerCase() === packId);
                 if(!pack) { consolePrint("Пакет не найден!", 'error'); return; }
                 db.ref('users').once('value', snap => {
                     const users = snap.val();
@@ -1003,7 +1027,7 @@
                         const invRef = db.ref('users/'+safePath(key)+'/inventory');
                         invRef.transaction(cur => {
                             if(!cur) cur = [];
-                            cur.push({packId: packId, mutation: mutation});
+                            cur.push({packId: pack.id, mutation: mutation});
                             return cur;
                         });
                     }
@@ -1016,18 +1040,18 @@
             if(cmd === 'claim') {
                 if(args.length < 2) { consolePrint("Используй: claim all &lt;cardId&gt; [mutation] или claim &lt;nick&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
                 const target = args[0];
-                const cardId = args[1];
+                const cardId = args[1].toLowerCase();
                 const mutation = args[2] || null;
-                const card = ALL_CARDS.find(c => c.id === cardId);
+                const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
 
-                if(target === 'all') {
+                if(target.toLowerCase() === 'all') {
                     db.ref('users').once('value', snap => {
                         const users = snap.val();
                         if(!users) { consolePrint("Нет пользователей!", 'error'); return; }
                         for(let key in users) {
                             if(key === 'Dushka') continue;
-                            const cardRef = db.ref('users/'+safePath(key)+'/cards/'+cardId);
+                            const cardRef = db.ref('users/'+safePath(key)+'/cards/'+card.id);
                             cardRef.transaction(cur => {
                                 if(!cur) cur = {count:0, mutation:null};
                                 if(typeof cur === 'number') cur = {count:cur, mutation:null};
@@ -1040,8 +1064,8 @@
                     });
                 } else {
                     loadCloudData(target, function(data){
-                        if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
-                        const cardRef = db.ref('users/'+safePath(target)+'/cards/'+cardId);
+                        if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
+                        const cardRef = db.ref('users/'+safePath(target)+'/cards/'+card.id);
                         cardRef.transaction(cur => {
                             if(!cur) cur = {count:0, mutation:null};
                             if(typeof cur === 'number') cur = {count:cur, mutation:null};
@@ -1049,7 +1073,7 @@
                             if(mutation && !cur.mutation) cur.mutation = mutation;
                             return cur;
                         });
-                        consolePrint(`Карта выдана игроку ${target}`, 'success');
+                        consolePrint(`Карта выдана игроку "${target}"`, 'success');
                     });
                 }
                 return;
@@ -1062,9 +1086,9 @@
                 const amount = parseInt(args[1]);
                 if(isNaN(amount) || amount <= 0) { consolePrint("Сумма должна быть числом > 0!", 'error'); return; }
                 loadCloudData(target, function(data){
-                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
+                    if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/balance').transaction(cur => (cur||0)+amount);
-                    consolePrint(`Выдал $${amount} игроку ${target}`, 'success');
+                    consolePrint(`Выдал $${amount} игроку "${target}"`, 'success');
                 });
                 return;
             }
@@ -1076,12 +1100,12 @@
                 const amount = parseInt(args[1]);
                 if(isNaN(amount) || amount <= 0) { consolePrint("Сумма должна быть числом > 0!", 'error'); return; }
                 loadCloudData(target, function(data){
-                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
+                    if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/balance').transaction(cur => {
                         if((cur||0) < amount) return;
                         return (cur||0) - amount;
                     });
-                    consolePrint(`Забрал $${amount} у игрока ${target}`, 'success');
+                    consolePrint(`Забрал $${amount} у игрока "${target}"`, 'success');
                 });
                 return;
             }
@@ -1092,9 +1116,9 @@
                 const target = args[0];
                 const isBan = cmd === 'ban';
                 loadCloudData(target, function(data){
-                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
+                    if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/banned').set(isBan ? true : null);
-                    consolePrint(isBan ? `Игрок ${target} ЗАБАНЕН.` : `Игрок ${target} РАЗБАНЕН.`, 'success');
+                    consolePrint(isBan ? `Игрок "${target}" ЗАБАНЕН.` : `Игрок "${target}" РАЗБАНЕН.`, 'success');
                 });
                 return;
             }
@@ -1102,7 +1126,7 @@
             // EVENT
             if(cmd === 'event') {
                 if(args.length < 2) { consolePrint("Используй: event &lt;mutation&gt; &lt;seconds&gt;", 'error'); return; }
-                const mutation = args[0];
+                const mutation = args[0].toLowerCase();
                 const seconds = parseInt(args[1]);
                 if(!['gold','diamond','rainbow'].includes(mutation)) { consolePrint("Мутация должна быть gold, diamond или rainbow!", 'error'); return; }
                 if(isNaN(seconds) || seconds < 10) { consolePrint("Секунд должно быть > 10!", 'error'); return; }
