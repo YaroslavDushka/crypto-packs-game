@@ -967,7 +967,7 @@
                 return;
             }
 
-            // SPAWN (себе)
+            // SPAWN (себе) - МГНОВЕННО
             if(cmd === 'spawn') {
                 if(args.length < 1) { consolePrint("Используй: spawn &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0].toLowerCase();
@@ -976,11 +976,13 @@
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 addCard(card.id, mutation, 1);
                 saveToFirebase();
+                // Мгновенно обновляем интерфейс без ожидания
+                renderInventory(); updateUI();
                 consolePrint(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`, 'success');
                 return;
             }
 
-            // SPAWNROAD
+            // SPAWNROAD - МГНОВЕННО (для всех)
             if(cmd === 'spawnroad') {
                 if(args.length < 1) { consolePrint("Используй: spawnRoad &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0].toLowerCase();
@@ -988,12 +990,16 @@
                 const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 const newSlot = {...card, mutation: mutation};
+                // Пишем в базу и сразу перерисовываем
                 db.ref('roadmap/slots').transaction(cur => {
                     if(!cur) cur = [null, null, null];
                     cur[2] = newSlot; 
                     return cur;
+                }).then(() => {
+                    // Принудительно вызываем перерисовку слота
+                    renderRoadmapSlots();
+                    consolePrint(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`, 'success');
                 });
-                consolePrint(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`, 'success');
                 return;
             }
 
@@ -1135,14 +1141,16 @@
             }
         }
 
-        // ---------- ДОРОЖКА ----------
+        // ---------- ДОРОЖКА (НОВЫЕ ШАНСЫ И 5 СЕКУНД) ----------
         function generateRoadmapCard(){
+            // Шансы перекроены: Эпик, Легенда, Дидли убраны в обычные и редкие
             const r=Math.random()*100; let group;
-            if(r<50) group='common';
-            else if(r<80) group='rare';
-            else if(r<95) group='epic';
-            else if(r<99) group='legendary';
-            else group='deadly';
+            if(r<60) group='common';      // Обычные: 60% (было 50%)
+            else if(r<95) group='rare';   // Редкие: 35% (было 30%)
+            else if(r<99) group='epic';   // Эпик: 4% (было 15%) - порезано
+            else if(r<99.5) group='legendary'; // Легенда: 0.5% (было 4%) - порезано
+            else group='deadly';          // Дидли: 0.5% (было 1%) - порезано
+            
             const pool=ALL_CARDS.filter(c=>c.rarity===group && c.rarity!=='sigma');
             if(pool.length===0) return {name:'Пусто',emoji:'💀',rarity:group,id:'empty',price:0,mutation:'none'};
             const card=pool[Math.floor(Math.random()*pool.length)];
@@ -1210,7 +1218,7 @@
             });
         }
 
-        // Запуск дорожки
+        // Запуск дорожки (интервал 5 СЕКУНД)
         function startRoadmapTimer(){
             db.ref('roadmap/slots').once('value',snap=>{
                 if(!snap.exists()){
@@ -1220,11 +1228,12 @@
             });
             if(roadmapTimerInterval)clearInterval(roadmapTimerInterval);
             let counter=0;
+            // ИЗМЕНЕНО: теперь обновление раз в 5 секунд (5000мс) вместо 1с
             roadmapTimerInterval=setInterval(()=>{
                 counter++;
-                const left=3-(counter%3);
+                const left=5-(counter%5); // Показывает от 5 до 1
                 db.ref('roadmap/timer').set(`⏳ ${left} сек`);
-                if(counter%3===0){
+                if(counter%5===0){
                     db.ref('roadmap/slots').transaction(cur=>{
                         if(!cur)return [generateRoadmapCard(),generateRoadmapCard(),generateRoadmapCard()];
                         cur[2]=cur[1];
@@ -1233,7 +1242,7 @@
                         return cur;
                     });
                 }
-            },1000);
+            },1000); // Каждую секунду обновляем счётчик, но карты меняются только каждые 5 секунд
         }
 
         // ---------- КРИПТОБИРЖА ----------
