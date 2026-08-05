@@ -15,7 +15,7 @@
         .case-wheel{position:relative;width:300px;height:300px;margin:20px auto;border-radius:50%;border:4px solid #ffb347;background:#0b0e1a;overflow:hidden}.case-wheel-inner{width:100%;height:100%;transition:transform 4s cubic-bezier(0.2,0.8,0.2,1);will-change:transform}.case-card{position:absolute;width:70px;height:90px;background:#1a2133;border:2px solid #2a3348;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#fff;text-align:center;padding:4px;box-shadow:0 0 10px rgba(0,0,0,.5)}.case-card img{width:50px;height:50px;object-fit:contain;border-radius:4px}.case-card .card-emoji{font-size:32px}.case-arrow{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:32px;color:#ffb347;z-index:10;text-shadow:0 0 20px #ffb347}.case-result{margin-top:15px;font-size:18px;font-weight:700;min-height:40px;color:#64ffda}.case-btn{padding:10px 30px;border-radius:12px;border:none;font-size:18px;font-weight:700;cursor:pointer;background:#ffb347;color:#000}.case-btn:hover{transform:scale(1.05)}.case-btn:disabled{opacity:.5}
         .chat-container{background:#0b0e1a;border:1px solid #2a3348;border-radius:12px;padding:10px;margin-top:10px;max-height:300px;overflow-y:auto}.chat-message{padding:4px 8px;border-bottom:1px solid #1a2133;font-size:13px}.chat-message .chat-user{color:#64ffda;font-weight:700}.chat-message .chat-time{color:#848e9c;font-size:11px;margin-left:8px}.chat-input-group{display:flex;gap:8px;margin-top:8px}.chat-input-group input{flex:1;padding:8px;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff}.chat-input-group button{padding:8px 16px;background:#ffb347;border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer}
 
-        /* ===== СТИЛИ ДЛЯ НОВОЙ КОНСОЛИ (ИСПРАВЛЕНО) ===== */
+        /* ===== СТИЛИ ДЛЯ КОНСОЛИ ===== */
         .console-wrapper {
             background: #0b0e1a;
             border: 1px solid #2a3348;
@@ -73,7 +73,6 @@
         }
         .console-input-group input::placeholder { color: #3b4a6b; }
         
-        /* Стили плавающей подсказки */
         .console-suggest {
             position: absolute;
             bottom: 52px;
@@ -150,7 +149,7 @@
             <div class="tab-pane" id="leaders"><div class="content-card" style="padding:0;border:none;background:0 0;box-shadow:none;"><div class="leader-wrapper"><div class="leader-header"><h2><span>🏆</span> Топ лидеров</h2><div class="leader-stats">👥 <strong id="totalPlayers">0</strong></div></div><input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск..." oninput="filterPlayers()"><div class="leader-table-header"><div>№</div><div>Игрок</div><div style="text-align:center;">💰 Доход</div></div><div id="leaderList"><div class="leader-loading">Загрузка...</div></div><div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span></div></div></div></div>
             <div class="tab-pane" id="profile"><div class="content-card"><h2>👤 Профиль</h2><div style="text-align:center;padding:10px 0;"><h3 style="color:#64ffda;margin-bottom:10px;">Логин</h3><div id="profileLoginDisplay" style="font-size:20px;font-weight:700;color:#ffb347;margin-bottom:20px;">Гость</div><h3 style="color:#64ffda;margin-bottom:10px;">Аватарка</h3><div id="profileAvatarPreview" style="width:120px;height:120px;border-radius:50%;background:#0b0e1a;border:2px solid #ffb347;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;">👤</div><input type="file" id="avatarUploadInput" accept="image/*" style="display:none;"><button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">📸 Загрузить</button></div><div style="text-align:center;padding:10px 0;margin-top:15px;border-top:1px solid #2a3348;"><h3 style="color:#ffb347;margin-bottom:10px;">⭐ Любимая карта</h3><div id="favoriteCardDisplay" style="font-size:16px;color:#8892b0;min-height:40px;"><span>Выбери в инвентаре</span></div></div><div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid #2a3348;margin-top:15px;"><button class="auth-btn" id="changeNickBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">✏️ Сменить ник</button><button class="auth-btn" id="changePasswordBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">🔑 Сменить пароль</button><button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🗑️ Удалить аккаунт</button><button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🚪 Выйти</button></div></div><div class="content-card" style="margin-top:5px;"><h2>👥 Аккаунты</h2><div style="text-align:center;padding:10px 0;"><button class="auth-btn" id="addAccountBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">➕ Добавить (до 3)</button><div id="savedAccountsList" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div></div></div></div>
             
-            <!-- =================== АДМИН-ПАНЕЛЬ (УМНАЯ КОНСОЛЬ) =================== -->
+            <!-- =================== АДМИН-ПАНЕЛЬ (КОНСОЛЬ) =================== -->
             <div class="tab-pane" id="admin">
                 <div class="content-card">
                     <h2>🛠️ Админ-панель</h2>
@@ -914,7 +913,7 @@
         }
 
         // =====================================================================
-        // ПАРСЕР КОМАНД (НА 100% ИСПРАВЛЕН ДЛЯ ЛЮБЫХ НИКОВ)
+        // ПАРСЕР КОМАНД (ДЛЯ ЛЮБЫХ НИКОВ)
         // =====================================================================
         function parseCommand(input) {
             // Ищем первую команду (первое слово)
@@ -926,34 +925,19 @@
             let args = [];
 
             if (cmd === 'claim') {
-                // Разбиваем всё по пробелам
                 const allParts = rest.split(/\s+/);
-                
                 if (allParts.length >= 2) {
-                    // Ищем ID карты. Он всегда идет последним аргументом (потому что это ID, без пробелов)
                     const lastArg = allParts[allParts.length - 1];
-                    
-                    // Всё, что ДО последнего аргумента - это никнейм (даже если там скобки и пробелы)
                     const nickParts = allParts.slice(0, allParts.length - 1);
                     const nick = nickParts.join(' ');
-                    
-                    // Аргументы: [Никнейм, ID_карты, Мутация(если есть)]
                     args = [nick, lastArg];
-                    
-                    // Если есть еще кусок после ID карты (это мутация), добавляем его
-                    // (Например: claim Dushka (test) sigma_pelmeni rainbow)
-                    // allParts = ["Dushka", "(test)", "sigma_pelmeni", "rainbow"]
-                    // nickParts = ["Dushka", "(test)"], lastArg = "sigma_pelmeni"
-                    // Оставшаяся часть (если длинна массива > nickParts + 1) - это мутация
                     if (allParts.length > nickParts.length + 1) {
-                        args.push(allParts[allParts.length - 1]); // Добавляем "rainbow"
+                        args.push(allParts[allParts.length - 1]);
                     }
                 } else {
-                    // Если частей мало, берем всё как есть
                     args = allParts;
                 }
             } else {
-                // Обычные команды
                 args = rest.split(/\s+/);
             }
             
@@ -1973,6 +1957,17 @@
         document.getElementById('authRegisterBtn').onclick=function(){
             const login=document.getElementById('authLogin').value.trim();
             const pass=document.getElementById('authPassword').value.trim();
+            
+            // ========================================================
+            // ПРОВЕРКА: запрещаем пробелы, скобки и спецсимволы
+            // ========================================================
+            const allowedChars = /^[a-zA-Z0-9_]+$/; // Разрешены только буквы, цифры и подчеркивание _
+            if(!allowedChars.test(login)){
+                customMsg("Ошибка регистрации", "Логин может содержать ТОЛЬКО латинские буквы, цифры и символ подчёркивания (_). Пробелы, скобки и другие символы запрещены!");
+                return;
+            }
+            // ========================================================
+
             if(!login||!pass){customMsg("Ошибка","Введи логин и пароль!");return;}
             if(login.toLowerCase()==='dushka'){customMsg("Ошибка","Этот ник заблокирован для регистрации!");return;}
             loadCloudData(login,function(data){
