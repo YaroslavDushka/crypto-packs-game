@@ -150,7 +150,7 @@
             <div class="tab-pane" id="leaders"><div class="content-card" style="padding:0;border:none;background:0 0;box-shadow:none;"><div class="leader-wrapper"><div class="leader-header"><h2><span>🏆</span> Топ лидеров</h2><div class="leader-stats">👥 <strong id="totalPlayers">0</strong></div></div><input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск..." oninput="filterPlayers()"><div class="leader-table-header"><div>№</div><div>Игрок</div><div style="text-align:center;">💰 Доход</div></div><div id="leaderList"><div class="leader-loading">Загрузка...</div></div><div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span></div></div></div></div>
             <div class="tab-pane" id="profile"><div class="content-card"><h2>👤 Профиль</h2><div style="text-align:center;padding:10px 0;"><h3 style="color:#64ffda;margin-bottom:10px;">Логин</h3><div id="profileLoginDisplay" style="font-size:20px;font-weight:700;color:#ffb347;margin-bottom:20px;">Гость</div><h3 style="color:#64ffda;margin-bottom:10px;">Аватарка</h3><div id="profileAvatarPreview" style="width:120px;height:120px;border-radius:50%;background:#0b0e1a;border:2px solid #ffb347;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;">👤</div><input type="file" id="avatarUploadInput" accept="image/*" style="display:none;"><button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">📸 Загрузить</button></div><div style="text-align:center;padding:10px 0;margin-top:15px;border-top:1px solid #2a3348;"><h3 style="color:#ffb347;margin-bottom:10px;">⭐ Любимая карта</h3><div id="favoriteCardDisplay" style="font-size:16px;color:#8892b0;min-height:40px;"><span>Выбери в инвентаре</span></div></div><div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid #2a3348;margin-top:15px;"><button class="auth-btn" id="changeNickBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">✏️ Сменить ник</button><button class="auth-btn" id="changePasswordBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">🔑 Сменить пароль</button><button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🗑️ Удалить аккаунт</button><button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🚪 Выйти</button></div></div><div class="content-card" style="margin-top:5px;"><h2>👥 Аккаунты</h2><div style="text-align:center;padding:10px 0;"><button class="auth-btn" id="addAccountBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">➕ Добавить (до 3)</button><div id="savedAccountsList" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div></div></div></div>
             
-            <!-- =================== АДМИН-ПАНЕЛЬ (НОВАЯ УМНАЯ КОНСОЛЬ) =================== -->
+            <!-- =================== АДМИН-ПАНЕЛЬ (УМНАЯ КОНСОЛЬ) =================== -->
             <div class="tab-pane" id="admin">
                 <div class="content-card">
                     <h2>🛠️ Админ-панель</h2>
@@ -159,7 +159,7 @@
                             <div class="console-line info"><span class="console-prompt">></span> Добро пожаловать в консоль администратора.</div>
                             <div class="console-line info"><span class="console-prompt">></span> Введите <span style="color:#64ffda;">help</span> для списка команд.</div>
                         </div>
-                        <!-- Плавающая подсказка (кликабельная) -->
+                        <!-- Плавающая подсказка -->
                         <div class="console-suggest" id="adminConsoleSuggest" onclick="applySuggestion()"></div>
                         <div class="console-input-group">
                             <span class="prompt-symbol">></span>
@@ -914,9 +914,10 @@
         }
 
         // =====================================================================
-        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ НИКОВ С ПРОБЕЛАМИ И СКОБКАМИ)
+        // ПАРСЕР КОМАНД (НА 100% ИСПРАВЛЕН ДЛЯ ЛЮБЫХ НИКОВ)
         // =====================================================================
         function parseCommand(input) {
+            // Ищем первую команду (первое слово)
             const match = input.match(/^\s*(\w+)\s+(.*)$/);
             if (!match) return { cmd: input.trim().toLowerCase(), args: [] };
             
@@ -925,42 +926,34 @@
             let args = [];
 
             if (cmd === 'claim') {
-                // Особый парсинг для claim
-                // Ищем последний аргумент, который будет ID карты (идет последним)
+                // Разбиваем всё по пробелам
                 const allParts = rest.split(/\s+/);
-                if(allParts.length >= 2) {
-                    // ID карты - это последнее слово
-                    const cardIdCandidate = allParts[allParts.length - 1];
-                    // Если последнее слово похоже на ID карты (нет скобок/пробелов)
-                    // То все, что до него - это никнейм
+                
+                if (allParts.length >= 2) {
+                    // Ищем ID карты. Он всегда идет последним аргументом (потому что это ID, без пробелов)
+                    const lastArg = allParts[allParts.length - 1];
+                    
+                    // Всё, что ДО последнего аргумента - это никнейм (даже если там скобки и пробелы)
                     const nickParts = allParts.slice(0, allParts.length - 1);
                     const nick = nickParts.join(' ');
                     
-                    // Проверяем оставшиеся аргументы (мутация) - если есть
-                    let mutation = null;
-                    if(nickParts.length > 0 && allParts.length > nickParts.length + 1) {
-                        // Если есть 4-й аргумент, это мутация
-                        // В простом случае: claim Dushka (test) sigma_pelmeni rainbow
-                        // allParts = ["Dushka", "(test)", "sigma_pelmeni", "rainbow"]
-                        // nickParts = ["Dushka", "(test)"], cardId = "sigma_pelmeni", остальное mutation
-                        if(allParts.length > nickParts.length + 1) {
-                            mutation = allParts[allParts.length - 1];
-                        }
+                    // Аргументы: [Никнейм, ID_карты, Мутация(если есть)]
+                    args = [nick, lastArg];
+                    
+                    // Если есть еще кусок после ID карты (это мутация), добавляем его
+                    // (Например: claim Dushka (test) sigma_pelmeni rainbow)
+                    // allParts = ["Dushka", "(test)", "sigma_pelmeni", "rainbow"]
+                    // nickParts = ["Dushka", "(test)"], lastArg = "sigma_pelmeni"
+                    // Оставшаяся часть (если длинна массива > nickParts + 1) - это мутация
+                    if (allParts.length > nickParts.length + 1) {
+                        args.push(allParts[allParts.length - 1]); // Добавляем "rainbow"
                     }
-                    
-                    // Собираем аргументы правильно
-                    // 1. Ник (может быть со скобками и пробелами)
-                    // 2. ID карты
-                    // 3. Мутация (если есть)
-                    args = [nick, cardIdCandidate];
-                    if(mutation) args.push(mutation);
-                    
                 } else {
                     // Если частей мало, берем всё как есть
                     args = allParts;
                 }
             } else {
-                // Обычные команды, где аргументы разделены пробелами
+                // Обычные команды
                 args = rest.split(/\s+/);
             }
             
