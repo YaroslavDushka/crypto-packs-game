@@ -1724,6 +1724,26 @@
         };
         if(currentUser) setTimeout(()=>{renderClan(); renderAdminPanel();}, 500);
         console.log('✅ REAL-TIME версия готова! Все данные синхронизируются через Firebase.');
+
+        // ========================================
+        // ЗАЕБАЛО ВСЁ, ВОТ ТЕБЕ ФУНКЦИЯ loadCloudData
+        // ========================================
+        function loadCloudData(username, callback) {
+            if (!username) {
+                if (callback) callback(null);
+                return;
+            }
+            // Обрабатываем спецсимволы в нике, чтобы Firebase не сдох
+            const safeName = String(username).replace(/[.#$\/\[\]]/g, '_');
+            const ref = db.ref('users/' + safeName);
+            
+            ref.once('value').then(snapshot => {
+                if (callback) callback(snapshot.val());
+            }).catch(err => {
+                console.error("Ошибка при загрузке юзера:", err);
+                if (callback) callback(null);
+            });
+        }
     </script>
 </body>
 </html>
