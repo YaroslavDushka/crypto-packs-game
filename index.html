@@ -73,7 +73,7 @@
         }
         .console-input-group input::placeholder { color: #3b4a6b; }
         
-        /* Стили плавающей подсказки - теперь кликабельной */
+        /* Стили плавающей подсказки */
         .console-suggest {
             position: absolute;
             bottom: 52px;
@@ -914,10 +914,9 @@
         }
 
         // =====================================================================
-        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ НИКОВ С ПРОБЕЛАМИ)
+        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ НИКОВ С ПРОБЕЛАМИ И СКОБКАМИ)
         // =====================================================================
         function parseCommand(input) {
-            // Ищем команду (первое слово), а остальное - аргументы
             const match = input.match(/^\s*(\w+)\s+(.*)$/);
             if (!match) return { cmd: input.trim().toLowerCase(), args: [] };
             
@@ -926,29 +925,39 @@
             let args = [];
 
             if (cmd === 'claim') {
-                // Для claim особый парсинг.
-                // Если первый аргумент не "all", значит это ник (может быть с пробелами)
-                const firstSpace = rest.indexOf(' ');
-                if (firstSpace !== -1) {
-                    const potentialName = rest.substring(0, firstSpace);
-                    // Проверяем, является ли первый кусок словом "all"
-                    if (potentialName.toLowerCase() === 'all') {
-                        // Это "claim all ..."
-                        args = rest.split(/\s+/);
-                    } else {
-                        // Это "claim Имя Фамилия cardId ..."
-                        // Отделяем никнейм (все до последнего слова)
-                        const lastSpace = rest.lastIndexOf(' ');
-                        if (lastSpace !== -1) {
-                            const nick = rest.substring(0, lastSpace);
-                            const card = rest.substring(lastSpace + 1).split(/\s+/);
-                            args = [nick, ...card];
-                        } else {
-                            args = [rest];
+                // Особый парсинг для claim
+                // Ищем последний аргумент, который будет ID карты (идет последним)
+                const allParts = rest.split(/\s+/);
+                if(allParts.length >= 2) {
+                    // ID карты - это последнее слово
+                    const cardIdCandidate = allParts[allParts.length - 1];
+                    // Если последнее слово похоже на ID карты (нет скобок/пробелов)
+                    // То все, что до него - это никнейм
+                    const nickParts = allParts.slice(0, allParts.length - 1);
+                    const nick = nickParts.join(' ');
+                    
+                    // Проверяем оставшиеся аргументы (мутация) - если есть
+                    let mutation = null;
+                    if(nickParts.length > 0 && allParts.length > nickParts.length + 1) {
+                        // Если есть 4-й аргумент, это мутация
+                        // В простом случае: claim Dushka (test) sigma_pelmeni rainbow
+                        // allParts = ["Dushka", "(test)", "sigma_pelmeni", "rainbow"]
+                        // nickParts = ["Dushka", "(test)"], cardId = "sigma_pelmeni", остальное mutation
+                        if(allParts.length > nickParts.length + 1) {
+                            mutation = allParts[allParts.length - 1];
                         }
                     }
+                    
+                    // Собираем аргументы правильно
+                    // 1. Ник (может быть со скобками и пробелами)
+                    // 2. ID карты
+                    // 3. Мутация (если есть)
+                    args = [nick, cardIdCandidate];
+                    if(mutation) args.push(mutation);
+                    
                 } else {
-                    args = [rest];
+                    // Если частей мало, берем всё как есть
+                    args = allParts;
                 }
             } else {
                 // Обычные команды, где аргументы разделены пробелами
