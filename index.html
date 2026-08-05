@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Крипто-паки · Кланы · Танки</title>
-    <!-- Фавиконка -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
     <style>
         /* ===== ВСЕ СТИЛИ ===== */
@@ -15,6 +14,78 @@
         .event-indicator{position:fixed;bottom:70px;right:10px;background:#1a2133;border:2px solid #ffb347;border-radius:12px;padding:8px 14px;color:#fff;font-size:13px;z-index:150;box-shadow:0 0 20px rgba(255,180,71,.3);display:none;flex-direction:column;align-items:center;gap:2px}.event-indicator.active{display:flex}.event-indicator .event-title{font-weight:700;color:#ffb347}.event-indicator .event-timer{color:#64ffda;font-size:12px}
         .case-wheel{position:relative;width:300px;height:300px;margin:20px auto;border-radius:50%;border:4px solid #ffb347;background:#0b0e1a;overflow:hidden}.case-wheel-inner{width:100%;height:100%;transition:transform 4s cubic-bezier(0.2,0.8,0.2,1);will-change:transform}.case-card{position:absolute;width:70px;height:90px;background:#1a2133;border:2px solid #2a3348;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#fff;text-align:center;padding:4px;box-shadow:0 0 10px rgba(0,0,0,.5)}.case-card img{width:50px;height:50px;object-fit:contain;border-radius:4px}.case-card .card-emoji{font-size:32px}.case-arrow{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:32px;color:#ffb347;z-index:10;text-shadow:0 0 20px #ffb347}.case-result{margin-top:15px;font-size:18px;font-weight:700;min-height:40px;color:#64ffda}.case-btn{padding:10px 30px;border-radius:12px;border:none;font-size:18px;font-weight:700;cursor:pointer;background:#ffb347;color:#000}.case-btn:hover{transform:scale(1.05)}.case-btn:disabled{opacity:.5}
         .chat-container{background:#0b0e1a;border:1px solid #2a3348;border-radius:12px;padding:10px;margin-top:10px;max-height:300px;overflow-y:auto}.chat-message{padding:4px 8px;border-bottom:1px solid #1a2133;font-size:13px}.chat-message .chat-user{color:#64ffda;font-weight:700}.chat-message .chat-time{color:#848e9c;font-size:11px;margin-left:8px}.chat-input-group{display:flex;gap:8px;margin-top:8px}.chat-input-group input{flex:1;padding:8px;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff}.chat-input-group button{padding:8px 16px;background:#ffb347;border:none;border-radius:8px;color:#000;font-weight:700;cursor:pointer}
+
+        /* ===== СТИЛИ ДЛЯ НОВОЙ КОНСОЛИ ===== */
+        .console-wrapper {
+            background: #0b0e1a;
+            border: 1px solid #2a3348;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 300px;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .console-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px 0;
+            margin-bottom: 10px;
+            max-height: 340px;
+            color: #e0e6f0;
+            line-height: 1.6;
+        }
+        .console-output::-webkit-scrollbar { width: 4px; }
+        .console-output::-webkit-scrollbar-thumb { background: #3b4a6b; border-radius: 8px; }
+        .console-line {
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 1px solid #1a2133;
+            padding: 2px 0;
+        }
+        .console-line.error { color: #ff6b6b; }
+        .console-line.success { color: #64ffda; }
+        .console-line.info { color: #848e9c; }
+        .console-prompt { color: #ffb347; margin-right: 8px; font-weight: bold; }
+        .console-input-group {
+            display: flex;
+            align-items: center;
+            background: #141828;
+            border: 1px solid #2a3348;
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
+        .console-input-group .prompt-symbol { color: #ffb347; margin-right: 5px; font-weight: bold; }
+        .console-input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            padding: 6px 0;
+            outline: none;
+        }
+        .console-input-group input::placeholder { color: #3b4a6b; }
+        .console-suggest {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            background: #1a2133;
+            border: 1px solid #2a3348;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #64ffda;
+            display: none;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -65,20 +136,31 @@
             <div class="tab-pane" id="inventory"><div class="content-card"><h2>🎒 Инвентарь</h2><h3 style="font-size:16px;margin-bottom:10px;color:#64ffda;">⚔️ Экипировка <span id="incomeDisplay" style="font-size:12px;background:#101826;padding:4px 12px;border-radius:12px;">+$0/сек</span></h3><div class="equip-slots" id="equipContainer"></div><h3 style="font-size:14px;margin:15px 0 10px;color:#f7931a;">📦 Закрытые пакеты</h3><div id="invPacksContainer" class="inv-packs-grid"></div><h3 style="font-size:14px;margin:15px 0 10px;color:#64ffda;">🃏 Открытые карты</h3><div id="cardsContainer"></div></div></div>
             <div class="tab-pane" id="leaders"><div class="content-card" style="padding:0;border:none;background:0 0;box-shadow:none;"><div class="leader-wrapper"><div class="leader-header"><h2><span>🏆</span> Топ лидеров</h2><div class="leader-stats">👥 <strong id="totalPlayers">0</strong></div></div><input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск..." oninput="filterPlayers()"><div class="leader-table-header"><div>№</div><div>Игрок</div><div style="text-align:center;">💰 Доход</div></div><div id="leaderList"><div class="leader-loading">Загрузка...</div></div><div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span></div></div></div></div>
             <div class="tab-pane" id="profile"><div class="content-card"><h2>👤 Профиль</h2><div style="text-align:center;padding:10px 0;"><h3 style="color:#64ffda;margin-bottom:10px;">Логин</h3><div id="profileLoginDisplay" style="font-size:20px;font-weight:700;color:#ffb347;margin-bottom:20px;">Гость</div><h3 style="color:#64ffda;margin-bottom:10px;">Аватарка</h3><div id="profileAvatarPreview" style="width:120px;height:120px;border-radius:50%;background:#0b0e1a;border:2px solid #ffb347;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;">👤</div><input type="file" id="avatarUploadInput" accept="image/*" style="display:none;"><button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">📸 Загрузить</button></div><div style="text-align:center;padding:10px 0;margin-top:15px;border-top:1px solid #2a3348;"><h3 style="color:#ffb347;margin-bottom:10px;">⭐ Любимая карта</h3><div id="favoriteCardDisplay" style="font-size:16px;color:#8892b0;min-height:40px;"><span>Выбери в инвентаре</span></div></div><div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid #2a3348;margin-top:15px;"><button class="auth-btn" id="changeNickBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">✏️ Сменить ник</button><button class="auth-btn" id="changePasswordBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">🔑 Сменить пароль</button><button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🗑️ Удалить аккаунт</button><button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🚪 Выйти</button></div></div><div class="content-card" style="margin-top:5px;"><h2>👥 Аккаунты</h2><div style="text-align:center;padding:10px 0;"><button class="auth-btn" id="addAccountBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">➕ Добавить (до 3)</button><div id="savedAccountsList" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div></div></div></div>
-            <div class="tab-pane" id="admin"><div class="content-card"><h2>🛠️ Админ-панель</h2>
-                <!-- ТУТ ТЕПЕРЬ ТОЛЬКО ОДНА СТРОКА -->
-                <div style="background:#111722;border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">⌨️ Консоль команд</h3>
-                    <div style="display:flex;gap:10px;margin-top:6px;">
-                        <input type="text" id="adminCommandInput" placeholder="Введите команду (например: help)" style="flex:1;padding:10px;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;font-size:14px;">
-                        <button class="auth-btn" id="adminExecBtn" style="width:auto;padding:8px 20px;">⏎ Выполнить</button>
+            
+            <!-- =================== АДМИН-ПАНЕЛЬ (НОВАЯ КОНСОЛЬ) =================== -->
+            <div class="tab-pane" id="admin">
+                <div class="content-card">
+                    <h2>🛠️ Админ-панель</h2>
+                    <div class="console-wrapper" id="adminConsoleWrapper">
+                        <div class="console-output" id="adminConsoleOutput">
+                            <div class="console-line info"><span class="console-prompt">></span> Добро пожаловать в консоль администратора.</div>
+                            <div class="console-line info"><span class="console-prompt">></span> Введите <span style="color:#64ffda;">help</span> для списка команд.</div>
+                        </div>
+                        <!-- Подсказка автокомплита -->
+                        <div class="console-suggest" id="adminConsoleSuggest"></div>
+                        <div class="console-input-group">
+                            <span class="prompt-symbol">></span>
+                            <input type="text" id="adminConsoleInput" placeholder="Введите команду..." autocomplete="off" spellcheck="false">
+                        </div>
                     </div>
-                    <div id="adminCommandOutput" style="margin-top:10px;font-size:13px;color:#848e9c;font-family:monospace;border-top:1px solid #2a3348;padding-top:10px;min-height:30px;">Введите help для списка команд.</div>
-                </div>
-                <!-- КОНЕЦ СТРОКИ -->
 
-                <div id="adminContainer" style="padding:10px 0;margin-top:15px;"><div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка списка игроков...</div></div>
-            </div></div>
+                    <div id="adminContainer" style="padding:10px 0;margin-top:5px;">
+                        <div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка списка игроков...</div>
+                    </div>
+                </div>
+            </div>
+            <!-- =================== КОНЕЦ АДМИНКИ =================== -->
+
             <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок и Аукцион</h2><div style="margin-bottom:12px;font-size:14px;color:#848e9c;">💰 Фикс. цена (рынок) · 🔨 Аукцион (ставки)</div><div id="marketplaceContainer" style="padding:10px 0;"><div class="empty-state">📭 Лотов нет</div></div></div></div>
             <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div style="font-size:14px;color:#848e9c;margin-bottom:15px;">Карты меняются каждые 3 сек. Нажми, чтобы купить.</div><div class="roadmap-container"><div class="roadmap-slots" id="roadmapSlots"><div class="roadmap-slot" id="roadmapSlot0"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot1"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot2"><span style="color:#555;">Загрузка...</span></div></div><div class="roadmap-timer-container" id="roadmapTimerText">⏳ 3 сек</div></div></div></div>
             <div class="tab-pane" id="clan"><div class="content-card"><h2>🏰 Кланы</h2><div id="clanSection"><div id="clanLoginArea" style="text-align:center;padding:10px;display:none;"><p style="color:#8892b0;">Войдите в аккаунт</p></div><div id="clanNotInClanArea" style="display:none;"><div style="margin-bottom:15px;"><h3 style="font-size:16px;color:#64ffda;">📋 Все кланы</h3><div id="allClansList"></div></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">📨 Ваши запросы</h3><div id="myJoinRequestsList"></div></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">🏆 Топ кланов</h3><div id="clanTopList"></div></div></div><div id="clanMainArea" style="display:none;"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;"><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Клан:</span> <strong id="clanNameDisplay" style="color:#64ffda;">-</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Очки:</span> <strong id="clanPointsDisplay" style="color:#ffb347;">0</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">💰 Казна:</span> <strong id="clanMoneyDisplay" style="color:#f7931a;">$0</strong></div><div style="background:#111722;border-radius:8px;padding:8px 16px;border:1px solid #2a3348;"><span style="color:#848e9c;">Танк:</span> <strong id="clanTankStatus" style="color:#64ffda;">🟢 Цел</strong></div><button id="buyClanTankBtn" style="display:none;background:#0ecb81;color:#fff;" onclick="buyClanTank()">💰 Купить танк (10 млн)</button></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;"><button onclick="openClanInvite()" style="background:#2a3348;color:#fff;">📤 Пригласить</button><button onclick="clanDeposit(1000000)" style="background:#ffb347;">+1 млн</button><button onclick="clanDeposit(10000000)" style="background:#ffb347;">+10 млн</button><button onclick="clanDeposit(100000000)" style="background:#ffb347;">+100 млн</button><button onclick="startClanBattle()" id="startClanBattleBtn" style="background:#ef4444;color:#fff;" disabled>⚔️ Битва с кланом</button><button onclick="startAIBattle()" style="background:#3b82f6;color:#fff;">🤖 ИИ (+1 очко)</button><button id="withdrawClanMoneyBtn" style="display:inline-block;background:#f7931a;color:#000;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;" onclick="withdrawClanMoney()">💸 Снять с казны</button></div><h3 style="font-size:16px;color:#f7931a;margin-bottom:8px;">Танки (10 млн/шт)</h3><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><input type="text" id="newTankName" placeholder="Имя танка" style="background:#0b0e1a;border:1px solid #2a3348;padding:6px;border-radius:6px;color:#fff;flex:1;"><button onclick="buyNamedTank()" style="background:#ffb347;color:#000;padding:6px 12px;border-radius:6px;border:none;">Купить танк</button></div><div id="clanTanksList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><h3 style="font-size:16px;color:#64ffda;margin-bottom:8px;">👥 Участники</h3><div id="clanMembersList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><h3 style="font-size:16px;color:#f7931a;margin-bottom:8px;">⚔️ Битвы</h3><div id="clanBattleLog" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;max-height:120px;overflow-y:auto;font-size:13px;margin-bottom:15px;"></div><h3 style="font-size:16px;color:#ffb347;margin-bottom:8px;">📢 Вызовы</h3><div id="clanChallengesList" style="background:#0b0e1a;border-radius:8px;padding:10px;border:1px solid #2a3348;margin-bottom:15px;min-height:40px;"></div><div id="clanOwnerRequests" style="display:none;border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#64ffda;">📨 Запросы на вступление</h3><div id="joinRequestsList"></div></div><div id="clanBattleRequestsList" style="border-top:1px solid #2a3348;padding-top:15px;margin-top:15px;"></div><div style="border-top:1px solid #2a3348;padding-top:15px;"><h3 style="font-size:16px;color:#ffb347;">🏆 Топ кланов</h3><div id="clanTopListMain"></div></div></div></div></div></div>
@@ -668,22 +750,91 @@
             customMsg(`📊 Шансы ${p.name}`,msg);
         };
 
-        // ---------- АДМИН-КОМАНДЫ (НОВАЯ ХУЙНЯ) ----------
-        function outputToAdmin(msg, isError = false) {
-            const out = document.getElementById('adminCommandOutput');
-            if(out) {
-                out.innerHTML = (isError ? '❌ ' : '✅ ') + msg;
+        // =====================================================================
+        // НОВАЯ АДМИН КОНСОЛЬ (ВМЕСТО СТРОКИ И КНОПОК)
+        // =====================================================================
+        let consoleHistory = [];
+        let consoleHistoryIndex = -1;
+        let consoleAllowedCommands = [
+            'spawn', 'spawnroad', 'givepack', 'claim', 'give', 'take', 'ban', 'unban', 'event', 'help'
+        ];
+
+        function consolePrint(text, type = 'info') {
+            const output = document.getElementById('adminConsoleOutput');
+            if(!output) return;
+            const line = document.createElement('div');
+            line.className = 'console-line ' + type;
+            line.innerHTML = `<span class="console-prompt">></span> ${text}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function handleConsoleInput(e) {
+            const input = document.getElementById('adminConsoleInput');
+            const suggest = document.getElementById('adminConsoleSuggest');
+            
+            // Обработка стрелочек (История)
+            if(e.key === 'ArrowUp') {
+                e.preventDefault();
+                if(consoleHistory.length > 0) {
+                    if(consoleHistoryIndex < consoleHistory.length - 1) consoleHistoryIndex++;
+                    input.value = consoleHistory[consoleHistoryIndex] || '';
+                }
+                suggest.style.display = 'none';
+                return;
+            }
+            if(e.key === 'ArrowDown') {
+                e.preventDefault();
+                if(consoleHistoryIndex > 0) {
+                    consoleHistoryIndex--;
+                    input.value = consoleHistory[consoleHistoryIndex] || '';
+                } else {
+                    consoleHistoryIndex = -1;
+                    input.value = '';
+                }
+                suggest.style.display = 'none';
+                return;
+            }
+
+            // Обработка Автокомплита (подсказки)
+            if(e.key === 'Tab' || e.key.length === 1 || e.key === 'Backspace') {
+                setTimeout(() => {
+                    const val = input.value.trim().toLowerCase();
+                    if(val.length > 0) {
+                        const match = consoleAllowedCommands.find(cmd => cmd.startsWith(val) && cmd !== val);
+                        if(match) {
+                            suggest.innerText = match;
+                            suggest.style.display = 'block';
+                        } else {
+                            suggest.style.display = 'none';
+                        }
+                    } else {
+                        suggest.style.display = 'none';
+                    }
+                }, 50);
+            }
+
+            // Обработка Enter
+            if(e.key === 'Enter') {
+                suggest.style.display = 'none';
+                const val = input.value.trim();
+                if(!val) return;
+
+                // Сохраняем в историю
+                consoleHistory.unshift(val);
+                consoleHistoryIndex = -1;
+                input.value = '';
+
+                consolePrint(val, 'info');
+                executeAdminCommand(val);
             }
         }
 
-        function executeAdminCommand() {
+        function executeAdminCommand(fullCmd) {
             if(currentUser !== 'Dushka') {
-                outputToAdmin("У тебя нет прав админа, петушара!", true);
+                consolePrint("У тебя нет прав админа, петушара!", 'error');
                 return;
             }
-            const input = document.getElementById('adminCommandInput');
-            const fullCmd = input.value.trim();
-            if(!fullCmd) { outputToAdmin("Введи команду, блять!", true); return; }
             
             const parts = fullCmd.split(/\s+/);
             const cmd = parts[0].toLowerCase();
@@ -691,52 +842,60 @@
 
             // HELP
             if(cmd === 'help') {
-                outputToAdmin("spawn <cardId> [mutation] | spawnRoad <cardId> [mutation] | givepack <packId> [mutation] | claim all <cardId> [mutation] | claim <nick> <cardId> [mutation] | give <nick> <amount> | take <nick> <amount> | ban <nick> | unban <nick> | event <mutation> <seconds>");
+                consolePrint("<span style='color:#64ffda;'>Доступные команды:</span>", 'info');
+                consolePrint("spawn &lt;cardId&gt; [mutation] — Выдать карту себе", 'info');
+                consolePrint("spawnRoad &lt;cardId&gt; [mutation] — Заспавнить на 3-ю дорожку", 'info');
+                consolePrint("givepack &lt;packId&gt; [mutation] — Выдать пакет всем", 'info');
+                consolePrint("claim all &lt;cardId&gt; [mutation] — Выдать карту всем", 'info');
+                consolePrint("claim &lt;nick&gt; &lt;cardId&gt; [mutation] — Выдать карту игроку", 'info');
+                consolePrint("give &lt;nick&gt; &lt;amount&gt; — Выдать деньги", 'info');
+                consolePrint("take &lt;nick&gt; &lt;amount&gt; — Забрать деньги", 'info');
+                consolePrint("ban &lt;nick&gt; — Забанить", 'info');
+                consolePrint("unban &lt;nick&gt; — Разбанить", 'info');
+                consolePrint("event &lt;mutation&gt; &lt;seconds&gt; — Ивент (gold/diamond/rainbow)", 'info');
                 return;
             }
 
             // SPAWN (себе)
             if(cmd === 'spawn') {
-                if(args.length < 1) { outputToAdmin("Используй: spawn <cardId> [mutation]", true); return; }
+                if(args.length < 1) { consolePrint("Используй: spawn &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0];
                 const mutation = args[1] || null;
                 const card = ALL_CARDS.find(c => c.id === cardId);
-                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
+                if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 addCard(cardId, mutation, 1);
                 saveToFirebase();
-                outputToAdmin(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`);
+                consolePrint(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`, 'success');
                 return;
             }
 
-            // SPAWNROAD (на дорожку)
+            // SPAWNROAD
             if(cmd === 'spawnroad') {
-                if(args.length < 1) { outputToAdmin("Используй: spawnRoad <cardId> [mutation]", true); return; }
+                if(args.length < 1) { consolePrint("Используй: spawnRoad &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0];
                 const mutation = args[1] || null;
                 const card = ALL_CARDS.find(c => c.id === cardId);
-                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
-                // Кидаем на 3-ю дорожку (индекс 2)
+                if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 const newSlot = {...card, mutation: mutation};
                 db.ref('roadmap/slots').transaction(cur => {
                     if(!cur) cur = [null, null, null];
                     cur[2] = newSlot; 
                     return cur;
                 });
-                outputToAdmin(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`);
+                consolePrint(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`, 'success');
                 return;
             }
 
-            // GIVEPACK (всем пакет)
+            // GIVEPACK (всем)
             if(cmd === 'givepack') {
-                if(args.length < 1) { outputToAdmin("Используй: givepack <packId> [mutation]", true); return; }
+                if(args.length < 1) { consolePrint("Используй: givepack &lt;packId&gt; [mutation]", 'error'); return; }
                 const packId = args[0];
                 const mutation = args[1] || null;
                 const pack = PACK_DATA.find(p => p.id === packId);
-                if(!pack) { outputToAdmin("Пакет не найден!", true); return; }
+                if(!pack) { consolePrint("Пакет не найден!", 'error'); return; }
                 db.ref('users').once('value', snap => {
                     const users = snap.val();
-                    if(!users) { outputToAdmin("Нет пользователей!", true); return; }
-                    const updates = {};
+                    if(!users) { consolePrint("Нет пользователей!", 'error'); return; }
                     for(let key in users) {
                         if(key === 'Dushka') continue;
                         const invRef = db.ref('users/'+safePath(key)+'/inventory');
@@ -746,24 +905,24 @@
                             return cur;
                         });
                     }
-                    outputToAdmin(`Пакет ${pack.name} разослан всем!`);
+                    consolePrint(`Пакет ${pack.name} разослан всем!`, 'success');
                 });
                 return;
             }
 
-            // CLAIM (выдать карту)
+            // CLAIM
             if(cmd === 'claim') {
-                if(args.length < 2) { outputToAdmin("Используй: claim all <cardId> [mutation] или claim <nick> <cardId> [mutation]", true); return; }
+                if(args.length < 2) { consolePrint("Используй: claim all &lt;cardId&gt; [mutation] или claim &lt;nick&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
                 const target = args[0];
                 const cardId = args[1];
                 const mutation = args[2] || null;
                 const card = ALL_CARDS.find(c => c.id === cardId);
-                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
+                if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
 
                 if(target === 'all') {
                     db.ref('users').once('value', snap => {
                         const users = snap.val();
-                        if(!users) { outputToAdmin("Нет пользователей!", true); return; }
+                        if(!users) { consolePrint("Нет пользователей!", 'error'); return; }
                         for(let key in users) {
                             if(key === 'Dushka') continue;
                             const cardRef = db.ref('users/'+safePath(key)+'/cards/'+cardId);
@@ -775,11 +934,11 @@
                                 return cur;
                             });
                         }
-                        outputToAdmin(`Карта ${card.emoji} ${card.name} выдана ВСЕМ!`);
+                        consolePrint(`Карта ${card.emoji} ${card.name} выдана ВСЕМ!`, 'success');
                     });
                 } else {
                     loadCloudData(target, function(data){
-                        if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                        if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
                         const cardRef = db.ref('users/'+safePath(target)+'/cards/'+cardId);
                         cardRef.transaction(cur => {
                             if(!cur) cur = {count:0, mutation:null};
@@ -788,77 +947,81 @@
                             if(mutation && !cur.mutation) cur.mutation = mutation;
                             return cur;
                         });
-                        outputToAdmin(`Карта выдана игроку ${target}`);
+                        consolePrint(`Карта выдана игроку ${target}`, 'success');
                     });
                 }
                 return;
             }
 
-            // GIVE (дать денег)
+            // GIVE
             if(cmd === 'give') {
-                if(args.length < 2) { outputToAdmin("Используй: give <nick> <amount>", true); return; }
+                if(args.length < 2) { consolePrint("Используй: give &lt;nick&gt; &lt;amount&gt;", 'error'); return; }
                 const target = args[0];
                 const amount = parseInt(args[1]);
-                if(isNaN(amount) || amount <= 0) { outputToAdmin("Сумма должна быть числом > 0!", true); return; }
+                if(isNaN(amount) || amount <= 0) { consolePrint("Сумма должна быть числом > 0!", 'error'); return; }
                 loadCloudData(target, function(data){
-                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/balance').transaction(cur => (cur||0)+amount);
-                    outputToAdmin(`Выдал $${amount} игроку ${target}`);
+                    consolePrint(`Выдал $${amount} игроку ${target}`, 'success');
                 });
                 return;
             }
 
-            // TAKE (забрать деньги)
+            // TAKE
             if(cmd === 'take') {
-                if(args.length < 2) { outputToAdmin("Используй: take <nick> <amount>", true); return; }
+                if(args.length < 2) { consolePrint("Используй: take &lt;nick&gt; &lt;amount&gt;", 'error'); return; }
                 const target = args[0];
                 const amount = parseInt(args[1]);
-                if(isNaN(amount) || amount <= 0) { outputToAdmin("Сумма должна быть числом > 0!", true); return; }
+                if(isNaN(amount) || amount <= 0) { consolePrint("Сумма должна быть числом > 0!", 'error'); return; }
                 loadCloudData(target, function(data){
-                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/balance').transaction(cur => {
                         if((cur||0) < amount) return;
                         return (cur||0) - amount;
                     });
-                    outputToAdmin(`Забрал $${amount} у игрока ${target}`);
+                    consolePrint(`Забрал $${amount} у игрока ${target}`, 'success');
                 });
                 return;
             }
 
             // BAN / UNBAN
             if(cmd === 'ban' || cmd === 'unban') {
-                if(args.length < 1) { outputToAdmin(`Используй: ${cmd} <nick>`, true); return; }
+                if(args.length < 1) { consolePrint(`Используй: ${cmd} &lt;nick&gt;`, 'error'); return; }
                 const target = args[0];
                 const isBan = cmd === 'ban';
                 loadCloudData(target, function(data){
-                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    if(!data) { consolePrint(`Игрок ${target} не найден!`, 'error'); return; }
                     db.ref('users/'+safePath(target)+'/banned').set(isBan ? true : null);
-                    outputToAdmin(isBan ? `Игрок ${target} ЗАБАНЕН.` : `Игрок ${target} РАЗБАНЕН.`);
+                    consolePrint(isBan ? `Игрок ${target} ЗАБАНЕН.` : `Игрок ${target} РАЗБАНЕН.`, 'success');
                 });
                 return;
             }
 
             // EVENT
             if(cmd === 'event') {
-                if(args.length < 2) { outputToAdmin("Используй: event <mutation> <seconds>", true); return; }
+                if(args.length < 2) { consolePrint("Используй: event &lt;mutation&gt; &lt;seconds&gt;", 'error'); return; }
                 const mutation = args[0];
                 const seconds = parseInt(args[1]);
-                if(!['gold','diamond','rainbow'].includes(mutation)) { outputToAdmin("Мутация должна быть gold, diamond или rainbow!", true); return; }
-                if(isNaN(seconds) || seconds < 10) { outputToAdmin("Секунд должно быть > 10!", true); return; }
+                if(!['gold','diamond','rainbow'].includes(mutation)) { consolePrint("Мутация должна быть gold, diamond или rainbow!", 'error'); return; }
+                if(isNaN(seconds) || seconds < 10) { consolePrint("Секунд должно быть > 10!", 'error'); return; }
                 const endTime = Date.now() + seconds * 1000;
                 db.ref('event').set({active: true, mutation: mutation, endTime: endTime});
-                outputToAdmin(`Ивент запущен! Мутация: ${mutation.toUpperCase()} на ${seconds} сек.`);
+                consolePrint(`Ивент запущен! Мутация: ${mutation.toUpperCase()} на ${seconds} сек.`, 'success');
                 return;
             }
 
-            // Если команда не распознана
-            outputToAdmin(`Команда "${cmd}" не найдена. Введи help.`, true);
+            consolePrint(`Команда "${cmd}" не найдена. Введи help.`, 'error');
         }
 
-        document.getElementById('adminExecBtn').onclick = executeAdminCommand;
-        document.getElementById('adminCommandInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') executeAdminCommand();
+        // Инициализация обработчиков консоли
+        document.addEventListener('DOMContentLoaded', function(){
+            const adminInput = document.getElementById('adminConsoleInput');
+            if(adminInput) {
+                adminInput.addEventListener('keydown', handleConsoleInput);
+            }
         });
+
+        // ============= КОНЕЦ НОВОЙ КОНСОЛИ ==================
 
 
         // ---------- ИВЕНТЫ ----------
@@ -1835,6 +1998,16 @@
                 renderClan();
             }
         });
+
+        // Заполнение селектов (для старой панели, если нужно)
+        function fillAdminSelects(){
+            const selectCard=document.getElementById('adminCardSelect');
+            const selectClaim=document.getElementById('adminClaimCardSelect');
+            const selectPack=document.getElementById('adminPackSelect');
+            if(selectCard){ALL_CARDS.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.innerText=`${c.emoji} ${c.name} (${c.rarity})`;selectCard.appendChild(opt);});}
+            if(selectClaim){ALL_CARDS.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.innerText=`${c.emoji} ${c.name} (${c.rarity})`;selectClaim.appendChild(opt);});}
+            if(selectPack){PACK_DATA.forEach(p=>{const opt=document.createElement('option');opt.value=p.id;opt.innerText=p.name;selectPack.appendChild(opt);});}
+        }
 
         const origRenderAdmin=renderAdminPanel;
         renderAdminPanel=function(){
