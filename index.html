@@ -98,12 +98,58 @@
             color: #000;
             border-color: #fff;
         }
+
+        /* ===== СТИЛИ ДЛЯ ГЛОБАЛЬНОГО ТАЙМЕРА ===== */
+        .global-timer-container {
+            position: fixed;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2133;
+            border: 2px solid #ffb347;
+            border-radius: 12px;
+            padding: 12px 25px;
+            z-index: 9998;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(255,180,71,.3);
+            min-width: 250px;
+            pointer-events: none;
+            text-align: center;
+        }
+        .global-timer-container.active {
+            display: flex;
+        }
+        .global-timer-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .global-timer-countdown {
+            color: #64ffda;
+            font-size: 26px;
+            font-weight: bold;
+        }
+        .global-timer-text {
+            color: #e0e6f0;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
     <!-- ===== ЛЕВЫЙ ВЕРХНИЙ УГОЛ ===== -->
     <div class="avatar-actions-container">
         <div class="global-avatar-btn hidden" id="globalAvatarBtn"><span class="placeholder">👤</span></div>
+    </div>
+
+    <!-- ===== ГЛОБАЛЬНЫЙ ТАЙМЕР ===== -->
+    <div class="global-timer-container" id="globalTimerContainer">
+        <div class="global-timer-title" id="globalTimerTitle">⏳ Таймер</div>
+        <div class="global-timer-countdown" id="globalTimerCountdown">0</div>
+        <div class="global-timer-text" id="globalTimerText">Загрузка...</div>
     </div>
 
     <!-- ===== МОДАЛЬНЫЕ ОКНА ===== -->
@@ -763,12 +809,95 @@
         };
 
         // =====================================================================
+        // СИСТЕМА ГЛОБАЛЬНЫХ УВЕДОМЛЕНИЙ И ТАЙМЕРА (ВМЕСТО ЧАТА)
+        // =====================================================================
+
+        // Уведомления всем игрокам
+        function addGlobalNotification(title, text, duration = 8000) {
+            const area = document.getElementById('notificationArea');
+            const notif = document.createElement('div');
+            notif.className = 'notification-item';
+            notif.innerHTML = `<div class="notif-title">${title}</div><div class="notif-text">${text}</div><div class="notif-close">× Закрыть</div>`;
+            notif.querySelector('.notif-close').onclick = function(){ notif.remove(); };
+            area.appendChild(notif);
+            setTimeout(() => {
+                if(notif.parentNode) notif.remove();
+            }, duration);
+        }
+
+        // Функция для отправки сообщения в Firebase для всех
+        function sendGlobalNotification(title, text) {
+            const data = { title: title, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP };
+            db.ref('globalNotifications').push(data);
+        }
+
+        // Слушатель глобальных уведомлений
+        function setupGlobalNotificationListener() {
+            db.ref('globalNotifications').limitToLast(20).on('child_added', snap => {
+                const msg = snap.val();
+                if (msg && msg.title && msg.text) {
+                    // Не показываем уведомления самому себе, если это админ (чтобы не дублировать консоль)
+                    if(currentUser === 'Dushka') return;
+                    addGlobalNotification(msg.title, msg.text);
+                }
+            });
+        }
+
+        // Глобальный таймер
+        let globalTimerInterval = null;
+
+        function updateGlobalTimer(data) {
+            const container = document.getElementById('globalTimerContainer');
+            const titleEl = document.getElementById('globalTimerTitle');
+            const countdownEl = document.getElementById('globalTimerCountdown');
+            const textEl = document.getElementById('globalTimerText');
+
+            if (data && data.active) {
+                container.classList.add('active');
+                titleEl.innerText = `⏳ ${data.title || 'Таймер'}`;
+                textEl.innerText = data.text || '';
+                
+                const endTime = data.endTime;
+                const updateTimerDisplay = () => {
+                    const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+                    countdownEl.innerText = remaining;
+                    if (remaining <= 0) {
+                        clearInterval(globalTimerInterval);
+                        db.ref('globalTimer').set({active: false});
+                        // Добавляем финальное уведомление о завершении
+                        sendGlobalNotification('⏰ Время вышло!', `Таймер "${data.text || 'Без названия'}" завершён!`);
+                    }
+                };
+                
+                if(globalTimerInterval) clearInterval(globalTimerInterval);
+                updateTimerDisplay();
+                globalTimerInterval = setInterval(updateTimerDisplay, 1000);
+            } else {
+                container.classList.remove('active');
+                if(globalTimerInterval) {
+                    clearInterval(globalTimerInterval);
+                    globalTimerInterval = null;
+                }
+            }
+        }
+
+        function syncGlobalTimer() {
+            db.ref('globalTimer').on('value', snap => {
+                updateGlobalTimer(snap.val());
+            });
+        }
+
+        // =====================================================================
         // АДМИН КОНСОЛЬ (ГЛОБАЛЬНАЯ)
         // =====================================================================
         let consoleHistory = [];
         let consoleHistoryIndex = -1;
         
-        const consoleAllowedCommands = ['spawn', 'spawnroad', 'givepack', 'claim', 'give', 'take', 'ban', 'unban', 'event', 'help'];
+        const consoleAllowedCommands = [
+            'spawn', 'spawnroad', 'spawnplayer', 'lucky', 'givepack', 
+            'claim', 'give', 'take', 'ban', 'unban', 'event', 
+            'help', 'chat', 'timer'
+        ];
         const mutationList = ['gold', 'diamond', 'rainbow'];
         const packIdList = PACK_DATA.map(p => p.id);
         const cardIdList = ALL_CARDS.map(c => c.id);
@@ -807,7 +936,7 @@
                 const cmd = parts[0].toLowerCase();
                 const arg = parts[1].toLowerCase();
                 
-                if(cmd === 'spawn' || cmd === 'spawnroad' || (cmd === 'claim' && parts[0] !== 'all')) {
+                if(cmd === 'spawn' || cmd === 'spawnroad' || cmd === 'spawnplayer' || cmd === 'lucky' || (cmd === 'claim' && parts[0] !== 'all')) {
                     const match = cardIdList.find(id => id.toLowerCase().startsWith(arg));
                     if(match) suggestion = match;
                 }
@@ -822,7 +951,7 @@
             }
             else if(parts.length === 3) {
                 const cmd = parts[0].toLowerCase();
-                if(cmd === 'spawn' || cmd === 'spawnroad' || cmd === 'givepack') {
+                if(cmd === 'spawn' || cmd === 'spawnroad' || cmd === 'spawnplayer' || cmd === 'lucky' || cmd === 'givepack') {
                     const arg = parts[2].toLowerCase();
                     const match = mutationList.find(m => m.startsWith(arg));
                     if(match) suggestion = match;
@@ -908,7 +1037,7 @@
         }
 
         // =====================================================================
-        // ПАРСЕР КОМАНД (ИСПРАВЛЕН ДЛЯ ТОЧНОГО СОВПАДЕНИЯ)
+        // ПАРСЕР КОМАНД (ПОЛНЫЙ)
         // =====================================================================
         function parseCommand(input) {
             const match = input.match(/^\s*(\w+)\s+(.*)$/);
@@ -918,23 +1047,34 @@
             let rest = match[2].trim();
             let args = [];
 
-            if (cmd === 'claim') {
-                // Самая сложная команда. Мы просто берём всё, что осталось, и разбиваем с умом.
-                const allParts = rest.split(/\s+/);
-                if (allParts.length >= 2) {
-                    // Последний аргумент - это всегда ID карты (по логике игры)
-                    const lastArg = allParts[allParts.length - 1];
-                    // Всё, что ДО последнего аргумента - это никнейм (даже если там скобки и пробелы)
-                    const nickParts = allParts.slice(0, allParts.length - 1);
-                    const nick = nickParts.join(' ');
-                    
-                    args = [nick, lastArg];
-                    // Если есть еще 4-й аргумент, это мутация
-                    if (allParts.length > nickParts.length + 1) {
-                        args.push(allParts[allParts.length - 1]);
+            // Для команд, где могут быть пробелы в нике или тексте
+            if (cmd === 'claim' || cmd === 'spawnplayer' || cmd === 'chat' || cmd === 'timer') {
+                // Для чата и таймера всё остальное — это текст
+                if (cmd === 'chat' || cmd === 'timer') {
+                    // Первое слово после команды - это таймер (секунды) или просто текст
+                    const firstSpace = rest.indexOf(' ');
+                    if (firstSpace !== -1) {
+                        const firstArg = rest.substring(0, firstSpace);
+                        const restText = rest.substring(firstSpace + 1).trim();
+                        args = [firstArg, restText];
+                    } else {
+                        args = [rest];
                     }
-                } else {
-                    args = allParts;
+                } 
+                // Для claim и spawnplayer: ищем последний ID карты
+                else {
+                    const allParts = rest.split(/\s+/);
+                    if (allParts.length >= 2) {
+                        const lastArg = allParts[allParts.length - 1];
+                        const nickParts = allParts.slice(0, allParts.length - 1);
+                        const nick = nickParts.join(' ');
+                        args = [nick, lastArg];
+                        if (allParts.length > nickParts.length + 1) {
+                            args.push(allParts[allParts.length - 1]);
+                        }
+                    } else {
+                        args = allParts;
+                    }
                 }
             } else {
                 args = rest.split(/\s+/);
@@ -955,7 +1095,9 @@
             if(cmd === 'help') {
                 consolePrint("<span style='color:#64ffda;'>Доступные команды:</span>", 'info');
                 consolePrint("spawn &lt;cardId&gt; [mutation] — Выдать карту себе", 'info');
-                consolePrint("spawnRoad &lt;cardId&gt; [mutation] — Заспавнить на 3-ю дорожку", 'info');
+                consolePrint("spawnRoad &lt;cardId&gt; [mutation] — Заспавнить на 1-ю дорожку для всех", 'info');
+                consolePrint("spawnPlayer &lt;nick&gt; &lt;cardId&gt; [mutation] — Заспавнить карту на дорожку игроку", 'info');
+                consolePrint("lucky &lt;count&gt; &lt;cardId&gt; [mutation] — Рандомно раздать карту счастливчикам", 'info');
                 consolePrint("givepack &lt;packId&gt; [mutation] — Выдать пакет всем", 'info');
                 consolePrint("claim all &lt;cardId&gt; [mutation] — Выдать карту всем", 'info');
                 consolePrint("claim &lt;nick&gt; &lt;cardId&gt; [mutation] — Выдать карту игроку", 'info');
@@ -964,10 +1106,12 @@
                 consolePrint("ban &lt;nick&gt; — Забанить", 'info');
                 consolePrint("unban &lt;nick&gt; — Разбанить", 'info');
                 consolePrint("event &lt;mutation&gt; &lt;seconds&gt; — Ивент (gold/diamond/rainbow)", 'info');
+                consolePrint("chat &lt;текст&gt; — Отправить уведомление всем игрокам", 'info');
+                consolePrint("timer &lt;секунды&gt; &lt;текст&gt; — Запустить глобальный таймер", 'info');
                 return;
             }
 
-            // SPAWN (себе) - МГНОВЕННО
+            // SPAWN (себе)
             if(cmd === 'spawn') {
                 if(args.length < 1) { consolePrint("Используй: spawn &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0].toLowerCase();
@@ -976,29 +1120,106 @@
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
                 addCard(card.id, mutation, 1);
                 saveToFirebase();
-                // Мгновенно обновляем интерфейс без ожидания
                 renderInventory(); updateUI();
                 consolePrint(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`, 'success');
                 return;
             }
 
-            // SPAWNROAD - МГНОВЕННО (для всех)
+            // SPAWNROAD (на 1-й слот для всех)
             if(cmd === 'spawnroad') {
                 if(args.length < 1) { consolePrint("Используй: spawnRoad &lt;cardId&gt; [mutation]", 'error'); return; }
                 const cardId = args[0].toLowerCase();
                 const mutation = args[1] || null;
                 const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
                 if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
+                
+                // Спавн в 1-й слот
                 const newSlot = {...card, mutation: mutation};
-                // Пишем в базу и сразу перерисовываем
                 db.ref('roadmap/slots').transaction(cur => {
                     if(!cur) cur = [null, null, null];
-                    cur[2] = newSlot; 
+                    cur[2] = cur[1];
+                    cur[1] = cur[0];
+                    cur[0] = newSlot; 
                     return cur;
                 }).then(() => {
-                    // Принудительно вызываем перерисовку слота
                     renderRoadmapSlots();
-                    consolePrint(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`, 'success');
+                    consolePrint(`Заспавнил ${card.emoji} ${card.name} на 1-ю дорожку для всех!`, 'success');
+                    // Глобальное уведомление о появлении крутой карты, если это не обычная
+                    if(card.rarity === 'sigma' || card.rarity === 'epic' || card.rarity === 'legendary' || card.rarity === 'deadly') {
+                        sendGlobalNotification('⚡ Новая карта на дорожке!', `${card.emoji} ${card.name}${mutation ? ' ('+mutation+')' : ''} появилась у всех!`);
+                    }
+                });
+                return;
+            }
+
+            // SPAWNPLAYER (конкретному игроку на дорожку)
+            if(cmd === 'spawnplayer') {
+                if(args.length < 2) { consolePrint("Используй: spawnPlayer &lt;nick&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
+                const target = args[0];
+                const cardId = args[1].toLowerCase();
+                const mutation = args[2] || null;
+                const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
+                if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
+
+                loadCloudData(target, function(data){
+                    if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
+                    // Спавн в 1-й слот для конкретного игрока (используем отдельный путь roadmap/player)
+                    const newSlot = {...card, mutation: mutation};
+                    const playerRoadmapRef = db.ref('roadmap_players/' + safePath(target) + '/slots');
+                    playerRoadmapRef.transaction(cur => {
+                        if(!cur) cur = [null, null, null];
+                        cur[2] = cur[1];
+                        cur[1] = cur[0];
+                        cur[0] = newSlot;
+                        return cur;
+                    }).then(() => {
+                        consolePrint(`Заспавнил ${card.emoji} ${card.name} на дорожку игроку "${target}"`, 'success');
+                        if(card.rarity === 'sigma' || card.rarity === 'epic' || card.rarity === 'legendary' || card.rarity === 'deadly') {
+                            sendGlobalNotification('🎯 Карта для избранного!', `Игроку ${target} выпала ${card.emoji} ${card.name}${mutation ? ' ('+mutation+')' : ''} на дорожку!`);
+                        }
+                    });
+                });
+                return;
+            }
+
+            // LUCKY (рандомные счастливчики)
+            if(cmd === 'lucky') {
+                if(args.length < 2) { consolePrint("Используй: lucky &lt;count&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
+                const count = parseInt(args[0]);
+                const cardId = args[1].toLowerCase();
+                const mutation = args[2] || null;
+                const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
+                if(!card) { consolePrint("Карта не найдена!", 'error'); return; }
+                if(isNaN(count) || count < 1) { consolePrint("Количество должно быть числом > 0!", 'error'); return; }
+
+                db.ref('users').once('value', snap => {
+                    const users = snap.val();
+                    if(!users) { consolePrint("Нет пользователей для выбора!", 'error'); return; }
+                    const players = Object.keys(users).filter(key => key !== 'Dushka' && !users[key].banned);
+                    if(players.length === 0) { consolePrint("Нет активных игроков!", 'error'); return; }
+
+                    const luckyCount = Math.min(count, players.length);
+                    const shuffled = players.sort(() => 0.5 - Math.random());
+                    const winners = shuffled.slice(0, luckyCount);
+
+                    let winnerNames = [];
+                    winners.forEach(target => {
+                        const newSlot = {...card, mutation: mutation};
+                        const playerRoadmapRef = db.ref('roadmap_players/' + safePath(target) + '/slots');
+                        playerRoadmapRef.transaction(cur => {
+                            if(!cur) cur = [null, null, null];
+                            cur[2] = cur[1];
+                            cur[1] = cur[0];
+                            cur[0] = newSlot;
+                            return cur;
+                        });
+                        winnerNames.push(target);
+                    });
+
+                    consolePrint(`Карта ${card.emoji} ${card.name} отправлена ${luckyCount} счастливчикам!`, 'success');
+                    if(card.rarity === 'sigma' || card.rarity === 'epic' || card.rarity === 'legendary' || card.rarity === 'deadly') {
+                        sendGlobalNotification('🍀 Счастливчики!', `Карта ${card.emoji} ${card.name} выпала игрокам: ${winnerNames.join(', ')}!`);
+                    }
                 });
                 return;
             }
@@ -1030,8 +1251,7 @@
             // CLAIM
             if(cmd === 'claim') {
                 if(args.length < 2) { consolePrint("Используй: claim all &lt;cardId&gt; [mutation] или claim &lt;nick&gt; &lt;cardId&gt; [mutation]", 'error'); return; }
-                // ВАЖНО: здесь мы НЕ приводим ник к нижнему регистру, чтобы искать точное совпадение в базе
-                const target = args[0]; 
+                const target = args[0];
                 const cardId = args[1].toLowerCase();
                 const mutation = args[2] || null;
                 const card = ALL_CARDS.find(c => c.id.toLowerCase() === cardId);
@@ -1053,9 +1273,11 @@
                             });
                         }
                         consolePrint(`Карта ${card.emoji} ${card.name} выдана ВСЕМ!`, 'success');
+                        if(card.rarity === 'sigma' || card.rarity === 'epic' || card.rarity === 'legendary' || card.rarity === 'deadly') {
+                            sendGlobalNotification('🎁 Подарок всем!', `Карта ${card.emoji} ${card.name}${mutation ? ' ('+mutation+')' : ''} выдана всем игрокам!`);
+                        }
                     });
                 } else {
-                    // Ищем игрока БЕЗ приведения к нижнему регистру!
                     loadCloudData(target, function(data){
                         if(!data) { consolePrint(`Игрок "${target}" не найден!`, 'error'); return; }
                         const cardRef = db.ref('users/'+safePath(target)+'/cards/'+card.id);
@@ -1067,6 +1289,9 @@
                             return cur;
                         });
                         consolePrint(`Карта выдана игроку "${target}"`, 'success');
+                        if(card.rarity === 'sigma' || card.rarity === 'epic' || card.rarity === 'legendary' || card.rarity === 'deadly') {
+                            sendGlobalNotification('🎁 Поздравляем!', `Игроку ${target} выдана ${card.emoji} ${card.name}${mutation ? ' ('+mutation+')' : ''}!`);
+                        }
                     });
                 }
                 return;
@@ -1126,6 +1351,36 @@
                 const endTime = Date.now() + seconds * 1000;
                 db.ref('event').set({active: true, mutation: mutation, endTime: endTime});
                 consolePrint(`Ивент запущен! Мутация: ${mutation.toUpperCase()} на ${seconds} сек.`, 'success');
+                sendGlobalNotification('🔥 Ивент активирован!', `На дорожке действует мутация: ${mutation.toUpperCase()}!`);
+                return;
+            }
+
+            // CHAT (Глобальное уведомление для всех)
+            if(cmd === 'chat') {
+                if(args.length < 1) { consolePrint("Используй: chat &lt;текст&gt;", 'error'); return; }
+                // Восстанавливаем текст с пробелами
+                const text = args.join(' ');
+                sendGlobalNotification('📢 Админ', text);
+                consolePrint(`Отправлено уведомление всем: "${text}"`, 'success');
+                return;
+            }
+
+            // TIMER (Глобальный таймер)
+            if(cmd === 'timer') {
+                if(args.length < 2) { consolePrint("Используй: timer &lt;секунды&gt; &lt;текст&gt;", 'error'); return; }
+                const seconds = parseInt(args[0]);
+                // Восстанавливаем текст с пробелами
+                const title = args.slice(1).join(' ');
+                if(isNaN(seconds) || seconds < 1) { consolePrint("Время должно быть > 0!", 'error'); return; }
+                
+                const endTime = Date.now() + seconds * 1000;
+                db.ref('globalTimer').set({
+                    active: true,
+                    title: '⏳ Таймер',
+                    text: title,
+                    endTime: endTime
+                });
+                consolePrint(`Таймер запущен на ${seconds} сек: "${title}"`, 'success');
                 return;
             }
 
@@ -1141,15 +1396,14 @@
             }
         }
 
-        // ---------- ДОРОЖКА (НОВЫЕ ШАНСЫ И 5 СЕКУНД) ----------
+        // ---------- ДОРОЖКА ----------
         function generateRoadmapCard(){
-            // Шансы перекроены: Эпик, Легенда, Дидли убраны в обычные и редкие
             const r=Math.random()*100; let group;
-            if(r<60) group='common';      // Обычные: 60% (было 50%)
-            else if(r<95) group='rare';   // Редкие: 35% (было 30%)
-            else if(r<99) group='epic';   // Эпик: 4% (было 15%) - порезано
-            else if(r<99.5) group='legendary'; // Легенда: 0.5% (было 4%) - порезано
-            else group='deadly';          // Дидли: 0.5% (было 1%) - порезано
+            if(r<60) group='common';
+            else if(r<95) group='rare';
+            else if(r<99) group='epic';
+            else if(r<99.5) group='legendary';
+            else group='deadly';
             
             const pool=ALL_CARDS.filter(c=>c.rarity===group && c.rarity!=='sigma');
             if(pool.length===0) return {name:'Пусто',emoji:'💀',rarity:group,id:'empty',price:0,mutation:'none'};
@@ -1165,34 +1419,44 @@
         }
 
         function renderRoadmapSlots(){
-            const slots=document.querySelectorAll('.roadmap-slot');
-            roadmapSlotsData.forEach((cardData,idx)=>{
-                const slot=slots[idx];
-                if(cardData && cardData.id!=='empty'){
-                    let color={deadly:'#ef4444',legendary:'#ffd700',epic:'#a855f7',rare:'#3b82f6',sigma:'#ff00ff',common:'#6b7280'}[cardData.rarity]||'#6b7280';
-                    slot.className='roadmap-slot filled';
-                    let img=`<span class="card-img">${cardData.emoji}</span>`;
-                    if(cardData.img) img=`<img class="card-image" src="${cardData.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${cardData.emoji}</span>`;
-                    const income10=getCardIncome(cardData.id,cardData.mutation)*10*4;
-                    let mutationHtml='';
-                    if(cardData.mutation && cardData.mutation!=='none'){
-                        let cls='mutation-badge';
-                        if(cardData.mutation==='gold') cls+=' mutation-gold';
-                        else if(cardData.mutation==='diamond') cls+=' mutation-diamond';
-                        else if(cardData.mutation==='rainbow') cls+=' mutation-rainbow';
-                        mutationHtml=`<div class="${cls}" style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;margin-top:2px;">${cardData.mutation.toUpperCase()}</div>`;
-                    }
-                    slot.innerHTML=`${img}<div class="card-name">${cardData.name}</div>${mutationHtml}<div class="card-rarity" style="background:${color};color:#fff;">${cardData.rarity.toUpperCase()}</div><div class="timer-label">${idx===0?'9с':idx===1?'6с':'3с'}</div><div style="font-size:10px;color:#64ffda;">+${income10} за 10 мин</div>`;
-                    slot.onclick=()=>buyRoadmapCard(idx);
-                }else{
-                    slot.className='roadmap-slot';
-                    slot.innerHTML='<span style="color:#555;">Пусто</span>';
-                    slot.onclick=null;
+            // В первую очередь проверяем, есть ли персональная дорожка для текущего пользователя
+            const path = currentUser ? 'roadmap_players/' + safePath(currentUser) + '/slots' : 'roadmap/slots';
+            db.ref(path).on('value', snap => {
+                const data = snap.val();
+                if(data){
+                    roadmapSlotsData = data;
+                    const slots=document.querySelectorAll('.roadmap-slot');
+                    roadmapSlotsData.forEach((cardData,idx)=>{
+                        const slot=slots[idx];
+                        if(cardData && cardData.id!=='empty'){
+                            let color={deadly:'#ef4444',legendary:'#ffd700',epic:'#a855f7',rare:'#3b82f6',sigma:'#ff00ff',common:'#6b7280'}[cardData.rarity]||'#6b7280';
+                            slot.className='roadmap-slot filled';
+                            let img=`<span class="card-img">${cardData.emoji}</span>`;
+                            if(cardData.img) img=`<img class="card-image" src="${cardData.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${cardData.emoji}</span>`;
+                            const income10=getCardIncome(cardData.id,cardData.mutation)*10*4;
+                            let mutationHtml='';
+                            if(cardData.mutation && cardData.mutation!=='none'){
+                                let cls='mutation-badge';
+                                if(cardData.mutation==='gold') cls+=' mutation-gold';
+                                else if(cardData.mutation==='diamond') cls+=' mutation-diamond';
+                                else if(cardData.mutation==='rainbow') cls+=' mutation-rainbow';
+                                mutationHtml=`<div class="${cls}" style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;margin-top:2px;">${cardData.mutation.toUpperCase()}</div>`;
+                            }
+                            slot.innerHTML=`${img}<div class="card-name">${cardData.name}</div>${mutationHtml}<div class="card-rarity" style="background:${color};color:#fff;">${cardData.rarity.toUpperCase()}</div><div class="timer-label">${idx===0?'9с':idx===1?'6с':'3с'}</div><div style="font-size:10px;color:#64ffda;">+${income10} за 10 мин</div>`;
+                            slot.onclick=()=>buyRoadmapCard(idx);
+                        }else{
+                            slot.className='roadmap-slot';
+                            slot.innerHTML='<span style="color:#555;">Пусто</span>';
+                            slot.onclick=null;
+                        }
+                    });
                 }
             });
         }
 
         function buyRoadmapCard(idx){
+            // Проверяем, не персональная ли это дорожка
+            const path = currentUser ? 'roadmap_players/' + safePath(currentUser) + '/slots' : 'roadmap/slots';
             if(!currentUser || !roadmapSlotsData[idx] || roadmapSlotsData[idx].id==='empty') return;
             const cardData=roadmapSlotsData[idx];
             const price=(idx===2&&isRoadmapFrozen)?0:(cardData.price||50);
@@ -1213,7 +1477,7 @@
                 });
                 const newSlot=generateRoadmapCard();
                 roadmapSlotsData[idx]=newSlot;
-                db.ref('roadmap/slots').set(roadmapSlotsData);
+                db.ref(path).set(roadmapSlotsData);
                 customMsg("✅ Куплено!",`${cardData.emoji} ${cardData.name}`);
             });
         }
@@ -1228,10 +1492,9 @@
             });
             if(roadmapTimerInterval)clearInterval(roadmapTimerInterval);
             let counter=0;
-            // ИЗМЕНЕНО: теперь обновление раз в 5 секунд (5000мс) вместо 1с
             roadmapTimerInterval=setInterval(()=>{
                 counter++;
-                const left=5-(counter%5); // Показывает от 5 до 1
+                const left=5-(counter%5);
                 db.ref('roadmap/timer').set(`⏳ ${left} сек`);
                 if(counter%5===0){
                     db.ref('roadmap/slots').transaction(cur=>{
@@ -1242,7 +1505,7 @@
                         return cur;
                     });
                 }
-            },1000); // Каждую секунду обновляем счётчик, но карты меняются только каждые 5 секунд
+            },1000);
         }
 
         // ---------- КРИПТОБИРЖА ----------
@@ -2116,6 +2379,10 @@
             if(adminInput) {
                 adminInput.addEventListener('keydown', handleConsoleInput);
             }
+
+            // Слушатели глобальных уведомлений и таймера
+            setupGlobalNotificationListener();
+            syncGlobalTimer();
 
             if(currentUser){
                 syncUserData(currentUser);
