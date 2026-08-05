@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Крипто-паки · Кланы · Танки</title>
-    <!-- Фавиконка - исправлено -->
+    <!-- Фавиконка -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
     <style>
         /* ===== ВСЕ СТИЛИ ===== */
@@ -66,42 +66,18 @@
             <div class="tab-pane" id="leaders"><div class="content-card" style="padding:0;border:none;background:0 0;box-shadow:none;"><div class="leader-wrapper"><div class="leader-header"><h2><span>🏆</span> Топ лидеров</h2><div class="leader-stats">👥 <strong id="totalPlayers">0</strong></div></div><input type="text" class="leader-search" id="searchInput" placeholder="🔍 Поиск..." oninput="filterPlayers()"><div class="leader-table-header"><div>№</div><div>Игрок</div><div style="text-align:center;">💰 Доход</div></div><div id="leaderList"><div class="leader-loading">Загрузка...</div></div><div class="leader-footer">Показаны <span id="shownCount">0</span> из <span id="totalCount">0</span></div></div></div></div>
             <div class="tab-pane" id="profile"><div class="content-card"><h2>👤 Профиль</h2><div style="text-align:center;padding:10px 0;"><h3 style="color:#64ffda;margin-bottom:10px;">Логин</h3><div id="profileLoginDisplay" style="font-size:20px;font-weight:700;color:#ffb347;margin-bottom:20px;">Гость</div><h3 style="color:#64ffda;margin-bottom:10px;">Аватарка</h3><div id="profileAvatarPreview" style="width:120px;height:120px;border-radius:50%;background:#0b0e1a;border:2px solid #ffb347;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:60px;overflow:hidden;">👤</div><input type="file" id="avatarUploadInput" accept="image/*" style="display:none;"><button class="auth-btn" id="avatarUploadBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">📸 Загрузить</button></div><div style="text-align:center;padding:10px 0;margin-top:15px;border-top:1px solid #2a3348;"><h3 style="color:#ffb347;margin-bottom:10px;">⭐ Любимая карта</h3><div id="favoriteCardDisplay" style="font-size:16px;color:#8892b0;min-height:40px;"><span>Выбери в инвентаре</span></div></div><div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid #2a3348;margin-top:15px;"><button class="auth-btn" id="changeNickBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">✏️ Сменить ник</button><button class="auth-btn" id="changePasswordBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">🔑 Сменить пароль</button><button class="auth-btn danger" id="deleteAccountBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🗑️ Удалить аккаунт</button><button class="auth-btn danger" id="logoutBtn" style="background:#4a1a1a;color:#ff6b6b;width:auto;padding:10px 20px;">🚪 Выйти</button></div></div><div class="content-card" style="margin-top:5px;"><h2>👥 Аккаунты</h2><div style="text-align:center;padding:10px 0;"><button class="auth-btn" id="addAccountBtn" style="background:#2a3348;color:#fff;width:auto;padding:10px 20px;">➕ Добавить (до 3)</button><div id="savedAccountsList" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;"></div></div></div></div>
             <div class="tab-pane" id="admin"><div class="content-card"><h2>🛠️ Админ-панель</h2>
+                <!-- ТУТ ТЕПЕРЬ ТОЛЬКО ОДНА СТРОКА -->
                 <div style="background:#111722;border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">💸 Баланс</h3>
-                    <input type="text" id="adminGiveLogin" placeholder="Ник" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;">
-                    <input type="number" id="adminGiveAmount" placeholder="Сумма $" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;">
-                    <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
-                        <button class="auth-btn" id="adminGiveBtn" style="width:auto;padding:8px 20px;">💰 Выдать</button>
-                        <button class="auth-btn danger" id="adminTakeBtn" style="width:auto;padding:8px 20px;">💸 Забрать</button>
+                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">⌨️ Консоль команд</h3>
+                    <div style="display:flex;gap:10px;margin-top:6px;">
+                        <input type="text" id="adminCommandInput" placeholder="Введите команду (например: help)" style="flex:1;padding:10px;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;font-size:14px;">
+                        <button class="auth-btn" id="adminExecBtn" style="width:auto;padding:8px 20px;">⏎ Выполнить</button>
                     </div>
+                    <div id="adminCommandOutput" style="margin-top:10px;font-size:13px;color:#848e9c;font-family:monospace;border-top:1px solid #2a3348;padding-top:10px;min-height:30px;">Введите help для списка команд.</div>
                 </div>
-                <div style="background:#111722;border-radius:12px;padding:15px;margin-top:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#ffb347;font-size:16px;margin-bottom:10px;">🎲 Спавн на дорожку</h3>
-                    <select id="adminCardSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="">Выбери карту</option></select>
-                    <select id="adminMutationSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="">Без мутации</option><option value="gold">Золото (×1.2)</option><option value="diamond">Алмаз (×1.5)</option><option value="rainbow">Радуга (×10)</option></select>
-                    <input type="text" id="adminTargetUser" placeholder="Ник (пусто = всем)" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;">
-                    <button class="auth-btn" id="adminSpawnBtn" style="width:auto;padding:8px 20px;margin-top:6px;">💥 Заспавнить</button>
-                </div>
-                <div style="background:#111722;border-radius:12px;padding:15px;margin-top:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">📦 Выдать пакет всем</h3>
-                    <select id="adminPackSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"></select>
-                    <select id="adminPackMutationSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="">Без мутации</option><option value="gold">Золото</option><option value="diamond">Алмаз</option><option value="rainbow">Радуга</option></select>
-                    <button class="auth-btn" id="adminGivePackBtn" style="width:auto;padding:8px 20px;margin-top:6px;">📤 Выдать всем</button>
-                </div>
-                <div style="background:#111722;border-radius:12px;padding:15px;margin-top:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#f7931a;font-size:16px;margin-bottom:10px;">⚡ Ивент</h3>
-                    <select id="adminEventMutation" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="gold">Золото</option><option value="diamond">Алмаз</option><option value="rainbow">Радуга</option></select>
-                    <input type="number" id="adminEventSeconds" placeholder="Секунд" value="60" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;">
-                    <button class="auth-btn" id="adminEventBtn" style="width:auto;padding:8px 20px;margin-top:6px;">🔥 Запустить ивент</button>
-                </div>
-                <div style="background:#111722;border-radius:12px;padding:15px;margin-top:15px;border:1px solid #2a3348;">
-                    <h3 style="color:#64ffda;font-size:16px;margin-bottom:10px;">🎯 Выдать карту</h3>
-                    <select id="adminClaimCardSelect" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"></select>
-                    <select id="adminClaimMutation" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;"><option value="">Без мутации</option><option value="gold">Золото</option><option value="diamond">Алмаз</option><option value="rainbow">Радуга</option></select>
-                    <input type="text" id="adminClaimTarget" placeholder="Ник (all - всем)" value="all" style="width:100%;padding:10px;margin:4px 0;background:#0b0e1a;border:1px solid #2a3348;border-radius:8px;color:#fff;">
-                    <button class="auth-btn" id="adminClaimBtn" style="width:auto;padding:8px 20px;margin-top:6px;">🎁 Выдать</button>
-                </div>
-                <div id="adminContainer" style="padding:10px 0;margin-top:15px;"><div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка...</div></div>
+                <!-- КОНЕЦ СТРОКИ -->
+
+                <div id="adminContainer" style="padding:10px 0;margin-top:15px;"><div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Загрузка списка игроков...</div></div>
             </div></div>
             <div class="tab-pane" id="market"><div class="content-card"><h2>📊 Рынок и Аукцион</h2><div style="margin-bottom:12px;font-size:14px;color:#848e9c;">💰 Фикс. цена (рынок) · 🔨 Аукцион (ставки)</div><div id="marketplaceContainer" style="padding:10px 0;"><div class="empty-state">📭 Лотов нет</div></div></div></div>
             <div class="tab-pane" id="roadmap"><div class="content-card"><h2>🗺️ Дорожка</h2><div style="font-size:14px;color:#848e9c;margin-bottom:15px;">Карты меняются каждые 3 сек. Нажми, чтобы купить.</div><div class="roadmap-container"><div class="roadmap-slots" id="roadmapSlots"><div class="roadmap-slot" id="roadmapSlot0"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot1"><span style="color:#555;">Загрузка...</span></div><div class="roadmap-slot" id="roadmapSlot2"><span style="color:#555;">Загрузка...</span></div></div><div class="roadmap-timer-container" id="roadmapTimerText">⏳ 3 сек</div></div></div></div>
@@ -692,50 +668,198 @@
             customMsg(`📊 Шансы ${p.name}`,msg);
         };
 
-        // ---------- АДМИН-ПАНЕЛЬ (реал-тайм) ----------
-        function renderAdminPanel(){
-            if(currentUser!=='Dushka'){
-                document.getElementById('adminContainer').innerHTML='<div class="placeholder" style="text-align:center;padding:20px;color:#ff6b6b;">⛔ У вас нет прав администратора!</div>';
+        // ---------- АДМИН-КОМАНДЫ (НОВАЯ ХУЙНЯ) ----------
+        function outputToAdmin(msg, isError = false) {
+            const out = document.getElementById('adminCommandOutput');
+            if(out) {
+                out.innerHTML = (isError ? '❌ ' : '✅ ') + msg;
+            }
+        }
+
+        function executeAdminCommand() {
+            if(currentUser !== 'Dushka') {
+                outputToAdmin("У тебя нет прав админа, петушара!", true);
                 return;
             }
-            db.ref('users').on('value',s=>{
-                const data=s.val();
-                if(!data){
-                    document.getElementById('adminContainer').innerHTML='<div class="placeholder" style="text-align:center;padding:20px;color:#8892b0;">Нет пользователей.</div>';
-                    return;
-                }
-                let html='<div style="overflow-x:auto;font-size:13px;"><table style="width:100%;border-collapse:collapse;"><tr style="background:#2a3348;"><th>Логин</th><th>Имя</th><th>Баланс</th><th>Карт</th><th>Экип.</th><th>Действия</th></tr>';
-                for(let key in data){
-                    const p=data[key];
-                    if(key==='Dushka')continue;
-                    const displayName=p.displayName||key;
-                    const cardsCount=p.cards?Object.keys(p.cards).filter(c=>p.cards[c]>0).length:0;
-                    const equippedCount=p.equipped?p.equipped.length:0;
-                    const isBanned=p.banned===true;
-                    html+=`<tr style="border-bottom:1px solid #2a3348;"><td style="padding:8px;">${key}</td><td style="padding:8px;">${displayName}</td><td style="padding:8px;">$${p.balance||0}</td><td style="padding:8px;">${cardsCount}</td><td style="padding:8px;">${equippedCount}</td><td style="padding:8px;"><button class="auth-btn ${isBanned?'':'danger'}" onclick="adminToggleBan('${key}',${isBanned})" style="width:auto;padding:2px 10px;font-size:11px;margin:0;">${isBanned?'✅ Разбанить':'⛔ Забанить'}</button></td></tr>`;
-                }
-                html+='</table></div>';
-                document.getElementById('adminContainer').innerHTML=html;
-            });
-        }
-        window.adminToggleBan=function(u,b){
-            const action=b?'разбанить':'забанить';
-            if(!confirm(`Точно ${action} игрока ${u}?`))return;
-            db.ref('users/'+safePath(u)+'/banned').set(b?null:true).then(()=>{
-                customMsg("✅ Готово",`Игрок ${u} ${action}.`);
-                renderAdminPanel();
-            });
-        };
+            const input = document.getElementById('adminCommandInput');
+            const fullCmd = input.value.trim();
+            if(!fullCmd) { outputToAdmin("Введи команду, блять!", true); return; }
+            
+            const parts = fullCmd.split(/\s+/);
+            const cmd = parts[0].toLowerCase();
+            const args = parts.slice(1);
 
-        // Заполнение селектов
-        function fillAdminSelects(){
-            const selectCard=document.getElementById('adminCardSelect');
-            const selectClaim=document.getElementById('adminClaimCardSelect');
-            const selectPack=document.getElementById('adminPackSelect');
-            if(selectCard){ALL_CARDS.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.innerText=`${c.emoji} ${c.name} (${c.rarity})`;selectCard.appendChild(opt);});}
-            if(selectClaim){ALL_CARDS.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.innerText=`${c.emoji} ${c.name} (${c.rarity})`;selectClaim.appendChild(opt);});}
-            if(selectPack){PACK_DATA.forEach(p=>{const opt=document.createElement('option');opt.value=p.id;opt.innerText=p.name;selectPack.appendChild(opt);});}
+            // HELP
+            if(cmd === 'help') {
+                outputToAdmin("spawn <cardId> [mutation] | spawnRoad <cardId> [mutation] | givepack <packId> [mutation] | claim all <cardId> [mutation] | claim <nick> <cardId> [mutation] | give <nick> <amount> | take <nick> <amount> | ban <nick> | unban <nick> | event <mutation> <seconds>");
+                return;
+            }
+
+            // SPAWN (себе)
+            if(cmd === 'spawn') {
+                if(args.length < 1) { outputToAdmin("Используй: spawn <cardId> [mutation]", true); return; }
+                const cardId = args[0];
+                const mutation = args[1] || null;
+                const card = ALL_CARDS.find(c => c.id === cardId);
+                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
+                addCard(cardId, mutation, 1);
+                saveToFirebase();
+                outputToAdmin(`Выдал себе ${card.emoji} ${card.name}${mutation?' ('+mutation+')':''}`);
+                return;
+            }
+
+            // SPAWNROAD (на дорожку)
+            if(cmd === 'spawnroad') {
+                if(args.length < 1) { outputToAdmin("Используй: spawnRoad <cardId> [mutation]", true); return; }
+                const cardId = args[0];
+                const mutation = args[1] || null;
+                const card = ALL_CARDS.find(c => c.id === cardId);
+                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
+                // Кидаем на 3-ю дорожку (индекс 2)
+                const newSlot = {...card, mutation: mutation};
+                db.ref('roadmap/slots').transaction(cur => {
+                    if(!cur) cur = [null, null, null];
+                    cur[2] = newSlot; 
+                    return cur;
+                });
+                outputToAdmin(`Заспавнил ${card.emoji} ${card.name} на 3-ю дорожку для всех!`);
+                return;
+            }
+
+            // GIVEPACK (всем пакет)
+            if(cmd === 'givepack') {
+                if(args.length < 1) { outputToAdmin("Используй: givepack <packId> [mutation]", true); return; }
+                const packId = args[0];
+                const mutation = args[1] || null;
+                const pack = PACK_DATA.find(p => p.id === packId);
+                if(!pack) { outputToAdmin("Пакет не найден!", true); return; }
+                db.ref('users').once('value', snap => {
+                    const users = snap.val();
+                    if(!users) { outputToAdmin("Нет пользователей!", true); return; }
+                    const updates = {};
+                    for(let key in users) {
+                        if(key === 'Dushka') continue;
+                        const invRef = db.ref('users/'+safePath(key)+'/inventory');
+                        invRef.transaction(cur => {
+                            if(!cur) cur = [];
+                            cur.push({packId: packId, mutation: mutation});
+                            return cur;
+                        });
+                    }
+                    outputToAdmin(`Пакет ${pack.name} разослан всем!`);
+                });
+                return;
+            }
+
+            // CLAIM (выдать карту)
+            if(cmd === 'claim') {
+                if(args.length < 2) { outputToAdmin("Используй: claim all <cardId> [mutation] или claim <nick> <cardId> [mutation]", true); return; }
+                const target = args[0];
+                const cardId = args[1];
+                const mutation = args[2] || null;
+                const card = ALL_CARDS.find(c => c.id === cardId);
+                if(!card) { outputToAdmin("Карта не найдена!", true); return; }
+
+                if(target === 'all') {
+                    db.ref('users').once('value', snap => {
+                        const users = snap.val();
+                        if(!users) { outputToAdmin("Нет пользователей!", true); return; }
+                        for(let key in users) {
+                            if(key === 'Dushka') continue;
+                            const cardRef = db.ref('users/'+safePath(key)+'/cards/'+cardId);
+                            cardRef.transaction(cur => {
+                                if(!cur) cur = {count:0, mutation:null};
+                                if(typeof cur === 'number') cur = {count:cur, mutation:null};
+                                cur.count = (cur.count||0) + 1;
+                                if(mutation && !cur.mutation) cur.mutation = mutation;
+                                return cur;
+                            });
+                        }
+                        outputToAdmin(`Карта ${card.emoji} ${card.name} выдана ВСЕМ!`);
+                    });
+                } else {
+                    loadCloudData(target, function(data){
+                        if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                        const cardRef = db.ref('users/'+safePath(target)+'/cards/'+cardId);
+                        cardRef.transaction(cur => {
+                            if(!cur) cur = {count:0, mutation:null};
+                            if(typeof cur === 'number') cur = {count:cur, mutation:null};
+                            cur.count = (cur.count||0) + 1;
+                            if(mutation && !cur.mutation) cur.mutation = mutation;
+                            return cur;
+                        });
+                        outputToAdmin(`Карта выдана игроку ${target}`);
+                    });
+                }
+                return;
+            }
+
+            // GIVE (дать денег)
+            if(cmd === 'give') {
+                if(args.length < 2) { outputToAdmin("Используй: give <nick> <amount>", true); return; }
+                const target = args[0];
+                const amount = parseInt(args[1]);
+                if(isNaN(amount) || amount <= 0) { outputToAdmin("Сумма должна быть числом > 0!", true); return; }
+                loadCloudData(target, function(data){
+                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    db.ref('users/'+safePath(target)+'/balance').transaction(cur => (cur||0)+amount);
+                    outputToAdmin(`Выдал $${amount} игроку ${target}`);
+                });
+                return;
+            }
+
+            // TAKE (забрать деньги)
+            if(cmd === 'take') {
+                if(args.length < 2) { outputToAdmin("Используй: take <nick> <amount>", true); return; }
+                const target = args[0];
+                const amount = parseInt(args[1]);
+                if(isNaN(amount) || amount <= 0) { outputToAdmin("Сумма должна быть числом > 0!", true); return; }
+                loadCloudData(target, function(data){
+                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    db.ref('users/'+safePath(target)+'/balance').transaction(cur => {
+                        if((cur||0) < amount) return;
+                        return (cur||0) - amount;
+                    });
+                    outputToAdmin(`Забрал $${amount} у игрока ${target}`);
+                });
+                return;
+            }
+
+            // BAN / UNBAN
+            if(cmd === 'ban' || cmd === 'unban') {
+                if(args.length < 1) { outputToAdmin(`Используй: ${cmd} <nick>`, true); return; }
+                const target = args[0];
+                const isBan = cmd === 'ban';
+                loadCloudData(target, function(data){
+                    if(!data) { outputToAdmin(`Игрок ${target} не найден!`, true); return; }
+                    db.ref('users/'+safePath(target)+'/banned').set(isBan ? true : null);
+                    outputToAdmin(isBan ? `Игрок ${target} ЗАБАНЕН.` : `Игрок ${target} РАЗБАНЕН.`);
+                });
+                return;
+            }
+
+            // EVENT
+            if(cmd === 'event') {
+                if(args.length < 2) { outputToAdmin("Используй: event <mutation> <seconds>", true); return; }
+                const mutation = args[0];
+                const seconds = parseInt(args[1]);
+                if(!['gold','diamond','rainbow'].includes(mutation)) { outputToAdmin("Мутация должна быть gold, diamond или rainbow!", true); return; }
+                if(isNaN(seconds) || seconds < 10) { outputToAdmin("Секунд должно быть > 10!", true); return; }
+                const endTime = Date.now() + seconds * 1000;
+                db.ref('event').set({active: true, mutation: mutation, endTime: endTime});
+                outputToAdmin(`Ивент запущен! Мутация: ${mutation.toUpperCase()} на ${seconds} сек.`);
+                return;
+            }
+
+            // Если команда не распознана
+            outputToAdmin(`Команда "${cmd}" не найдена. Введи help.`, true);
         }
+
+        document.getElementById('adminExecBtn').onclick = executeAdminCommand;
+        document.getElementById('adminCommandInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') executeAdminCommand();
+        });
+
 
         // ---------- ИВЕНТЫ ----------
         function updateEventTimer(){
@@ -1130,7 +1254,7 @@
             });
         }
 
-        // ---------- КЛАНЫ (полный набор, синхронизация через Firebase) ----------
+        // ---------- КЛАНЫ ----------
         function getClanRef(clanName){return db.ref('clans/'+safePath(clanName));}
         function getUserClan(user){return new Promise((resolve)=>{if(!user)resolve(null);db.ref('users/'+safePath(user)+'/clan').once('value').then(s=>{resolve(s.val())}).catch(()=>resolve(null))});}
         function createClan(clanName,owner){return new Promise((resolve,reject)=>{const ref=getClanRef(clanName);ref.transaction((cur)=>{if(cur!==null)return;return{name:clanName,owner:owner,members:[owner],money:0,points:0,wins:0,losses:0,tankAlive:true,tankHP:100,weeklyPoints:0,tanks:[],joinRequests:{},challenges:{},battles:[],clanBattleRequests:{}};}).then(res=>{if(res.committed){db.ref('users/'+safePath(owner)+'/clan').set(clanName);resolve();}else{reject("Клан уже существует");}}).catch(reject);});}
@@ -1726,17 +1850,15 @@
         console.log('✅ REAL-TIME версия готова! Все данные синхронизируются через Firebase.');
 
         // ========================================
-        // ЗАЕБАЛО ВСЁ, ВОТ ТЕБЕ ФУНКЦИЯ loadCloudData
+        // ФУНКЦИЯ loadCloudData (исправленная)
         // ========================================
         function loadCloudData(username, callback) {
             if (!username) {
                 if (callback) callback(null);
                 return;
             }
-            // Обрабатываем спецсимволы в нике, чтобы Firebase не сдох
             const safeName = String(username).replace(/[.#$\/\[\]]/g, '_');
             const ref = db.ref('users/' + safeName);
-            
             ref.once('value').then(snapshot => {
                 if (callback) callback(snapshot.val());
             }).catch(err => {
