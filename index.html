@@ -4240,7 +4240,7 @@
         ref.transaction(cur => {
             if (!cur) return;
             if (!cur.battles) cur.battles = [];
-            cur.battles.push({ text: text, timestamp: firebase.database.ServerValue.TIMESTAMP });
+            cur.battles.push({ type: 'log', text: text, timestamp: firebase.database.ServerValue.TIMESTAMP });
             return cur;
         });
     }
@@ -4427,13 +4427,18 @@
                 document.getElementById('clanMoneyDisplay').textContent = '$' + (data.money || 0).toLocaleString();
                 document.getElementById('clanTankStatus').textContent = data.tankAlive ? '🟢 Цел' : '💀 Уничтожен';
                 document.getElementById('buyClanTankBtn').style.display = data.tankAlive ? 'none' : 'block';
+                
+                // ИСПРАВЛЕНИЕ: Список участников
                 const members = data.members || [];
                 let mhtml = '';
-                members.forEach(m => {
-                    const isOwner = m === data.owner;
-                    mhtml += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2a3348;"><span>${m} ${isOwner?'👑':''}</span>${m===currentUser?`<button onclick="leaveClan('${m}')" class="danger" style="font-size:10px;padding:2px 8px;">Выйти</button>`:''}${m!==currentUser?`<button onclick="sendChallenge('${m}')" style="font-size:10px;padding:2px 8px;">⚔️ Вызвать</button>`:''}</div>`;
-                });
+                if (Array.isArray(members) && members.length > 0) {
+                    members.forEach(m => {
+                        const isOwner = m === data.owner;
+                        mhtml += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2a3348;"><span>${m} ${isOwner?'👑':''}</span>${m===currentUser?`<button onclick="leaveClan('${m}')" class="danger" style="font-size:10px;padding:2px 8px;">Выйти</button>`:''}${m!==currentUser?`<button onclick="sendChallenge('${m}')" style="font-size:10px;padding:2px 8px;">⚔️ Вызвать</button>`:''}</div>`;
+                    });
+                }
                 document.getElementById('clanMembersList').innerHTML = mhtml || 'Нет участников.';
+
                 const tanks = data.tanks || [];
                 let thtml = '';
                 tanks.forEach(tank => {
@@ -4441,12 +4446,21 @@
                     thtml += `<div class="tank-item"><span class="tank-name">${tank.name}</span><span class="tank-status">${tank.alive?'🟢':'💀'} HP: ${tank.hp}</span>${tank.alive?`<button class="tank-select-btn" onclick="selectTank('${tank.name}')">${isSelected?'✅':'Выбрать'}</button>`:''}</div>`;
                 });
                 document.getElementById('clanTanksList').innerHTML = thtml || 'Нет танков. Купите первый!';
+
+                // ИСПРАВЛЕНИЕ: Логи битв
                 const battles = data.battles || [];
                 let blog = '';
                 battles.slice(-10).reverse().forEach(b => {
-                    blog += `<div>${b.type} — ${b.result==='win'?'🏆':'💀'} ${b.opponent?'против '+b.opponent:''}</div>`;
+                    if (b.type === 'AI' || b.type === 'PvP') {
+                        blog += `<div>${b.type} — ${b.result==='win'?'🏆':'💀'} ${b.opponent?'против '+b.opponent:''}</div>`;
+                    } else if (b.type === 'log') {
+                        blog += `<div>${b.text || 'Неизвестная запись'}</div>`;
+                    } else {
+                        blog += `<div>⚠️ Неизвестная запись</div>`;
+                    }
                 });
                 document.getElementById('clanBattleLog').innerHTML = blog || 'Битв пока нет.';
+
                 const challenges = data.challenges || {};
                 let chhtml = '';
                 for (let id in challenges) {
@@ -4457,6 +4471,7 @@
                     }
                 }
                 document.getElementById('clanChallengesList').innerHTML = chhtml || 'Нет активных вызовов.';
+
                 const joinRequests = data.joinRequests || {};
                 const isOwner = (data.owner === currentUser);
                 document.getElementById('clanOwnerRequests').style.display = isOwner ? 'block' : 'none';
@@ -4470,6 +4485,7 @@
                     }
                     document.getElementById('joinRequestsList').innerHTML = jhtml || 'Нет запросов.';
                 }
+
                 const clanBattleRequests = data.clanBattleRequests || {};
                 let cbhtml = '';
                 for (let fromClan in clanBattleRequests) {
