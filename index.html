@@ -6,6 +6,7 @@
     <title>Крипто-паки · Кланы · Танки</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
     <style>
+        /* ... весь CSS без изменений ... */
         * {
             margin: 0;
             padding: 0;
@@ -1628,6 +1629,18 @@
             font-size: 12px;
             color: #848e9c;
         }
+        .mutation-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ffb347;
+            color: #000;
+            font-size: 8px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+        }
     </style>
 </head>
 <body>
@@ -2016,7 +2029,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
         // =====================================================================
-        //  ПОЛНЫЙ JAVASCRIPT
+        //  ПОЛНЫЙ JAVASCRIPT - ИСПРАВЛЕННЫЙ
         // =====================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDKMRdOJCYk0T8r9532sf4Lc_v087bVRpE",
@@ -2422,7 +2435,6 @@
                 imgHtml = '<img src="' + card.img + '" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';" style="width:40px;height:40px;object-fit:contain;"><span style="font-size:32px;display:none;">' + card.emoji + '</span>';
             }
 
-            // --- ДОБАВЛЕНИЕ МУТАЦИИ В МОДАЛЬНОЕ ОКНО ---
             let mutText = '';
             if (gameData.mutations && gameData.mutations[id]) {
                 const mut = MUTATIONS[gameData.mutations[id]];
@@ -2614,8 +2626,6 @@
             ALL_CARDS.forEach(card => {
                 if (gameData.cards && (gameData.cards[card.id] || 0) > 0) {
                     const item = document.createElement('div');
-
-                    // --- ДОБАВЛЕНИЕ КЛАССОВ МУТАЦИЙ ---
                     let mutationClass = '';
                     if (gameData.mutations && gameData.mutations[card.id]) {
                         const mutType = gameData.mutations[card.id];
@@ -2629,7 +2639,6 @@
                             `<img src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
                     }
 
-                    // --- ДОБАВЛЕНИЕ БЕЙДЖИКА МУТАЦИИ ---
                     let badgeHtml = '';
                     if (gameData.mutations && gameData.mutations[card.id]) {
                         const mutName = gameData.mutations[card.id].toUpperCase();
@@ -5017,17 +5026,14 @@
 
         // ---------- ДОРОЖКА ----------
         function generateRoadmapCard() {
-            // --- НОВАЯ ЛОГИКА С МУТАЦИЯМИ ---
             let mutType = null;
             let r = Math.random();
 
             if (isEventActive) {
-                // Ивент: шансы мутаций повышаются в 5 раз (50% Gold, 45% Diamond, 5% Rainbow)
                 if (r < 0.50) mutType = 'gold';
                 else if (r < 0.95) mutType = 'diamond';
                 else mutType = 'rainbow';
             } else {
-                // Обычные шансы: 20% Gold, 9% Diamond, 1% Rainbow
                 if (r < 0.20) mutType = 'gold';
                 else if (r < 0.29) mutType = 'diamond';
                 else if (r < 0.30) mutType = 'rainbow';
@@ -5056,7 +5062,6 @@
                     }
                     const income10 = card.income * 10 * 4;
 
-                    // --- ДОБАВЛЕНИЕ ТЕКСТА МУТАЦИИ НА ДОРОЖКУ ---
                     let mutText = '';
                     if (card.mutation) {
                         const mut = MUTATIONS[card.mutation];
@@ -5099,7 +5104,6 @@
             if (!gameData.cards[card.id]) gameData.cards[card.id] = 0;
             gameData.cards[card.id]++;
 
-            // --- СОХРАНЕНИЕ МУТАЦИИ ПРИ ПОКУПКЕ ---
             if (card.mutation) {
                 if (!gameData.mutations) gameData.mutations = {};
                 gameData.mutations[card.id] = card.mutation;
@@ -5627,19 +5631,46 @@
             });
         };
 
-        const origRenderAdmin = renderAdminPanel;
-        renderAdminPanel = function() {
-            const btn = document.querySelector('.hidden-admin');
-            if (currentUser === 'Dushka') {
-                if (btn) btn.style.display = 'flex';
-                fillAdminCardSelect();
-                origRenderAdmin();
-            } else {
-                if (btn) btn.style.display = 'none';
+        // Функция админ-панели
+        function renderAdminPanel() {
+            if (currentUser !== 'Dushka') {
                 document.getElementById('adminContainer').innerHTML =
                     '<div class="placeholder" style="text-align:center;padding:20px;color:#ff6b6b;">⛔ У вас нет прав администратора!</div>';
+                return;
             }
-        };
+            document.getElementById('adminContainer').innerHTML = '<div class="placeholder" style="text-align:center;padding:20px;color:#64ffda;">✅ Админ-панель активна</div>';
+            
+            // Настройка кнопок админа
+            document.getElementById('adminGiveBtn').onclick = function() {
+                const login = document.getElementById('adminGiveLogin').value.trim();
+                const amount = parseInt(document.getElementById('adminGiveAmount').value);
+                if (!login || isNaN(amount) || amount <= 0) {
+                    customMsg("Ошибка", "Введите ник и сумму!");
+                    return;
+                }
+                loadCloudData(login, data => {
+                    if (!data) { customMsg("Ошибка", "Игрок не найден!"); return; }
+                    db.ref('users/' + safePath(login) + '/balance').set((data.balance || 0) + amount);
+                    customMsg("✅ Выдано!", `$${amount} выдано ${login}`);
+                });
+            };
+            
+            document.getElementById('adminTakeBtn').onclick = function() {
+                const login = document.getElementById('adminGiveLogin').value.trim();
+                const amount = parseInt(document.getElementById('adminGiveAmount').value);
+                if (!login || isNaN(amount) || amount <= 0) {
+                    customMsg("Ошибка", "Введите ник и сумму!");
+                    return;
+                }
+                loadCloudData(login, data => {
+                    if (!data) { customMsg("Ошибка", "Игрок не найден!"); return; }
+                    const cur = data.balance || 0;
+                    if (cur < amount) { customMsg("Ошибка", `У игрока ${login} только $${cur}`); return; }
+                    db.ref('users/' + safePath(login) + '/balance').set(cur - amount);
+                    customMsg("✅ Забрано!", `$${amount} забрано у ${login}`);
+                });
+            };
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.tab-btn');
@@ -5654,9 +5685,11 @@
                     tabs.forEach(b => b.classList.remove('active'));
                     panes.forEach(p => p.classList.remove('active'));
                     this.classList.add('active');
-                    document.getElementById(tabId).classList.add('active');
+                    const pane = document.getElementById(tabId);
+                    if (pane) pane.classList.add('active');
                     if (tabId === 'clan') renderClan();
                     if (tabId === 'market') renderMarketplace();
+                    if (tabId === 'admin' && currentUser === 'Dushka') renderAdminPanel();
                 });
             });
             document.getElementById('globalAvatarBtn').onclick = function() {
@@ -5669,9 +5702,20 @@
             generateStore();
             initPopularCoins();
             renderMarketplace();
+            // Скрываем админ-вкладку если не админ
+            if (currentUser !== 'Dushka') {
+                document.querySelector('.hidden-admin').style.display = 'none';
+            }
         });
 
-        if (currentUser) setTimeout(() => renderClan(), 500);
+        // Если пользователь уже авторизован - показываем админ-вкладку
+        if (currentUser === 'Dushka') {
+            setTimeout(() => {
+                renderAdminPanel();
+                document.querySelector('.hidden-admin').style.display = 'flex';
+            }, 500);
+        }
+
         console.log('✅ Игра успешно загружена! Ошибок синтаксиса нет.');
     </script>
 </body>
