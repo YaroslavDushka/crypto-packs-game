@@ -3471,4 +3471,674 @@
             renderClan();
         }).catch(err => customMsg("Ошибка", err));
     }
+</script><script>
+    // ---------- ДОРОЖКА ----------
+    function generateRoadmapCard() {
+        let mutType = null;
+        let r = Math.random();
+        if (isEventActive) {
+            if (r < 0.50) mutType = 'gold';
+            else if (r < 0.95) mutType = 'diamond';
+            else mutType = 'rainbow';
+        } else {
+            if (r < 0.20) mutType = 'gold';
+            else if (r < 0.29) mutType = 'diamond';
+            else if (r < 0.30) mutType = 'rainbow';
+        }
+        const pool = ALL_CARDS.filter(c => c.id !== 'empty');
+        const card = pool[Math.floor(Math.random() * pool.length)];
+        card.mutation = mutType;
+        return card;
+    }
+
+    function renderRoadmapSlots() {
+        const slots = document.querySelectorAll('.roadmap-slot');
+        const timer = document.getElementById('roadmapTimerText');
+        roadmapSlotsData.forEach((card, idx) => {
+            const slot = slots[idx];
+            if (card && card.id !== 'empty') {
+                let color = card.rarity === 'deadly' ? '#ef4444' : card.rarity === 'legendary' ? '#ffd700' : card.rarity === 'epic' ? '#a855f7' : card.rarity === 'rare' ? '#3b82f6' : card.rarity === 'sigma' ? '#ff00ff' : '#6b7280';
+                slot.className = 'roadmap-slot filled';
+                let imgHtml = `<span class="card-img">${card.emoji}</span>`;
+                if (card.img) {
+                    imgHtml = `<img class="card-image" src="${card.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span class="card-img" style="display:none;">${card.emoji}</span>`;
+                }
+                const income10 = card.income * 10 * 4;
+                let mutText = '';
+                if (card.mutation) {
+                    const mut = MUTATIONS[card.mutation];
+                    mutText = `<div style="font-size:10px;color:#ffb347;margin-top:2px;">⚡ ${mut.emoji} ${mut.name} x${mut.multiplier}</div>`;
+                }
+                slot.innerHTML = `${imgHtml}<div class="card-name">${card.name}</div><div class="card-rarity" style="background:${color};color:#fff;">${card.rarity.toUpperCase()}</div>${mutText}<div class="timer-label">${idx===0?'9с':idx===1?'6с':'3с'}</div><div style="font-size:10px;color:#64ffda;margin-top:2px;">+${income10} за 10 мин</div>`;
+                slot.onclick = () => buyRoadmapCard(idx);
+            } else {
+                slot.className = 'roadmap-slot';
+                slot.innerHTML = '<span style="color:#555;">Пусто</span>';
+                slot.onclick = null;
+            }
+        });
+        if (!isRoadmapFrozen) {
+            const left = 3 - (roadmapTimerCounter % 3);
+            timer.innerText = `⏳ До следующей смены: ${left} секунд${left>1?'ы':'а'}`;
+        } else {
+            timer.innerText = '⏳ Админский спавн: 9 секунд';
+        }
+    }
+
+    function buyRoadmapCard(idx) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Сначала войди в аккаунт!");
+            return;
+        }
+        const card = roadmapSlotsData[idx];
+        if (!card || card.id === 'empty') {
+            customMsg("Ошибка", "В этом слоте нет карты!");
+            return;
+        }
+        const price = (idx === 2 && isRoadmapFrozen) ? 0 : (card.price || 50);
+        if (gameData.balance < price) {
+            customMsg("Не хватает денег", `Карта стоит $${price}, у тебя $${Math.floor(gameData.balance)}`);
+            return;
+        }
+        gameData.balance -= price;
+        if (!gameData.cards[card.id]) gameData.cards[card.id] = 0;
+        gameData.cards[card.id]++;
+        if (card.mutation) {
+            if (!gameData.mutations) gameData.mutations = {};
+            gameData.mutations[card.id] = card.mutation;
+        }
+        saveLocalGame();
+        saveCloudGame();
+        updateUI();
+        renderInventory();
+        if (idx === 2 && isRoadmapFrozen) {
+            clearSpawnedCard();
+        } else {
+            roadmapSlotsData[idx] = generateRoadmapCard();
+            renderRoadmapSlots();
+        }
+        customMsg("✅ Куплено!", `Ты купил ${card.emoji} ${card.name} за $${price}.`);
+    }
+
+    function clearSpawnedCard() {
+        isRoadmapFrozen = false;
+        const ref = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+        ref.remove();
+        roadmapSlotsData[2] = generateRoadmapCard();
+        if (roadmapInterval) {
+            clearInterval(roadmapInterval);
+            roadmapInterval = null;
+        }
+        roadmapTimerCounter = 0;
+        roadmapInterval = setInterval(() => {
+            roadmapTimerCounter++;
+            if (roadmapTimerCounter % 3 === 0) {
+                roadmapSlotsData[2] = roadmapSlotsData[1];
+                roadmapSlotsData[1] = roadmapSlotsData[0];
+                roadmapSlotsData[0] = generateRoadmapCard();
+            }
+            renderRoadmapSlots();
+        }, 1000);
+        renderRoadmapSlots();
+    }
+
+    function startRoadmapTimer() {
+        if (roadmapInterval) clearInterval(roadmapInterval);
+        roadmapTimerCounter = 0;
+        roadmapSlotsData = [generateRoadmapCard(), generateRoadmapCard(), generateRoadmapCard()];
+        renderRoadmapSlots();
+        isRoadmapFrozen = false;
+        if (currentUser) {
+            const ref = db.ref('users/' + safePath(currentUser) + '/roadmapSpawn');
+            ref.off();
+            ref.on('value', snap => {
+                const data = snap.val();
+                if (!data || !data.cardId) return;
+                if (isRoadmapFrozen) return;
+                const card = ALL_CARDS.find(c => c.id === data.cardId);
+                if (!card) return;
+                isRoadmapFrozen = true;
+                if (roadmapInterval) clearInterval(roadmapInterval);
+                roadmapSlotsData[2] = card;
+                renderRoadmapSlots();
+                addNotification("🛠️ Админ заспавнил карту!", `На 3-ю дорожку вышла ${card.emoji} ${card.name}. У тебя 9 секунд, чтобы забрать её бесплатно!`, 9000);
+                setTimeout(() => {
+                    if (isRoadmapFrozen && currentUser) clearSpawnedCard();
+                }, 9000);
+            });
+        }
+        roadmapInterval = setInterval(() => {
+            if (isRoadmapFrozen) return;
+            roadmapTimerCounter++;
+            if (roadmapTimerCounter % 3 === 0) {
+                roadmapSlotsData[2] = roadmapSlotsData[1];
+                roadmapSlotsData[1] = roadmapSlotsData[0];
+                roadmapSlotsData[0] = generateRoadmapCard();
+            }
+            renderRoadmapSlots();
+        }, 1000);
+    }
+
+    function stopRoadmap() {
+        if (roadmapInterval) {
+            clearInterval(roadmapInterval);
+            roadmapInterval = null;
+        }
+        document.querySelectorAll('.roadmap-slot').forEach(s => {
+            s.className = 'roadmap-slot';
+            s.innerHTML = '<span style="color:#555;">Остановлено</span>';
+        });
+        document.getElementById('roadmapTimerText').innerText = '⏳ Дорожка приостановлена';
+        if (currentUser) {
+            db.ref('users/' + safePath(currentUser) + '/roadmapSpawn').off();
+        }
+    }
+
+    function fillAdminCardSelect() {
+        const select = document.getElementById('adminCardSelect');
+        select.innerHTML = '<option value="">Выбери карту</option>';
+        ALL_CARDS.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.innerText = `${c.emoji} ${c.name} (${c.rarity})`;
+            select.appendChild(opt);
+        });
+    }
+
+    document.getElementById('adminSpawnBtn').onclick = function() {
+        if (currentUser !== 'MrDushka') {
+            customMsg("Ошибка", "Только для админа!");
+            return;
+        }
+        const cardId = document.getElementById('adminCardSelect').value;
+        const target = document.getElementById('adminTargetUser').value.trim();
+        if (!cardId) {
+            customMsg("Ошибка", "Выбери карту!");
+            return;
+        }
+        const card = ALL_CARDS.find(c => c.id === cardId);
+        if (!card) return;
+        const data = { cardId: cardId, timestamp: firebase.database.ServerValue.TIMESTAMP };
+        if (target === '') {
+            db.ref('users').once('value', snap => {
+                const users = snap.val();
+                if (!users) {
+                    customMsg("Ошибка", "Нет игроков.");
+                    return;
+                }
+                const updates = {};
+                for (let key in users) {
+                    if (key === 'MrDushka') continue;
+                    updates['users/' + safePath(key) + '/roadmapSpawn'] = data;
+                }
+                db.ref().update(updates).then(() => {
+                    customMsg("✅ Спавн всем!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку всем игрокам!`);
+                    renderAdminPanel();
+                }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карты."));
+            });
+        } else {
+            loadCloudData(target, function(userData) {
+                if (!userData) {
+                    customMsg("Ошибка", "Игрок не найден!");
+                    return;
+                }
+                db.ref('users/' + safePath(target) + '/roadmapSpawn').set(data).then(() => {
+                    customMsg("✅ Спавн!", `Карта ${card.emoji} ${card.name} заспавнена на дорожку игроку ${target}.`);
+                    renderAdminPanel();
+                }).catch(err => customMsg("Ошибка", "Не удалось заспавнить карту."));
+            });
+        }
+    };
+
+    // ---------- УТИЛИТЫ ДЛЯ СООБЩЕНИЙ ----------
+    function showCustomMsg(t, text, b) {
+        return new Promise(r => {
+            const o = document.getElementById('customMsgOverlay');
+            document.getElementById('customMsgTitle').innerText = t;
+            document.getElementById('customMsgText').innerText = text;
+            const c = document.getElementById('customMsgBtns');
+            c.innerHTML = '';
+            b.forEach((btn, i) => {
+                const e = document.createElement('button');
+                e.className = 'custom-msg-btn ' + (btn.class || 'ok');
+                e.innerText = btn.text;
+                e.onclick = function() {
+                    o.classList.remove('active');
+                    r(i);
+                };
+                c.appendChild(e);
+            });
+            o.classList.add('active');
+        });
+    }
+
+    async function customMsg(t, text) {
+        await showCustomMsg(t, text, [{ text: 'Подтвердить', class: 'confirm' }]);
+    }
+
+    // ---------- РЫНОК И АУКЦИОН ----------
+    function openSellModal(cardId) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Сначала войди в аккаунт!");
+            return;
+        }
+        const card = ALL_CARDS.find(c => c.id === cardId);
+        if (!card || !gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
+            customMsg("Ошибка", "У вас нет этой карты для выставления!");
+            return;
+        }
+        currentCardForSell = cardId;
+        document.getElementById('marketPriceInput').value = card.price;
+        document.getElementById('marketSellModal').classList.add('active');
+    }
+
+    function confirmMarketSell() {
+        if (!currentUser || !currentCardForSell) {
+            customMsg("Ошибка", "Что-то пошло не так.");
+            return;
+        }
+        const priceInput = document.getElementById('marketPriceInput');
+        let price = parseInt(priceInput.value);
+        if (isNaN(price) || price < 1) {
+            customMsg("Ошибка", "Введите корректную цену (целое число, больше 0)!");
+            return;
+        }
+        const card = ALL_CARDS.find(c => c.id === currentCardForSell);
+        if (!card || !gameData.cards[currentCardForSell] || gameData.cards[currentCardForSell] <= 0) {
+            customMsg("Ошибка", "У вас больше нет этой карты.");
+            document.getElementById('marketSellModal').classList.remove('active');
+            return;
+        }
+        gameData.cards[currentCardForSell]--;
+        saveLocalGame();
+        saveCloudGame();
+        const lotRef = db.ref('market/lots').push();
+        lotRef.set({ cardId: currentCardForSell, seller: currentUser, price: price, type: 'market', timestamp: firebase.database.ServerValue.TIMESTAMP }).then(() => {
+            customMsg("✅ Выставлено!", `Карта ${card.emoji} ${card.name} выставлена на рынок за $${price}.`);
+            document.getElementById('marketSellModal').classList.remove('active');
+            renderInventory();
+            renderMarketplace();
+            updateUI();
+        }).catch(err => {
+            if (!gameData.cards[currentCardForSell]) gameData.cards[currentCardForSell] = 0;
+            gameData.cards[currentCardForSell]++;
+            saveLocalGame();
+            saveCloudGame();
+            customMsg("❌ Ошибка", "Не удалось выставить карту на рынок.");
+        });
+    }
+
+    function openAuctionModal(cardId) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Сначала войди в аккаунт!");
+            return;
+        }
+        const card = ALL_CARDS.find(c => c.id === cardId);
+        if (!card || !gameData.cards[cardId] || gameData.cards[cardId] <= 0) {
+            customMsg("Ошибка", "У вас нет этой карты для выставления!");
+            return;
+        }
+        currentCardForSell = cardId;
+        document.getElementById('auctionStartPrice').value = card.price;
+        document.getElementById('auctionDuration').value = 24;
+        document.getElementById('auctionSellModal').classList.add('active');
+    }
+
+    function confirmAuctionSell() {
+        if (!currentUser || !currentCardForSell) {
+            customMsg("Ошибка", "Что-то пошло не так.");
+            return;
+        }
+        const startPrice = parseInt(document.getElementById('auctionStartPrice').value);
+        const durationHours = parseInt(document.getElementById('auctionDuration').value);
+        if (isNaN(startPrice) || startPrice < 1) {
+            customMsg("Ошибка", "Введите корректную стартовую цену (целое число, >0)!");
+            return;
+        }
+        if (isNaN(durationHours) || durationHours < 1 || durationHours > 48) {
+            customMsg("Ошибка", "Длительность должна быть от 1 до 48 часов.");
+            return;
+        }
+        const card = ALL_CARDS.find(c => c.id === currentCardForSell);
+        if (!card || !gameData.cards[currentCardForSell] || gameData.cards[currentCardForSell] <= 0) {
+            customMsg("Ошибка", "У вас больше нет этой карты.");
+            document.getElementById('auctionSellModal').classList.remove('active');
+            return;
+        }
+        gameData.cards[currentCardForSell]--;
+        saveLocalGame();
+        saveCloudGame();
+        const endTime = Date.now() + durationHours * 3600 * 1000;
+        const lotRef = db.ref('auction/lots').push();
+        lotRef.set({ cardId: currentCardForSell, seller: currentUser, startPrice: startPrice, currentBid: startPrice, buyer: null, endTime: endTime, status: 'active', timestamp: firebase.database.ServerValue.TIMESTAMP }).then(() => {
+            customMsg("✅ Аукцион создан!", `Карта ${card.emoji} ${card.name} выставлена на аукцион с начальной ставкой $${startPrice}.`);
+            document.getElementById('auctionSellModal').classList.remove('active');
+            renderInventory();
+            renderMarketplace();
+            updateUI();
+        }).catch(err => {
+            if (!gameData.cards[currentCardForSell]) gameData.cards[currentCardForSell] = 0;
+            gameData.cards[currentCardForSell]++;
+            saveLocalGame();
+            saveCloudGame();
+            customMsg("❌ Ошибка", "Не удалось создать аукцион.");
+        });
+    }
+
+    function renderMarketplace() {
+        const container = document.getElementById('marketplaceContainer');
+        if (!container) return;
+        container.innerHTML = '<div style="text-align:center;padding:10px;color:#848e9c;">Загрузка...</div>';
+        db.ref('market/lots').on('value', snap => {
+            const marketData = snap.val() || {};
+            db.ref('auction/lots').on('value', snap2 => {
+                const auctionData = snap2.val() || {};
+                let html = '';
+                const now = Date.now();
+                for (let id in auctionData) {
+                    const lot = auctionData[id];
+                    if (lot.status === 'active' && lot.endTime && lot.endTime < now) {
+                        db.ref('auction/lots/' + id + '/status').set('ended');
+                    }
+                }
+                db.ref('auction/lots').once('value', snapAuc => {
+                    const auctionData2 = snapAuc.val() || {};
+                    const allLots = [];
+                    for (let id in marketData) allLots.push({ id, ...marketData[id], type: 'market' });
+                    for (let id in auctionData2) allLots.push({ id, ...auctionData2[id], type: 'auction' });
+                    if (allLots.length === 0) {
+                        container.innerHTML = '<div class="empty-state">📭 Лотов нет</div>';
+                        return;
+                    }
+                    html = '';
+                    allLots.forEach(lot => {
+                        const card = ALL_CARDS.find(c => c.id === lot.cardId);
+                        if (!card) return;
+                        let imgHtml = `<span>${card.emoji}</span>`;
+                        if (card.img) {
+                            imgHtml = `<img src="${card.img}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>'+card.emoji+'</span>';" style="width:40px;height:40px;object-fit:contain;">`;
+                        }
+                        const isSeller = (lot.seller === currentUser);
+                        let actions = '';
+                        if (lot.type === 'market') {
+                            actions = `<button class="buy-btn" onclick="buyMarketLot('${lot.id}')">Купить за $${lot.price}</button>`;
+                            if (isSeller) {
+                                actions += `<button class="cancel-btn" onclick="cancelLot('${lot.id}','market')">Снять</button>`;
+                            }
+                        } else if (lot.type === 'auction') {
+                            if (lot.status === 'ended') {
+                                if (lot.buyer === currentUser) {
+                                    actions = `<button class="claim-btn" onclick="claimAuctionLot('${lot.id}')">Забрать</button>`;
+                                } else {
+                                    actions = `<span style="color:#ff6b6b;">Завершён</span>`;
+                                }
+                            } else {
+                                const highestBid = lot.currentBid || lot.startPrice;
+                                if (lot.seller === currentUser) {
+                                    actions = `<button class="cancel-btn" onclick="cancelLot('${lot.id}','auction')">Снять</button>`;
+                                } else {
+                                    actions = `<button class="bid-btn" onclick="placeBid('${lot.id}')">Ставка $${highestBid+1}</button>`;
+                                }
+                                const timeLeft = Math.max(0, Math.floor((lot.endTime - Date.now()) / 1000));
+                                const hours = Math.floor(timeLeft / 3600);
+                                const minutes = Math.floor((timeLeft % 3600) / 60);
+                                actions += `<span class="lot-time">⏳ ${hours}ч ${minutes}м</span>`;
+                            }
+                        }
+                        html += `<div class="market-lot"><div class="lot-card">${imgHtml}<div><div class="lot-name">${card.emoji} ${card.name}</div><div class="lot-seller">👤 ${lot.seller}</div></div></div><div class="lot-price">$${lot.type==='market'?lot.price:lot.currentBid||lot.startPrice}</div><div class="lot-actions">${actions}</div></div>`;
+                    });
+                    container.innerHTML = html;
+                });
+            });
+        });
+    }
+
+    window.buyMarketLot = function(lotId) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Войдите в аккаунт!");
+            return;
+        }
+        const ref = db.ref('market/lots/' + lotId);
+        ref.once('value', snap => {
+            const lot = snap.val();
+            if (!lot) {
+                customMsg("Ошибка", "Лот не найден!");
+                return;
+            }
+            if (lot.seller === currentUser) {
+                customMsg("Ошибка", "Вы не можете купить свой лот!");
+                return;
+            }
+            const price = lot.price;
+            if (gameData.balance < price) {
+                customMsg("Ошибка", `Не хватает денег! Нужно $${price}.`);
+                return;
+            }
+            gameData.balance -= price;
+            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+            gameData.cards[lot.cardId]++;
+            saveLocalGame();
+            saveCloudGame();
+            db.ref('users/' + safePath(lot.seller) + '/balance').transaction(cur => (cur || 0) + price);
+            ref.remove().then(() => {
+                customMsg("✅ Покупка успешна!", `Карта куплена за $${price}.`);
+                renderInventory();
+                renderMarketplace();
+                updateUI();
+            }).catch(err => {
+                gameData.balance += price;
+                gameData.cards[lot.cardId]--;
+                saveLocalGame();
+                saveCloudGame();
+                customMsg("❌ Ошибка", "Не удалось завершить покупку.");
+            });
+        });
+    };
+
+    window.placeBid = function(lotId) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Войдите в аккаунт!");
+            return;
+        }
+        const ref = db.ref('auction/lots/' + lotId);
+        ref.once('value', snap => {
+            const lot = snap.val();
+            if (!lot || lot.status !== 'active') {
+                customMsg("Ошибка", "Аукцион не активен!");
+                return;
+            }
+            if (lot.seller === currentUser) {
+                customMsg("Ошибка", "Вы не можете делать ставку на свой лот!");
+                return;
+            }
+            const currentBid = lot.currentBid || lot.startPrice;
+            const minBid = currentBid + 1;
+            showCustomMsg("Ставка на аукционе", `Текущая ставка: $${currentBid}. Минимальная: $${minBid}. Введите вашу ставку:`, [{ text: 'Ввести', class: 'confirm' }, { text: 'Отмена', class: 'cancel' }]).then(res => {
+                if (res === 0) {
+                    const amount = parseInt(prompt('Ваша ставка (целое число):'));
+                    if (isNaN(amount) || amount < minBid) {
+                        customMsg("Ошибка", `Ставка должна быть не меньше $${minBid}!`);
+                        return;
+                    }
+                    if (gameData.balance < amount) {
+                        customMsg("Ошибка", `Не хватает денег! Нужно $${amount}.`);
+                        return;
+                    }
+                    gameData.balance -= amount;
+                    saveLocalGame();
+                    saveCloudGame();
+                    ref.update({ currentBid: amount, buyer: currentUser }).then(() => {
+                        customMsg("✅ Ставка принята!", `Вы поставили $${amount}.`);
+                        renderMarketplace();
+                        updateUI();
+                    }).catch(err => {
+                        gameData.balance += amount;
+                        saveLocalGame();
+                        saveCloudGame();
+                        customMsg("❌ Ошибка", "Не удалось сделать ставку.");
+                    });
+                }
+            });
+        });
+    };
+
+    window.claimAuctionLot = function(lotId) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Войдите в аккаунт!");
+            return;
+        }
+        const ref = db.ref('auction/lots/' + lotId);
+        ref.once('value', snap => {
+            const lot = snap.val();
+            if (!lot || lot.status !== 'ended') {
+                customMsg("Ошибка", "Аукцион ещё не завершён или не существует!");
+                return;
+            }
+            if (lot.buyer !== currentUser) {
+                customMsg("Ошибка", "Вы не победитель этого аукциона!");
+                return;
+            }
+            if (lot.claimed) {
+                customMsg("Ошибка", "Вы уже забрали эту карту.");
+                return;
+            }
+            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+            gameData.cards[lot.cardId]++;
+            saveLocalGame();
+            saveCloudGame();
+            ref.update({ claimed: true }).then(() => {
+                customMsg("✅ Карта получена!", `Вы забрали ${lot.cardId}.`);
+                renderInventory();
+                renderMarketplace();
+                updateUI();
+            }).catch(err => customMsg("❌ Ошибка", "Не удалось забрать карту."));
+        });
+    };
+
+    window.cancelLot = function(lotId, type) {
+        if (!currentUser) {
+            customMsg("Ошибка", "Войдите в аккаунт!");
+            return;
+        }
+        const path = type === 'market' ? 'market/lots/' : 'auction/lots/';
+        const ref = db.ref(path + lotId);
+        ref.once('value', snap => {
+            const lot = snap.val();
+            if (!lot) {
+                customMsg("Ошибка", "Лот не найден!");
+                return;
+            }
+            if (lot.seller !== currentUser) {
+                customMsg("Ошибка", "Вы не владелец лота!");
+                return;
+            }
+            if (type === 'auction' && lot.status !== 'active') {
+                customMsg("Ошибка", "Нельзя отменить завершённый аукцион.");
+                return;
+            }
+            if (!gameData.cards[lot.cardId]) gameData.cards[lot.cardId] = 0;
+            gameData.cards[lot.cardId]++;
+            saveLocalGame();
+            saveCloudGame();
+            ref.remove().then(() => {
+                customMsg("✅ Лот отменён", `Карта возвращена в ваш инвентарь.`);
+                renderInventory();
+                renderMarketplace();
+                updateUI();
+            }).catch(err => {
+                gameData.cards[lot.cardId]--;
+                saveLocalGame();
+                saveCloudGame();
+                customMsg("❌ Ошибка", "Не удалось отменить лот.");
+            });
+        });
+    };
+
+    // Функция админ-панели
+    function renderAdminPanel() {
+        if (currentUser !== 'MrDushka') {
+            document.getElementById('adminContainer').innerHTML = '<div class="placeholder" style="text-align:center;padding:20px;color:#ff6b6b;">⛔ У вас нет прав администратора!</div>';
+            return;
+        }
+        document.getElementById('adminContainer').innerHTML = '<div class="placeholder" style="text-align:center;padding:20px;color:#64ffda;">✅ Админ-панель активна</div>';
+        
+        // Настройка кнопок админа
+        document.getElementById('adminGiveBtn').onclick = function() {
+            const login = document.getElementById('adminGiveLogin').value.trim();
+            const amount = parseInt(document.getElementById('adminGiveAmount').value);
+            if (!login || isNaN(amount) || amount <= 0) {
+                customMsg("Ошибка", "Введите ник и сумму!");
+                return;
+            }
+            loadCloudData(login, data => {
+                if (!data) { customMsg("Ошибка", "Игрок не найден!"); return; }
+                db.ref('users/' + safePath(login) + '/balance').set((data.balance || 0) + amount);
+                customMsg("✅ Выдано!", `$${amount} выдано ${login}`);
+            });
+        };
+        
+        document.getElementById('adminTakeBtn').onclick = function() {
+            const login = document.getElementById('adminGiveLogin').value.trim();
+            const amount = parseInt(document.getElementById('adminGiveAmount').value);
+            if (!login || isNaN(amount) || amount <= 0) {
+                customMsg("Ошибка", "Введите ник и сумму!");
+                return;
+            }
+            loadCloudData(login, data => {
+                if (!data) { customMsg("Ошибка", "Игрок не найден!"); return; }
+                const cur = data.balance || 0;
+                if (cur < amount) { customMsg("Ошибка", `У игрока ${login} только $${cur}`); return; }
+                db.ref('users/' + safePath(login) + '/balance').set(cur - amount);
+                customMsg("✅ Забрано!", `$${amount} забрано у ${login}`);
+            });
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panes = document.querySelectorAll('.tab-pane');
+        tabs.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                if (tabId === 'mail') {
+                    openInbox();
+                    return;
+                }
+                tabs.forEach(b => b.classList.remove('active'));
+                panes.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                const pane = document.getElementById(tabId);
+                if (pane) pane.classList.add('active');
+                if (tabId === 'clan') renderClan();
+                if (tabId === 'market') renderMarketplace();
+                if (tabId === 'admin' && currentUser === 'MrDushka') renderAdminPanel();
+            });
+        });
+        document.getElementById('globalAvatarBtn').onclick = function() {
+            if (!currentUser) return;
+            tabs.forEach(b => b.classList.remove('active'));
+            panes.forEach(p => p.classList.remove('active'));
+            document.querySelector('[data-tab="profile"]').classList.add('active');
+            document.getElementById('profile').classList.add('active');
+        };
+        generateStore();
+        initPopularCoins();
+        renderMarketplace();
+        // Скрываем админ-вкладку если не админ
+        if (currentUser !== 'MrDushka') {
+            document.querySelector('.hidden-admin').style.display = 'none';
+        }
+    });
+
+    // Если пользователь уже авторизован - показываем админ-вкладку
+    if (currentUser === 'MrDushka') {
+        setTimeout(() => {
+            renderAdminPanel();
+            document.querySelector('.hidden-admin').style.display = 'flex';
+        }, 500);
+    }
+
+    console.log('✅ Игра успешно загружена! Ошибок синтаксиса нет.');
 </script>
+</body>
+</html>
