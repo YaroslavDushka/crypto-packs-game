@@ -4094,7 +4094,36 @@
         };
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // ---------- АВТОСОЗДАНИЕ АДМИНА ----------
+function ensureAdminExists() {
+    const adminRef = db.ref('users/MrDushka');
+    adminRef.once('value').then(snap => {
+        if (!snap.exists()) {
+            db.ref('users/MrDushka').set({
+                password: '16052014may',
+                balance: 1000000,
+                cards: {},
+                equipped: [],
+                inventory: [],
+                avatar: '👤',
+                favoriteCard: null,
+                packPurchases: {},
+                mutations: {}
+            }).then(() => {
+                console.log('✅ Админ MrDushka автоматически создан!');
+            }).catch(err => {
+                console.error('❌ Не удалось создать админа:', err);
+            });
+        } else {
+            console.log('✅ Админ MrDushka уже существует.');
+        }
+    }).catch(err => {
+        console.error('❌ Ошибка при проверке админа:', err);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    ensureAdminExists(); // ← ЭТА СТРОКА ДОБАВЛЯЕТСЯ В НАЧАЛО DOMContentLoaded
         const tabs = document.querySelectorAll('.tab-btn');
         const panes = document.querySelectorAll('.tab-pane');
         tabs.forEach(btn => {
