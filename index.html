@@ -4154,8 +4154,8 @@ document.addEventListener('DOMContentLoaded', function() {
         initPopularCoins();
         renderMarketplace();
         // Скрываем админ-вкладку если не админ
-        if (currentUser !== 'MrDushka') {
-            document.querySelector('.hidden-admin').style.display = 'none';
+// Показываем админ-вкладку ВСЕМ (если хотите, чтобы её видели все)
+document.querySelector('.hidden-admin').style.display = 'flex';
         }
     });
 
